@@ -49,10 +49,6 @@ export function LegalPage() {
     body_markdown: string;
   }>();
   const [editForm] = Form.useForm<{ title: string; body_markdown: string }>();
-  const [settingsForm] = Form.useForm<{
-    third_party_registration: string;
-    retention_days: string;
-  }>();
 
   const settingsMap = useMemo(() => {
     const map: Record<string, string | null> = {};
@@ -84,11 +80,17 @@ export function LegalPage() {
   return (
     <Flex vertical gap={16}>
       <PageHeader
-        title="Legal & OAuth"
-        subtitle="Dokumen Syarat/Privasi berversi dan pengaturan enforce OAuth"
+        title="Legal"
+        subtitle="Dokumen Syarat Ketentuan dan Kebijakan Privasi berversi"
         extra={
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={() => { void docsQuery.refetch(); void settingsQuery.refetch(); }}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                void docsQuery.refetch();
+                void settingsQuery.refetch();
+              }}
+            >
               Muat ulang
             </Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
@@ -98,63 +100,15 @@ export function LegalPage() {
         }
       />
 
-      <Card title="Pengaturan runtime" size="small" loading={settingsQuery.isLoading}>
-        <Form
-          form={settingsForm}
-          layout="vertical"
-          key={JSON.stringify(settingsMap)}
-          initialValues={{
-            third_party_registration: settingsMap['oauth.third_party_registration'] ?? 'closed',
-            retention_days: settingsMap['oauth.request_log_retention_days'] ?? '90',
-          }}
-          onFinish={async (values) => {
-            try {
-              await mutations.patchSettings.mutateAsync([
-                { key: 'oauth.third_party_registration', value: values.third_party_registration },
-                { key: 'oauth.request_log_retention_days', value: values.retention_days },
-              ]);
-              message.success('Pengaturan disimpan');
-            } catch (err) {
-              message.error(normalizeError(err).message);
-            }
-          }}
-        >
-          <Flex gap={16} wrap>
-            <Form.Item name="third_party_registration" label="Registrasi third-party" style={{ minWidth: 200 }}>
-              <Select
-                options={[
-                  { value: 'closed', label: 'closed' },
-                  { value: 'open', label: 'open' },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item name="retention_days" label="Retensi request log (hari)" style={{ minWidth: 160 }}>
-              <Input />
-            </Form.Item>
-          </Flex>
-          <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-            Gate JWT <Typography.Text code>azp</Typography.Text> dikontrol env{' '}
-            <Typography.Text code>OAUTH_REQUIRE_AZP</Typography.Text> (bukan pengaturan ini).
-            Default false = token lama tanpa azp masih lolos.
-          </Typography.Paragraph>
-          <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-            Versi legal aktif: terms <Typography.Text code>{settingsMap['legal.terms_version'] ?? '-'}</Typography.Text>
-            {' · '}
-            privacy <Typography.Text code>{settingsMap['legal.privacy_version'] ?? '-'}</Typography.Text>
-            {' '}(diubah otomatis saat Publish dokumen)
-          </Typography.Paragraph>
-          <Popconfirm
-            title="Simpan pengaturan OAuth?"
-            description="Perubahan retensi / registrasi third-party berlaku segera."
-            okText="Simpan"
-            onConfirm={() => settingsForm.submit()}
-          >
-            <Button type="primary" loading={mutations.patchSettings.isPending}>
-              Simpan pengaturan
-            </Button>
-          </Popconfirm>
-        </Form>
-      </Card>
+      <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+        Versi aktif: terms{' '}
+        <Typography.Text code>{settingsMap['legal.terms_version'] ?? '-'}</Typography.Text>
+        {' · '}
+        privacy{' '}
+        <Typography.Text code>{settingsMap['legal.privacy_version'] ?? '-'}</Typography.Text>
+        {' '}
+        (otomatis berubah saat Publish)
+      </Typography.Paragraph>
 
       <Card size="small">
         <Tabs
@@ -252,7 +206,7 @@ export function LegalPage() {
         okText="Simpan draft"
         confirmLoading={mutations.createDraft.isPending}
         onOk={() => form.submit()}
-          destroyOnClose
+        destroyOnClose
       >
         <Form
           form={form}
@@ -296,7 +250,7 @@ export function LegalPage() {
         okText="Simpan"
         confirmLoading={mutations.updateDraft.isPending}
         onOk={() => editForm.submit()}
-          destroyOnClose
+        destroyOnClose
       >
         <Form
           form={editForm}

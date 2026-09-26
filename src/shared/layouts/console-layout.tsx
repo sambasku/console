@@ -21,6 +21,7 @@ import {
   UserOutlined,
   WarningOutlined,
   FileProtectOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import { Avatar, Breadcrumb, Button, Dropdown, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -60,7 +61,8 @@ type TopRoute =
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
-  | '/legal';
+  | '/legal'
+  | '/oauth';
 type MenuRoute = KamusRoute | NotificationRoute | TopRoute;
 
 const KAMUS_GROUP_KEY = 'kamus';
@@ -84,7 +86,8 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
   profile: 'Profil',
-  legal: 'Legal & OAuth',
+  legal: 'Legal',
+  oauth: 'OAuth',
 };
 
 function topPath(pathname: string): string {
@@ -161,7 +164,8 @@ export function ConsoleLayout() {
         ).map(([key, { icon, label }]) => ({ key, icon, label })),
       });
       items.push({ key: '/bug-reports', icon: <FlagOutlined />, label: 'Laporan Masalah' });
-      items.push({ key: '/legal', icon: <FileProtectOutlined />, label: 'Legal & OAuth' });
+      items.push({ key: '/legal', icon: <FileProtectOutlined />, label: 'Legal' });
+      items.push({ key: '/oauth', icon: <ApiOutlined />, label: 'OAuth' });
     }
     items.push({ key: '/audit-logs', icon: <AuditOutlined />, label: 'Audit Log' });
     return items;

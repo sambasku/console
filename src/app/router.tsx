@@ -1,6 +1,8 @@
 import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router';
 import { sessionStore } from '@/shared/auth/session';
 import { tryRestoreSession } from '@/features/auth/application/try-restore-session';
+import { revokeUnauthorizedConsoleSession } from '@/features/auth/application/revoke-unauthorized-console-session';
+import { isConsoleAllowedRole } from '@/features/auth/domain/user';
 import { BaseLayout } from '@/shared/layouts/base-layout';
 import { ConsoleLayout } from '@/shared/layouts/console-layout';
 import { LoginPage } from '@/features/auth/presentation/login-page';
@@ -32,6 +34,7 @@ import { NotificationCampaignDetailPage } from '@/features/notification-campaign
 import { NotificationTemplatesPage } from '@/features/notification-campaigns/presentation/notification-templates-page';
 import { ProfilePage } from '@/features/profile/presentation/pages/profile-page';
 import { LegalPage } from '@/features/legal/presentation/legal-page';
+import { OauthPage } from '@/features/oauth/presentation/oauth-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -74,9 +77,13 @@ const loginRoute = createRoute({
   getParentRoute: () => baseLayoutRoute,
   path: '/login',
   component: LoginPage,
-  beforeLoad: () => {
-    // Sesi sudah aktif (mis. user ketik /login manual) → arahkan ke konsol.
-    if (sessionStore.isAuthenticated()) throw redirect({ to: '/dashboard' });
+  beforeLoad: async () => {
+    // Sesi staff aktif → konsol. Role non-staff (cookie sisa) → revoke dulu.
+    if (!sessionStore.isAuthenticated()) return;
+    if (isConsoleAllowedRole(sessionStore.getSnapshot().user?.role)) {
+      throw redirect({ to: '/dashboard' });
+    }
+    await revokeUnauthorizedConsoleSession();
   },
 });
 
@@ -85,8 +92,12 @@ const consoleLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'console-layout',
   component: ConsoleLayout,
-  beforeLoad: () => {
+  beforeLoad: async () => {
     if (!sessionStore.isAuthenticated()) throw redirect({ to: '/login' });
+    if (!isConsoleAllowedRole(sessionStore.getSnapshot().user?.role)) {
+      await revokeUnauthorizedConsoleSession();
+      throw redirect({ to: '/login' });
+    }
   },
 });
 
@@ -281,6 +292,12 @@ const legalRoute = createRoute({
   component: LegalPage,
 });
 
+const oauthRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/oauth',
+  component: OauthPage,
+});
+
 /**
  * Alias path `/console-layout/...` → path nyata (tanpa prefix layout id).
  *
@@ -337,6 +354,7 @@ const routeTree = rootRoute.addChildren([
     notificationTemplatesRoute,
     profileRoute,
     legalRoute,
+    oauthRoute,
   ]),
 ]);
 
