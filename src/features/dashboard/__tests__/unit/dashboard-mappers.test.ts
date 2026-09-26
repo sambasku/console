@@ -48,6 +48,11 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
         word_reports: { open: 2, closed: 2 },
       },
     },
+    verifier_applications: {
+      pending: 2,
+      approved: 4,
+      rejected: 1,
+    },
     ...overrides,
   };
 }
@@ -81,6 +86,11 @@ describe('normalizeDashboardStats', () => {
         wordReports: { open: 2, closed: 2 },
       },
     });
+    expect(stats.verifierApplications).toEqual({
+      pending: 2,
+      approved: 4,
+      rejected: 1,
+    });
   });
 
   it('problems hilang → open/closed 0', () => {
@@ -89,6 +99,13 @@ describe('normalizeDashboardStats', () => {
     const stats = normalizeDashboardStats(wire);
     expect(stats.problems.open).toBe(0);
     expect(stats.problems.closed).toBe(0);
+  });
+
+  it('verifier_applications hilang → pending/approved/rejected 0', () => {
+    const wire = wireFixture();
+    delete wire.verifier_applications;
+    const stats = normalizeDashboardStats(wire);
+    expect(stats.verifierApplications).toEqual({ pending: 0, approved: 0, rejected: 0 });
   });
 
   it('daily_last_30_days hilang → tetap 30 titik angka 0', () => {
