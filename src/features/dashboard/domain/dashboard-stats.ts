@@ -6,6 +6,29 @@ export type WordStatusKey = 'draft' | 'pending_review' | 'published' | 'rejected
 export type ContributionStatusKey = 'pending' | 'approved' | 'rejected' | 'corrected';
 export type AppRoleKey = 'root' | 'admin' | 'editor' | 'reviewer' | 'contributor';
 
+export interface ActivityDailyPoint {
+  /** 'YYYY-MM-DD' WIB */
+  date: string;
+  contributions: number;
+  votes: number;
+  comments: number;
+  newUsers: number;
+}
+
+export interface ProblemSourceCounts {
+  open: number;
+  closed: number;
+}
+
+export interface ProblemsStats {
+  open: number;
+  closed: number;
+  bySource: {
+    bugReports: ProblemSourceCounts;
+    wordReports: ProblemSourceCounts;
+  };
+}
+
 export interface DashboardStats {
   words: {
     total: number;
@@ -23,7 +46,10 @@ export interface DashboardStats {
   };
   activity: {
     auditLogsLast7Days: number;
+    /** 30 hari WIB inklusif (panjang tetap); hari kosong angka 0 */
+    dailyLast30Days: ActivityDailyPoint[];
   };
+  problems: ProblemsStats;
 }
 
 export const WORD_STATUS_LABELS: Record<WordStatusKey, string> = {
