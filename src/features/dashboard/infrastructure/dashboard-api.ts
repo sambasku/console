@@ -22,6 +22,13 @@ export interface DashboardStatsWire {
   };
   activity: {
     audit_logs_last_7_days: number;
+    daily_last_30_days?: Array<{
+      date: string;
+      contributions: number;
+      votes: number;
+      comments: number;
+      new_users: number;
+    }>;
   };
 }
 

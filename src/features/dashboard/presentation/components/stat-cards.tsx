@@ -75,7 +75,7 @@ export function StatCards({ stats, onNavigateContributions }: StatCardsProps) {
     },
     {
       key: 'activity',
-      label: 'Mutasi 7h',
+      label: 'Mutasi (7 hari)',
       value: activity.auditLogsLast7Days,
       meta: 'Entri audit log 7 hari terakhir',
     },

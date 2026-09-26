@@ -6,10 +6,11 @@ import { useAuth } from '@/shared/auth/use-auth';
 import { ROLE_LABELS, type UserRole } from '@/features/auth/domain/user';
 import { useDashboardStats } from '../application/use-dashboard-stats';
 import { StatCards } from './components/stat-cards';
+import { ActivityDailyChart } from './components/activity-daily-chart';
 import { WordOfDayCard } from '@/features/word-of-day/presentation/word-of-day-card';
 
 /**
- * Dashboard - strip KPI ringkas. Navigasi kerja lewat sider.
+ * Dashboard - strip KPI ringkas + chart aktivitas harian. Navigasi kerja lewat sider.
  */
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -66,6 +67,14 @@ export function DashboardPage() {
           onNavigateContributions={() => navigate({ to: '/contributions', search: { id: undefined } })}
         />
       ) : null}
+
+      {isPending && !stats ? (
+        <div className="dashboard__chart dashboard__chart--skeleton">
+          <Skeleton active paragraph={{ rows: 6 }} title={{ width: 180 }} />
+        </div>
+      ) : null}
+
+      {stats ? <ActivityDailyChart points={stats.activity.dailyLast30Days} /> : null}
     </div>
   );
 }
