@@ -38,6 +38,11 @@ export interface DashboardStatsWire {
       word_reports: { open: number; closed: number };
     };
   };
+  verifier_applications?: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
 }
 
 export async function getDashboardStatsRequest(signal?: AbortSignal): Promise<DashboardStatsWire> {

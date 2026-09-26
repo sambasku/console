@@ -1,31 +1,35 @@
 import { useMemo } from 'react';
 import { Pie } from '@ant-design/plots';
 import { theme, Typography } from 'antd';
-import type { ProblemsStats } from '../../domain/dashboard-stats';
+import type { VerifierApplicationsStats } from '../../domain/dashboard-stats';
 
-export interface ProblemsDonutChartProps {
-  problems: ProblemsStats;
+export interface VerifierApplicationsDonutChartProps {
+  stats: VerifierApplicationsStats;
   onNavigate?: () => void;
 }
 
 /**
- * Donut permasalahan via @ant-design/plots - open vs closed.
+ * Donut pengajuan verifikator: menunggu / disetujui / ditolak.
  */
-export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartProps) {
+export function VerifierApplicationsDonutChart({
+  stats,
+  onNavigate,
+}: VerifierApplicationsDonutChartProps) {
   const { token } = theme.useToken();
-  const total = problems.open + problems.closed;
+  const total = stats.pending + stats.approved + stats.rejected;
 
   const data = useMemo(
     () => [
-      { type: 'Belum', value: problems.open },
-      { type: 'Selesai', value: problems.closed },
+      { type: 'Menunggu', value: stats.pending },
+      { type: 'Disetujui', value: stats.approved },
+      { type: 'Ditolak', value: stats.rejected },
     ],
-    [problems.open, problems.closed],
+    [stats.pending, stats.approved, stats.rejected],
   );
 
   const config = useMemo(
     () => ({
-      data: total === 0 ? [{ type: 'Kosong', value: 1 }] : data,
+      data: total === 0 ? [{ type: 'Kosong', value: 1 }] : data.filter((d) => d.value > 0),
       angleField: 'value',
       colorField: 'type',
       innerRadius: 0.62,
@@ -33,7 +37,11 @@ export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartP
       height: 200,
       scale: {
         color: {
-          range: total === 0 ? [token.colorFillSecondary] : [token.colorWarning, token.colorSuccess],
+          range:
+            total === 0
+              ? [token.colorFillSecondary]
+              : [token.colorWarning, token.colorSuccess, token.colorError],
+          domain: total === 0 ? ['Kosong'] : ['Menunggu', 'Disetujui', 'Ditolak'],
         },
       },
       legend: false,
@@ -43,18 +51,17 @@ export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartP
         elementHighlight: true,
       },
     }),
-    [data, total, token.colorFillSecondary, token.colorWarning, token.colorSuccess],
+    [data, total, token.colorFillSecondary, token.colorWarning, token.colorSuccess, token.colorError],
   );
 
   const body = (
     <>
       <div className="dashboard__donut-header">
         <Typography.Title level={5} className="dashboard__chart-title">
-          Permasalahan
+          Pengajuan verifikator
         </Typography.Title>
         <Typography.Text type="secondary" className="dashboard__chart-subtitle">
-          Bug {problems.bySource.bugReports.open + problems.bySource.bugReports.closed} · Kata{' '}
-          {problems.bySource.wordReports.open + problems.bySource.wordReports.closed}
+          Snapshot status pengajuan
         </Typography.Text>
       </div>
 
@@ -67,16 +74,16 @@ export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartP
           </div>
         </div>
 
-        <ul className="dashboard__donut-legend" aria-label="Legenda permasalahan">
+        <ul className="dashboard__donut-legend" aria-label="Legenda pengajuan verifikator">
           <li className="dashboard__chart-legend-item">
             <span
               className="dashboard__chart-legend-swatch"
               style={{ background: token.colorWarning }}
               aria-hidden
             />
-            Belum{' '}
+            Menunggu{' '}
             <span className="dashboard__chart-legend-total">
-              ({problems.open.toLocaleString('id-ID')})
+              ({stats.pending.toLocaleString('id-ID')})
             </span>
           </li>
           <li className="dashboard__chart-legend-item">
@@ -85,9 +92,20 @@ export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartP
               style={{ background: token.colorSuccess }}
               aria-hidden
             />
-            Selesai{' '}
+            Disetujui{' '}
             <span className="dashboard__chart-legend-total">
-              ({problems.closed.toLocaleString('id-ID')})
+              ({stats.approved.toLocaleString('id-ID')})
+            </span>
+          </li>
+          <li className="dashboard__chart-legend-item">
+            <span
+              className="dashboard__chart-legend-swatch"
+              style={{ background: token.colorError }}
+              aria-hidden
+            />
+            Ditolak{' '}
+            <span className="dashboard__chart-legend-total">
+              ({stats.rejected.toLocaleString('id-ID')})
             </span>
           </li>
         </ul>
@@ -102,7 +120,7 @@ export function ProblemsDonutChart({ problems, onNavigate }: ProblemsDonutChartP
           type="button"
           className="dashboard__donut-body dashboard__donut-body--clickable"
           onClick={onNavigate}
-          aria-label={`Permasalahan: ${problems.open} belum, ${problems.closed} selesai. Buka laporan bug.`}
+          aria-label={`Pengajuan verifikator: ${stats.pending} menunggu, ${stats.approved} disetujui, ${stats.rejected} ditolak.`}
         >
           {body}
         </button>

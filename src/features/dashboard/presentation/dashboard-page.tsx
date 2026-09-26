@@ -8,10 +8,12 @@ import { useDashboardStats } from '../application/use-dashboard-stats';
 import { StatCards } from './components/stat-cards';
 import { ActivityDailyChart } from './components/activity-daily-chart';
 import { ProblemsDonutChart } from './components/problems-donut-chart';
+import { VerifierApplicationsDonutChart } from './components/verifier-applications-donut-chart';
+import { WordsStatusDonutChart } from './components/words-status-donut-chart';
 import { WordOfDayCard } from '@/features/word-of-day/presentation/word-of-day-card';
 
 /**
- * Dashboard - strip KPI + chart aktivitas + donut permasalahan.
+ * Dashboard - strip KPI + chart aktivitas + donut status/ops.
  */
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -81,9 +83,17 @@ export function DashboardPage() {
             <ActivityDailyChart points={stats.activity.dailyLast30Days} />
           </div>
           <div className="dashboard__charts-side">
+            <WordsStatusDonutChart
+              words={stats.words}
+              onNavigate={() => navigate({ to: '/words' })}
+            />
             <ProblemsDonutChart
               problems={stats.problems}
               onNavigate={() => navigate({ to: '/bug-reports' })}
+            />
+            <VerifierApplicationsDonutChart
+              stats={stats.verifierApplications}
+              onNavigate={() => navigate({ to: '/verifier-applications' })}
             />
           </div>
         </div>

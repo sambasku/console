@@ -95,5 +95,10 @@ export function normalizeDashboardStats(
         },
       },
     },
+    verifierApplications: {
+      pending: wire.verifier_applications?.pending ?? 0,
+      approved: wire.verifier_applications?.approved ?? 0,
+      rejected: wire.verifier_applications?.rejected ?? 0,
+    },
   };
 }

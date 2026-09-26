@@ -29,6 +29,12 @@ export interface ProblemsStats {
   };
 }
 
+export interface VerifierApplicationsStats {
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
 export interface DashboardStats {
   words: {
     total: number;
@@ -50,6 +56,7 @@ export interface DashboardStats {
     dailyLast30Days: ActivityDailyPoint[];
   };
   problems: ProblemsStats;
+  verifierApplications: VerifierApplicationsStats;
 }
 
 export const WORD_STATUS_LABELS: Record<WordStatusKey, string> = {
