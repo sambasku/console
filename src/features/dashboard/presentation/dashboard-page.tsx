@@ -7,10 +7,11 @@ import { ROLE_LABELS, type UserRole } from '@/features/auth/domain/user';
 import { useDashboardStats } from '../application/use-dashboard-stats';
 import { StatCards } from './components/stat-cards';
 import { ActivityDailyChart } from './components/activity-daily-chart';
+import { ProblemsDonutChart } from './components/problems-donut-chart';
 import { WordOfDayCard } from '@/features/word-of-day/presentation/word-of-day-card';
 
 /**
- * Dashboard - strip KPI ringkas + chart aktivitas harian. Navigasi kerja lewat sider.
+ * Dashboard - strip KPI + chart aktivitas + donut permasalahan.
  */
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -69,12 +70,24 @@ export function DashboardPage() {
       ) : null}
 
       {isPending && !stats ? (
-        <div className="dashboard__chart dashboard__chart--skeleton">
+        <div className="dashboard__charts dashboard__charts--skeleton">
           <Skeleton active paragraph={{ rows: 6 }} title={{ width: 180 }} />
         </div>
       ) : null}
 
-      {stats ? <ActivityDailyChart points={stats.activity.dailyLast30Days} /> : null}
+      {stats ? (
+        <div className="dashboard__charts">
+          <div className="dashboard__charts-main">
+            <ActivityDailyChart points={stats.activity.dailyLast30Days} />
+          </div>
+          <div className="dashboard__charts-side">
+            <ProblemsDonutChart
+              problems={stats.problems}
+              onNavigate={() => navigate({ to: '/bug-reports' })}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

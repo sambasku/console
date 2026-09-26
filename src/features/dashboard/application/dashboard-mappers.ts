@@ -81,5 +81,19 @@ export function normalizeDashboardStats(
       auditLogsLast7Days: wire.activity.audit_logs_last_7_days,
       dailyLast30Days: ensureDailyActivityLast30Days(wire.activity.daily_last_30_days, now),
     },
+    problems: {
+      open: wire.problems?.open ?? 0,
+      closed: wire.problems?.closed ?? 0,
+      bySource: {
+        bugReports: {
+          open: wire.problems?.by_source.bug_reports.open ?? 0,
+          closed: wire.problems?.by_source.bug_reports.closed ?? 0,
+        },
+        wordReports: {
+          open: wire.problems?.by_source.word_reports.open ?? 0,
+          closed: wire.problems?.by_source.word_reports.closed ?? 0,
+        },
+      },
+    },
   };
 }

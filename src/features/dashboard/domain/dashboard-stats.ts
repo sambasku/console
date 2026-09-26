@@ -15,6 +15,20 @@ export interface ActivityDailyPoint {
   newUsers: number;
 }
 
+export interface ProblemSourceCounts {
+  open: number;
+  closed: number;
+}
+
+export interface ProblemsStats {
+  open: number;
+  closed: number;
+  bySource: {
+    bugReports: ProblemSourceCounts;
+    wordReports: ProblemSourceCounts;
+  };
+}
+
 export interface DashboardStats {
   words: {
     total: number;
@@ -35,6 +49,7 @@ export interface DashboardStats {
     /** 30 hari WIB inklusif (panjang tetap); hari kosong angka 0 */
     dailyLast30Days: ActivityDailyPoint[];
   };
+  problems: ProblemsStats;
 }
 
 export const WORD_STATUS_LABELS: Record<WordStatusKey, string> = {

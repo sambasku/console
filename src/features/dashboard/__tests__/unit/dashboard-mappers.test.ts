@@ -40,6 +40,14 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
         },
       ],
     },
+    problems: {
+      open: 3,
+      closed: 5,
+      by_source: {
+        bug_reports: { open: 1, closed: 3 },
+        word_reports: { open: 2, closed: 2 },
+      },
+    },
     ...overrides,
   };
 }
@@ -65,6 +73,22 @@ describe('normalizeDashboardStats', () => {
       comments: 2,
       newUsers: 1,
     });
+    expect(stats.problems).toEqual({
+      open: 3,
+      closed: 5,
+      bySource: {
+        bugReports: { open: 1, closed: 3 },
+        wordReports: { open: 2, closed: 2 },
+      },
+    });
+  });
+
+  it('problems hilang → open/closed 0', () => {
+    const wire = wireFixture();
+    delete wire.problems;
+    const stats = normalizeDashboardStats(wire);
+    expect(stats.problems.open).toBe(0);
+    expect(stats.problems.closed).toBe(0);
   });
 
   it('daily_last_30_days hilang → tetap 30 titik angka 0', () => {

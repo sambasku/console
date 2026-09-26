@@ -30,6 +30,14 @@ export interface DashboardStatsWire {
       new_users: number;
     }>;
   };
+  problems?: {
+    open: number;
+    closed: number;
+    by_source: {
+      bug_reports: { open: number; closed: number };
+      word_reports: { open: number; closed: number };
+    };
+  };
 }
 
 export async function getDashboardStatsRequest(signal?: AbortSignal): Promise<DashboardStatsWire> {
