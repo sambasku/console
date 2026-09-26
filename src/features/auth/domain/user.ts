@@ -12,6 +12,20 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   contributor: 'Kontributor',
 };
 
+/**
+ * Role yang boleh masuk konsol admin. Login API tetap menerima semua role
+ * (dipakai mobile/web); pembatasan ini khusus klien console.
+ */
+export const CONSOLE_ALLOWED_ROLES = ['root', 'admin', 'reviewer'] as const;
+export type ConsoleAllowedRole = (typeof CONSOLE_ALLOWED_ROLES)[number];
+
+export function isConsoleAllowedRole(role: string | null | undefined): role is ConsoleAllowedRole {
+  return !!role && (CONSOLE_ALLOWED_ROLES as readonly string[]).includes(role);
+}
+
+export const CONSOLE_ACCESS_DENIED_MESSAGE =
+  'Akun ini tidak memiliki akses ke konsol. Hanya admin, root, atau verifikator yang boleh masuk.';
+
 export type User = SessionUser;
 
 export interface LoginCredentials {
