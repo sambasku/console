@@ -48,6 +48,8 @@ export interface DashboardStats {
   };
   users: {
     active: number;
+    /** Presence piggyback: last_seen dalam 15 menit (bukan realtime). */
+    onlineRecently: number;
     byRole: Record<AppRoleKey, number>;
   };
   activity: {

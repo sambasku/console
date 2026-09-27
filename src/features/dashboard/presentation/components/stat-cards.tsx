@@ -7,7 +7,10 @@ import {
 
 export interface StatCardsProps {
   stats: DashboardStats;
+  onNavigateWords?: () => void;
   onNavigateContributions?: () => void;
+  onNavigateUsers?: () => void;
+  onNavigateAuditLogs?: () => void;
 }
 
 function formatMeta(parts: Array<string | false | null | undefined>): string {
@@ -15,36 +18,57 @@ function formatMeta(parts: Array<string | false | null | undefined>): string {
 }
 
 /**
- * Strip KPI satu baris - label + angka; detail di title tooltip.
+ * Grid KPI 4 card - angka besar, meta terlihat, attention dengan teks legenda.
  */
-export function StatCards({ stats, onNavigateContributions }: StatCardsProps) {
+export function StatCards({
+  stats,
+  onNavigateWords,
+  onNavigateContributions,
+  onNavigateUsers,
+  onNavigateAuditLogs,
+}: StatCardsProps) {
   const { words, contributions, users, activity } = stats;
   const { token } = theme.useToken();
   const pending = contributions.byStatus.pending;
   const hasPending = pending > 0;
 
-  const wordMeta = formatMeta([
-    words.verified > 0 && `Terverifikasi ${words.verified}`,
-    words.byStatus.published > 0 && `Published ${words.byStatus.published}`,
-    words.byStatus.draft > 0 && `Draft ${words.byStatus.draft}`,
-    words.byStatus.pending_review > 0 && `Review ${words.byStatus.pending_review}`,
-  ]) || Object.entries(words.byStatus)
-    .filter(([, n]) => n > 0)
-    .map(([s, n]) => `${WORD_STATUS_LABELS[s as keyof typeof words.byStatus]} ${n}`)
-    .join(' · ');
-
-  const contribMeta = formatMeta([
-    hasPending && `${pending} menunggu`,
-    contributions.byStatus.approved > 0 && `Disetujui ${contributions.byStatus.approved}`,
-    contributions.byStatus.rejected > 0 && `Ditolak ${contributions.byStatus.rejected}`,
-  ]) || 'Belum ada data';
-
-  const roleMeta = formatMeta(
-    (Object.entries(users.byRole) as Array<[keyof typeof users.byRole, number]>)
+  const wordMeta =
+    formatMeta([
+      words.verified > 0 && `Terverifikasi ${words.verified.toLocaleString('id-ID')}`,
+      words.byStatus.published > 0 && `Published ${words.byStatus.published.toLocaleString('id-ID')}`,
+      words.byStatus.draft > 0 && `Draft ${words.byStatus.draft.toLocaleString('id-ID')}`,
+      words.byStatus.pending_review > 0 &&
+        `Review ${words.byStatus.pending_review.toLocaleString('id-ID')}`,
+    ]) ||
+    Object.entries(words.byStatus)
       .filter(([, n]) => n > 0)
-      .map(([role, n]) => `${ROLE_LABELS_SHORT[role]} ${n}`),
-  ) || 'Tidak ada pengguna aktif';
+      .map(([s, n]) => `${WORD_STATUS_LABELS[s as keyof typeof words.byStatus]} ${n}`)
+      .join(' · ') ||
+    'Belum ada data';
 
+  const contribMeta = hasPending
+    ? formatMeta([
+        `${pending.toLocaleString('id-ID')} menunggu`,
+        contributions.byStatus.approved > 0 &&
+          `Disetujui ${contributions.byStatus.approved.toLocaleString('id-ID')}`,
+        contributions.byStatus.rejected > 0 &&
+          `Ditolak ${contributions.byStatus.rejected.toLocaleString('id-ID')}`,
+      ])
+    : formatMeta([
+        contributions.byStatus.approved > 0 &&
+          `Disetujui ${contributions.byStatus.approved.toLocaleString('id-ID')}`,
+        contributions.byStatus.rejected > 0 &&
+          `Ditolak ${contributions.byStatus.rejected.toLocaleString('id-ID')}`,
+        contributions.byStatus.corrected > 0 &&
+          `Dikoreksi ${contributions.byStatus.corrected.toLocaleString('id-ID')}`,
+      ]) || 'Belum ada data';
+
+  const roleMeta = formatMeta([
+    `Aktif 15 mnt ${users.onlineRecently.toLocaleString('id-ID')}`,
+    ...(Object.entries(users.byRole) as Array<[keyof typeof users.byRole, number]>)
+      .filter(([, n]) => n > 0)
+      .map(([role, n]) => `${ROLE_LABELS_SHORT[role]} ${n.toLocaleString('id-ID')}`),
+  ]);
   const items: Array<{
     key: string;
     label: string;
@@ -58,6 +82,7 @@ export function StatCards({ stats, onNavigateContributions }: StatCardsProps) {
       label: 'Kata',
       value: words.total,
       meta: wordMeta,
+      onClick: onNavigateWords,
     },
     {
       key: 'contributions',
@@ -72,57 +97,47 @@ export function StatCards({ stats, onNavigateContributions }: StatCardsProps) {
       label: 'Pengguna',
       value: users.active,
       meta: roleMeta,
+      onClick: onNavigateUsers,
     },
     {
       key: 'activity',
       label: 'Mutasi (7 hari)',
       value: activity.auditLogsLast7Days,
       meta: 'Entri audit log 7 hari terakhir',
+      onClick: onNavigateAuditLogs,
     },
   ];
 
   return (
-    <div className="dashboard__strip" role="list">
-      {items.map((item, index) => {
+    <div className="dashboard__kpi" role="list">
+      {items.map((item) => {
         const clickable = Boolean(item.onClick);
         const className = [
-          'dashboard__strip-item',
-          clickable ? 'dashboard__strip-item--clickable' : '',
-          item.attention ? 'dashboard__strip-item--attention' : '',
+          'dashboard__kpi-card',
+          clickable ? 'dashboard__kpi-card--clickable' : '',
+          item.attention ? 'dashboard__kpi-card--attention' : '',
         ]
           .filter(Boolean)
           .join(' ');
         const style = item.attention
-          ? { ['--strip-accent' as string]: token.colorWarning }
+          ? { ['--kpi-accent' as string]: token.colorWarning }
           : undefined;
         const body = (
           <>
-            <span className="dashboard__strip-label">{item.label}</span>
-            <span className="dashboard__strip-value">
-              {item.value.toLocaleString('id-ID')}
-            </span>
+            <span className="dashboard__kpi-label">{item.label}</span>
+            <span className="dashboard__kpi-value">{item.value.toLocaleString('id-ID')}</span>
+            <span className="dashboard__kpi-meta">{item.meta}</span>
           </>
         );
 
         return (
-          <div key={item.key} className="dashboard__strip-cell" role="listitem">
-            {index > 0 ? (
-              <span className="dashboard__strip-sep" aria-hidden>
-                ·
-              </span>
-            ) : null}
+          <div key={item.key} role="listitem" className="dashboard__kpi-cell">
             {clickable ? (
-              <button
-                type="button"
-                className={className}
-                style={style}
-                title={item.meta}
-                onClick={item.onClick}
-              >
+              <button type="button" className={className} style={style} onClick={item.onClick}>
                 {body}
               </button>
             ) : (
-              <div className={className} style={style} title={item.meta}>
+              <div className={className} style={style}>
                 {body}
               </div>
             )}

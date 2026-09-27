@@ -69,7 +69,7 @@ const KAMUS_GROUP_KEY = 'kamus';
 const NOTIFICATION_GROUP_KEY = 'notifikasi';
 
 const BREADCRUMB_LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
+  dashboard: 'Analitik',
   words: 'Kata',
   contributions: 'Review',
   'translation-helps': 'Tanya Terjemahan',
@@ -137,7 +137,7 @@ export function ConsoleLayout() {
       .map(([key, { icon, label }]) => ({ key, icon, label }));
 
     const items: MenuProps['items'] = [
-      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Analitik' },
       {
         key: KAMUS_GROUP_KEY,
         icon: <BookOutlined />,

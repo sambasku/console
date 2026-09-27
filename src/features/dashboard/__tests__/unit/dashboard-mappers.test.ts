@@ -19,6 +19,7 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
     },
     users: {
       active: 1,
+      online_recently: 0,
       by_role: { root: 0, admin: 1, editor: 0, reviewer: 0, contributor: 0 },
     },
     activity: {

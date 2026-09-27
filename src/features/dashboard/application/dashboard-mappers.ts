@@ -75,6 +75,7 @@ export function normalizeDashboardStats(
     },
     users: {
       active: wire.users.active,
+      onlineRecently: wire.users.online_recently ?? 0,
       byRole: wire.users.by_role as DashboardStats['users']['byRole'],
     },
     activity: {
