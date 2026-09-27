@@ -15,8 +15,18 @@ import { logoutRequest } from '../../infrastructure/auth-api';
 import { tryRestoreSession } from '../try-restore-session';
 
 const USER_CACHE_KEY = 'sambasku_admin_user_v1';
-const cachedUser = { id: '01HXYZABC', username: 'siti', role: 'admin' };
-const contributorUser = { id: '01HXYZCON', username: 'budi', role: 'contributor' };
+const cachedUser = {
+  id: '01HXYZABC',
+  username: 'siti',
+  role: 'admin',
+  display_name: null as string | null,
+};
+const contributorUser = {
+  id: '01HXYZCON',
+  username: 'budi',
+  role: 'contributor',
+  display_name: null as string | null,
+};
 
 describe('tryRestoreSession', () => {
   beforeEach(() => {
@@ -77,7 +87,7 @@ describe('tryRestoreSession', () => {
   });
 
   it('refresh sukses tapi role editor → revoke + false', async () => {
-    const editor = { id: '01HXYZEDT', username: 'edi', role: 'editor' };
+    const editor = { id: '01HXYZEDT', username: 'edi', role: 'editor', display_name: null as string | null };
     vi.mocked(performRefresh).mockImplementation(async () => {
       sessionStore.signIn('new-access', 900, editor);
       return 'new-access';

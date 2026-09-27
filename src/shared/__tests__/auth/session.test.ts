@@ -45,9 +45,24 @@ describe('sessionStore', () => {
   });
 
   it('signIn men-cache identitas user (non-token) ke sessionStorage', () => {
-    const user: SessionUser = { id: '01HXYZABC', username: 'siti', role: 'reviewer' };
+    const user: SessionUser = {
+      id: '01HXYZABC',
+      username: 'siti',
+      role: 'reviewer',
+      display_name: 'Siti',
+    };
     sessionStore.signIn('token', 900, user);
     expect(restoreSessionUser()).toEqual(user);
+  });
+
+  it('restore menormalisasi display_name hilang menjadi null', () => {
+    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'siti', role: 'reviewer' });
+    expect(restoreSessionUser()).toEqual({
+      id: '01HXYZABC',
+      username: 'siti',
+      role: 'reviewer',
+      display_name: null,
+    });
   });
 
   it('clear menghapus cache identitas', () => {
@@ -70,12 +85,21 @@ describe('sessionStore', () => {
 describe('userFromJwtClaims', () => {
   it('membangun user dari klaim sub + role', () => {
     const user = userFromJwtClaims({ sub: '01HXYZABC', role: 'editor' });
-    expect(user).toEqual({ id: '01HXYZABC', username: '01HXYZABC', role: 'editor' });
+    expect(user).toEqual({
+      id: '01HXYZABC',
+      username: '01HXYZABC',
+      role: 'editor',
+      display_name: null,
+    });
   });
 
   it('menggunakan username dari cache identitas bila klaim tidak membawanya', () => {
-    const user = userFromJwtClaims({ sub: '01HXYZABC', role: 'editor' }, { id: '01HXYZABC', username: 'budi', role: 'editor' });
+    const user = userFromJwtClaims(
+      { sub: '01HXYZABC', role: 'editor' },
+      { id: '01HXYZABC', username: 'budi', role: 'editor', display_name: 'Budi' },
+    );
     expect(user?.username).toBe('budi');
+    expect(user?.display_name).toBe('Budi');
   });
 
   it('mengembalikan null tanpa sub (token bentuk tidak valid)', () => {
