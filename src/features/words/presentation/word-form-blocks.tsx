@@ -1286,16 +1286,17 @@ export function WordVariantsField() {
 // ---------------------------------------------------------------------------
 
 /**
- * Nama penutur awal = username akun yang sedang login.
+ * Nama penutur awal = display_name (fallback username) akun yang login.
  * Setelah admin mengubah kolom, nilai sesi tidak menimpa lagi.
  */
 function useSessionSpeakerName(existing?: string | null): [string, (next: string) => void] {
   const { user } = useAuth();
-  const sessionName = user?.username?.trim() ?? '';
+  const sessionName =
+    user?.display_name?.trim() || user?.username?.trim() || '';
   const [draft, setDraft] = useState(() => existing?.trim() ?? '');
   const [touched, setTouched] = useState(() => Boolean(existing?.trim()));
 
-  // Belum diubah user → tampilkan session username (derive, bukan effect).
+  // Belum diubah user → tampilkan nama tampilan sesi (derive, bukan effect).
   const speakerName = touched ? draft : draft || sessionName;
 
   const update = useCallback((next: string) => {

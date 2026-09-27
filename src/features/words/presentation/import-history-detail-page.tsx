@@ -103,7 +103,11 @@ export function ImportHistoryDetailPage() {
           {formatDateTime(session.finished_at ?? session.created_at)}
         </Descriptions.Item>
         <Descriptions.Item label="Atribusi">
-          {session.attributed_to_username || 'Pengimpor Data CSV'}
+          {personLabel(
+            session.attributed_to_display_name,
+            session.attributed_to_username,
+            'Pengimpor Data CSV',
+          )}
         </Descriptions.Item>
         <Descriptions.Item label="Total">{session.total}</Descriptions.Item>
         <Descriptions.Item label="Kata baru">{session.created_count}</Descriptions.Item>

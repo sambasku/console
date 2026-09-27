@@ -4,6 +4,7 @@ import { FilterOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, DatePicker, Flex, Input, Result, Select, Tag, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { formatDateTimeSeconds } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -93,9 +94,12 @@ export function AuditLogsPage() {
         size: 140,
         meta: { responsive: ['lg'] },
         cell: (info) => {
-          const name = info.getValue();
-          return name ? (
-            <Typography.Text strong>{name}</Typography.Text>
+          const label = personLabel(
+            info.row.original.user_display_name,
+            info.getValue(),
+          );
+          return label !== '-' ? (
+            <Typography.Text strong>{label}</Typography.Text>
           ) : (
             <Typography.Text type="secondary">{shortUlid(info.row.original.user_id)}</Typography.Text>
           );

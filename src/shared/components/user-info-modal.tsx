@@ -82,15 +82,20 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
               size={56}
               src={displayImageUrl(query.data.avatarUrl ?? undefined, { width: 112 })}
             >
-              {query.data.username.slice(0, 2).toUpperCase()}
+              {query.data.displayName.slice(0, 2).toUpperCase()}
             </Avatar>
             <div>
               <Typography.Title level={5} style={{ margin: 0 }}>
-                {query.data.username}
+                {query.data.displayName}
               </Typography.Title>
-              <Typography.Text type="secondary">
-                Bergabung {formatDateTime(query.data.joinedAt)}
-              </Typography.Text>
+              {query.data.displayName !== query.data.username ? (
+                <Typography.Text type="secondary">@{query.data.username}</Typography.Text>
+              ) : null}
+              <div>
+                <Typography.Text type="secondary">
+                  Bergabung {formatDateTime(query.data.joinedAt)}
+                </Typography.Text>
+              </div>
             </div>
           </Flex>
           <Descriptions size="small" column={1} bordered>

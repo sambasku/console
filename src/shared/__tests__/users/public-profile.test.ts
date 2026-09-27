@@ -5,6 +5,8 @@ describe('normalizePublicProfile', () => {
   it('memetakan wire snake_case ke profil tanpa id', () => {
     const profile = normalizePublicProfile({
       username: 'budi',
+      display_name: 'Budi Santoso',
+      bio: 'Kontributor Sambas',
       role: 'reviewer',
       is_verifier: true,
       joined_at: '2026-08-01T00:00:00.000Z',
@@ -18,6 +20,8 @@ describe('normalizePublicProfile', () => {
 
     expect(profile).toEqual({
       username: 'budi',
+      displayName: 'Budi Santoso',
+      bio: 'Kontributor Sambas',
       role: 'reviewer',
       isVerifier: true,
       joinedAt: '2026-08-01T00:00:00.000Z',
@@ -32,9 +36,10 @@ describe('normalizePublicProfile', () => {
     expect(profile).not.toHaveProperty('user_id');
   });
 
-  it('comments_published hilang → default 0', () => {
+  it('display_name kosong → fallback username; comments_published hilang → 0', () => {
     const profile = normalizePublicProfile({
       username: 'ani',
+      display_name: '  ',
       role: 'contributor',
       is_verifier: false,
       joined_at: '2026-08-01T00:00:00.000Z',
@@ -47,6 +52,8 @@ describe('normalizePublicProfile', () => {
       },
     });
 
+    expect(profile.displayName).toBe('ani');
+    expect(profile.bio).toBeNull();
     expect(profile.avatarUrl).toBe('https://cdn.example/ani.jpg');
     expect(profile.stats.commentsPublished).toBe(0);
   });
