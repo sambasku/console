@@ -83,7 +83,7 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
       yField: 'value',
       colorField: 'series',
       autoFit: true,
-      height: 280,
+      height: 240,
       scale: {
         color: { range: colors },
         y: { nice: true, domainMin: 0 },
@@ -109,7 +109,12 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
       },
       tooltip: {
         title: (d: ChartRow) => formatFullDate(d.date),
-        items: [{ channel: 'y', name: 'series' }],
+        items: [
+          (d: ChartRow) => ({
+            name: d.series,
+            value: d.value.toLocaleString('id-ID'),
+          }),
+        ],
       },
     }),
     [chartData, colors],
@@ -120,10 +125,10 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
       <div className="dashboard__chart-header">
         <div>
           <Typography.Title level={5} className="dashboard__chart-title">
-            Aktivitas harian
+            Aktivitas 30 hari
           </Typography.Title>
           <Typography.Text type="secondary" className="dashboard__chart-subtitle">
-            30 hari terakhir (WIB)
+            Kontribusi · Vote · Komentar · User baru (WIB)
           </Typography.Text>
           <ul className="dashboard__chart-legend" aria-label="Legenda series">
             {SERIES.map((s, i) => (

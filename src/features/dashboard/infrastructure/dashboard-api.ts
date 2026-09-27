@@ -18,6 +18,7 @@ export interface DashboardStatsWire {
   };
   users: {
     active: number;
+    online_recently: number;
     by_role: Record<string, number>;
   };
   activity: {
