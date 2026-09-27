@@ -22,7 +22,9 @@ export function LoginPage() {
   const onFinish = async (values: LoginCredentials) => {
     try {
       const result = await loginMutation.mutateAsync(values);
-      message.success(`Selamat datang, ${result.user.username}`);
+      message.success(
+        `Selamat datang, ${result.user.display_name?.trim() || result.user.username}`,
+      );
       navigate({ to: '/dashboard' });
     } catch (err) {
       const apiError = normalizeError(err);

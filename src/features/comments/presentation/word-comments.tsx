@@ -1,6 +1,7 @@
 import { EyeOutlined, StopOutlined } from '@ant-design/icons';
 import { Alert, App as AntdApp, Button, Divider, Flex, Skeleton, Space, Tag, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { normalizeError } from '@/shared/api/error';
 import {
   COMMENT_STATUS_LABELS,
@@ -96,7 +97,9 @@ export function WordComments({ wordId }: { wordId: string }) {
           <div key={cm.id} style={marked}>
             <Flex justify="space-between" align="center" wrap gap={8}>
               <Space size={8} wrap>
-                <Text strong>{cm.username ?? 'pengguna terhapus'}</Text>
+                <Text strong>
+                  {personLabel(cm.display_name, cm.username, 'pengguna terhapus')}
+                </Text>
                 <Text type="secondary">{formatDateTime(cm.created_at)}</Text>
                 <Tag color={COMMENT_STATUS_TAG_COLOR[cm.status]}>{COMMENT_STATUS_LABELS[cm.status]}</Tag>
                 {cm.is_censored ? <Tag color="gold">Disensor</Tag> : null}

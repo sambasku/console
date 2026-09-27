@@ -15,6 +15,8 @@
 export interface SessionUser {
   id: string;
   username: string;
+  /** Nama tampilan; opsional (login lama / JWT restore tanpa klaim). */
+  display_name?: string | null;
   role: string;
 }
 
@@ -46,7 +48,12 @@ export function restoreSessionUser(): SessionUser | null {
     if (typeof parsed?.id !== 'string' || typeof parsed?.username !== 'string' || typeof parsed?.role !== 'string') {
       return null;
     }
-    return parsed;
+    return {
+      id: parsed.id,
+      username: parsed.username,
+      role: parsed.role,
+      display_name: typeof parsed.display_name === 'string' ? parsed.display_name : null,
+    };
   } catch {
     return null;
   }
@@ -73,6 +80,7 @@ export function userFromJwtClaims(
   return {
     id: claims.sub,
     username: cached?.username ?? claims.username ?? claims.sub,
+    display_name: cached?.display_name ?? null,
     role: claims.role ?? cached?.role ?? 'contributor',
   };
 }

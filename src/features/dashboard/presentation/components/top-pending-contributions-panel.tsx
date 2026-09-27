@@ -5,6 +5,7 @@ import {
 } from '@/features/contributions/domain/contribution';
 import { useTopPendingContributions } from '@/features/contributions/application/use-top-pending-contributions';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 
 export interface TopPendingContributionsPanelProps {
   enabled?: boolean;
@@ -73,7 +74,7 @@ export function TopPendingContributionsPanel({
                 <span className="dashboard__review-lemma">{titleFor(item)}</span>
                 <Tag className="dashboard__review-tag">{ENTITY_TYPE_LABELS[item.entity_type]}</Tag>
                 <span className="dashboard__review-meta">
-                  {item.contributor_username}
+                  {personLabel(item.contributor_display_name, item.contributor_username)}
                   <span aria-hidden> · </span>
                   {formatDateTime(item.created_at)}
                 </span>

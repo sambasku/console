@@ -25,6 +25,7 @@ import {
   Typography,
 } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { UserInfoLink } from '@/shared/components/user-info-modal';
@@ -212,7 +213,7 @@ export function TranslationHelpDetailPage() {
         title="Detail Tanya Terjemahan"
         subtitle={
           detail.username
-            ? `Dari ${detail.username} · ${formatDateTime(detail.created_at)}`
+            ? `Dari ${personLabel(detail.display_name, detail.username)} · ${formatDateTime(detail.created_at)}`
             : formatDateTime(detail.created_at)
         }
         extra={
@@ -245,7 +246,11 @@ export function TranslationHelpDetailPage() {
             {
               key: 'user',
               label: 'Pengirim',
-              children: detail.username ? <UserInfoLink username={detail.username} /> : '-',
+              children: detail.username ? (
+                <UserInfoLink username={detail.username} label={detail.display_name} />
+              ) : (
+                '-'
+              ),
             },
             {
               key: 'submitted',
@@ -454,7 +459,10 @@ export function TranslationHelpDetailPage() {
                         title={
                           <Space wrap size={8}>
                             {reply.username ? (
-                              <UserInfoLink username={reply.username} />
+                              <UserInfoLink
+                                username={reply.username}
+                                label={reply.display_name}
+                              />
                             ) : (
                               <Text type="secondary">Anonim</Text>
                             )}

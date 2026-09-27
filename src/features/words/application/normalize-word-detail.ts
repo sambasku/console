@@ -168,7 +168,12 @@ function verifier(raw: unknown): WordDetail['verified_by'] {
   const username = str(item.username);
   const role = str(item.role);
   if (!username || !role) return null;
-  return { username, role };
+  const displayName = str(item.display_name);
+  return {
+    username,
+    role,
+    ...(displayName ? { display_name: displayName } : {}),
+  };
 }
 
 function record(value: unknown): Record<string, unknown> | null {

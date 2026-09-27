@@ -1,6 +1,7 @@
 import { Button, Skeleton, Typography } from 'antd';
 import { useLatestComments } from '@/features/comments/application/use-latest-comments';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 
 export interface LatestCommentsPanelProps {
   enabled?: boolean;
@@ -65,7 +66,7 @@ export function LatestCommentsPanel({
               <>
                 <span className="dashboard__comments-body">{item.body}</span>
                 <span className="dashboard__comments-meta">
-                  {item.username ?? 'pengguna'}
+                  {personLabel(item.display_name, item.username, 'pengguna')}
                   {item.word_lemma ? (
                     <>
                       <span aria-hidden> · </span>

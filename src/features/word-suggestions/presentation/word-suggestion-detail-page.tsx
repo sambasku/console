@@ -128,7 +128,9 @@ function WordSuggestionDetail({ id }: { id: string }) {
       <Card title="Ringkasan">
         <Descriptions column={1} size="small">
           <Descriptions.Item label="Kontributor">
-            {suggestion.contributor_username ?? suggestion.contributor_id}
+            {suggestion.contributor_display_name?.trim() ||
+              suggestion.contributor_username ||
+              suggestion.contributor_id}
           </Descriptions.Item>
           <Descriptions.Item label="Alasan">
             <Space>

@@ -81,6 +81,9 @@ function normalizeContributionMeta(
     contributor_username: String(
       pickDefined(r, ['contributor_username', 'contributorUsername']) ?? '',
     ),
+    contributor_display_name: asString(
+      pickDefined(r, ['contributor_display_name', 'contributorDisplayName']),
+    ),
     entity_type: entityType,
     entity_id: String(pickDefined(r, ['entity_id', 'entityId']) ?? ''),
     action: String(pickDefined(r, ['action']) ?? ''),

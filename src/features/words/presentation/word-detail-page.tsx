@@ -413,13 +413,16 @@ function WordDetailContent({
       children: detail.created_by ? (
         detail.verified_by?.username === detail.created_by.username ? (
           <Space size={6} wrap>
-            <span>Dibuat dan diverifikasi oleh {detail.created_by.username}</span>
+            <span>
+              Dibuat dan diverifikasi oleh{' '}
+              {detail.created_by.display_name?.trim() || detail.created_by.username}
+            </span>
             {['admin', 'editor', 'root', 'reviewer'].includes(detail.verified_by?.role ?? '') ? (
               <Tag color="cyan">Verifikator</Tag>
             ) : null}
           </Space>
         ) : (
-          `Dibuat oleh ${detail.created_by.username}`
+          `Dibuat oleh ${detail.created_by.display_name?.trim() || detail.created_by.username}`
         )
       ) : (
         '-'
@@ -462,7 +465,11 @@ function WordDetailContent({
             detail.verified_by &&
             detail.created_by.username === detail.verified_by.username ? (
               <Space size={6} wrap>
-                <Text>Dibuat dan diverifikasi oleh {detail.created_by.username}</Text>
+                <Text>
+                  Dibuat dan diverifikasi oleh{' '}
+                  {detail.created_by.display_name?.trim() ||
+                    detail.created_by.username}
+                </Text>
                 {['admin', 'editor', 'root', 'reviewer'].includes(detail.verified_by.role) ? (
                   <Tag color="cyan">Verifikator</Tag>
                 ) : null}
@@ -470,10 +477,18 @@ function WordDetailContent({
             ) : (
               <>
                 {detail.created_by ? (
-                  <Text>Dibuat oleh {detail.created_by.username}</Text>
+                  <Text>
+                    Dibuat oleh{' '}
+                    {detail.created_by.display_name?.trim() ||
+                      detail.created_by.username}
+                  </Text>
                 ) : null}
                 {detail.verified_by ? (
-                  <Text>Diverifikasi oleh {detail.verified_by.username}</Text>
+                  <Text>
+                    Diverifikasi oleh{' '}
+                    {detail.verified_by.display_name?.trim() ||
+                      detail.verified_by.username}
+                  </Text>
                 ) : null}
               </>
             )}

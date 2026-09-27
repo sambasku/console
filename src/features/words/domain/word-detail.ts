@@ -91,8 +91,8 @@ export interface WordDetail {
   is_verified: boolean;
   is_corrected: boolean;
   self_verified: boolean;
-  created_by: { username: string; role: string } | null;
-  verified_by: { username: string; role: string } | null;
+  created_by: { username: string; display_name?: string; role: string } | null;
+  verified_by: { username: string; display_name?: string; role: string } | null;
   verified_at: string | null;
   created_at: string;
   updated_at: string | null;
