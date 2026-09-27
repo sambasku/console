@@ -28,7 +28,12 @@ export function DashboardPage() {
 
   const role = user?.role as UserRole | undefined;
   const roleLabel = role ? (ROLE_LABELS[role] ?? role) : null;
-  const subtitle = [user?.username ? `Halo, ${user.username}` : null, roleLabel]
+  const subtitle = [
+    user?.username
+      ? `Halo, ${user.display_name?.trim() || user.username}`
+      : null,
+    roleLabel,
+  ]
     .filter(Boolean)
     .join(' · ');
   const canManageUsers = role === 'root' || role === 'admin';

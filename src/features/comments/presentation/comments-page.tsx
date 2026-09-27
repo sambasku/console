@@ -3,6 +3,7 @@ import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/re
 import { EyeOutlined, StopOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Alert, App as AntdApp, Button, Flex, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { useNavigate } from '@tanstack/react-router';
 import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
@@ -39,7 +40,7 @@ export function CommentsPage() {
   const confirmTakedown = (item: AdminCommentItem) => {
     modal.confirm({
       title: 'Takedown komentar ini?',
-      content: `"${item.body}" - ${item.username ?? 'pengguna terhapus'}`,
+      content: `"${item.body}" - ${personLabel(item.display_name, item.username, 'pengguna terhapus')}`,
       okText: 'Takedown',
       okButtonProps: { danger: true },
       onOk: async () => {
@@ -97,9 +98,9 @@ export function CommentsPage() {
         size: 160,
         meta: { responsive: ['md'] },
         cell: (info) => {
-          const username = info.getValue();
-          return username ? (
-            <Typography.Text strong>{username}</Typography.Text>
+          const label = personLabel(info.row.original.display_name, info.getValue());
+          return label !== '-' ? (
+            <Typography.Text strong>{label}</Typography.Text>
           ) : (
             <Typography.Text type="secondary" italic>
               Pengguna terhapus

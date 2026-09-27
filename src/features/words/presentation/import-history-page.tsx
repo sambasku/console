@@ -4,6 +4,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Tag, Typography } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { useImportSessionList } from '../application/use-import-sessions';
@@ -55,7 +56,12 @@ export function ImportHistoryPage() {
       columnHelper.accessor('attributed_to_username', {
         header: 'Atribusi',
         size: 180,
-        cell: (info) => info.getValue() || 'Pengimpor Data CSV',
+        cell: (info) =>
+          personLabel(
+            info.row.original.attributed_to_display_name,
+            info.getValue(),
+            'Pengimpor Data CSV',
+          ),
       }),
       columnHelper.accessor('status', {
         header: 'Status',

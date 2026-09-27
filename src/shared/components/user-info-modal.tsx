@@ -82,15 +82,20 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
               size={56}
               src={displayImageUrl(query.data.avatarUrl ?? undefined, { width: 112 })}
             >
-              {query.data.username.slice(0, 2).toUpperCase()}
+              {query.data.displayName.slice(0, 2).toUpperCase()}
             </Avatar>
             <div>
               <Typography.Title level={5} style={{ margin: 0 }}>
-                {query.data.username}
+                {query.data.displayName}
               </Typography.Title>
-              <Typography.Text type="secondary">
-                Bergabung {formatDateTime(query.data.joinedAt)}
-              </Typography.Text>
+              {query.data.displayName !== query.data.username ? (
+                <Typography.Text type="secondary">@{query.data.username}</Typography.Text>
+              ) : null}
+              <div>
+                <Typography.Text type="secondary">
+                  Bergabung {formatDateTime(query.data.joinedAt)}
+                </Typography.Text>
+              </div>
             </div>
           </Flex>
           <Descriptions size="small" column={1} bordered>
@@ -143,23 +148,30 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
 
 export interface UserInfoLinkProps {
   username: string | null | undefined;
+  /** Teks tampilan; default = username. Tap tetap buka modal by username. */
+  label?: string | null;
   fallback?: ReactNode;
 }
 
 /**
- * Username yang bisa diklik untuk membuka `UserInfoModal`.
+ * Nama orang yang bisa diklik untuk membuka `UserInfoModal`.
  * Tanpa username: teks fallback, bukan tautan.
  */
-export function UserInfoLink({ username, fallback = 'Pengguna terhapus' }: UserInfoLinkProps) {
+export function UserInfoLink({
+  username,
+  label,
+  fallback = 'Pengguna terhapus',
+}: UserInfoLinkProps) {
   const [open, setOpen] = useState(false);
+  const text = (label?.trim() || username?.trim()) || null;
 
-  if (!username) {
+  if (!username || !text) {
     return <Typography.Text type="secondary">{fallback}</Typography.Text>;
   }
 
   return (
     <>
-      <Typography.Link onClick={() => setOpen(true)}>{username}</Typography.Link>
+      <Typography.Link onClick={() => setOpen(true)}>{text}</Typography.Link>
       <UserInfoModal username={username} open={open} onClose={() => setOpen(false)} />
     </>
   );

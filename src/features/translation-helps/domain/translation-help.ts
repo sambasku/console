@@ -33,6 +33,7 @@ export interface TranslationHelpListItem {
   id: string;
   user_id: string;
   username: string | null;
+  display_name: string | null;
   body: string | null;
   images: TranslationHelpImage[];
   status: TranslationHelpStatus;
@@ -48,6 +49,7 @@ export interface TranslationHelpReply {
   id: string;
   user_id: string;
   username: string | null;
+  display_name: string | null;
   body: string | null;
   status: TranslationHelpReplyStatus;
   is_verifier: boolean;

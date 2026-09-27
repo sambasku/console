@@ -46,10 +46,14 @@ export function WordSuggestionsPage() {
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('contributor_username', {
+      columnHelper.accessor('contributor_display_name', {
         header: 'Kontributor',
         size: 160,
-        cell: (info) => <Typography.Text strong>{info.getValue() ?? '-'}</Typography.Text>,
+        cell: (info) => (
+          <Typography.Text strong>
+            {info.getValue()?.trim() || info.row.original.contributor_username || '-'}
+          </Typography.Text>
+        ),
       }),
       columnHelper.accessor('word_lemma', {
         header: 'Kata',

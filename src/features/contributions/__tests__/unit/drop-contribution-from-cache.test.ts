@@ -10,6 +10,7 @@ function item(id: string): ContributionListItem {
     id,
     user_id: 'u1',
     contributor_username: 'budi',
+    contributor_display_name: 'Budi',
     entity_type: 'word',
     entity_id: 'e1',
     action: 'create',

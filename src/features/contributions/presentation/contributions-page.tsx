@@ -3,6 +3,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, App as AntdApp, Button, Col, Empty, Flex, List, Row, Select, Tabs, Tag, Typography, theme } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { PageHeader } from '@/shared/components/page-header';
 import { useContributionList } from '../application/use-contribution-list';
@@ -195,7 +196,8 @@ export function ContributionsPage() {
                       }
                       description={
                         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                          {item.contributor_username} · {formatDateTime(item.created_at)}
+                          {personLabel(item.contributor_display_name, item.contributor_username)} ·{' '}
+                          {formatDateTime(item.created_at)}
                         </Typography.Text>
                       }
                     />

@@ -2,6 +2,7 @@ import { Alert, Button, Descriptions, Flex, Table, Tag, Typography } from 'antd'
 import { DownloadOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { useImportSession } from '../application/use-import-sessions';
@@ -76,7 +77,7 @@ export function ImportHistoryDetailPage() {
     <>
       <PageHeader
         title={session.source_label || 'Sesi impor'}
-        subtitle={`Atribusi: ${session.attributed_to_username ?? 'Pengimpor Data CSV'}`}
+        subtitle={`Atribusi: ${personLabel(session.attributed_to_display_name, session.attributed_to_username, 'Pengimpor Data CSV')}`}
         extra={
           <Flex gap={8}>
             <Button icon={<RollbackOutlined />} onClick={() => navigate({ to: '/words/import-history' })}>
@@ -102,7 +103,11 @@ export function ImportHistoryDetailPage() {
           {formatDateTime(session.finished_at ?? session.created_at)}
         </Descriptions.Item>
         <Descriptions.Item label="Atribusi">
-          {session.attributed_to_username || 'Pengimpor Data CSV'}
+          {personLabel(
+            session.attributed_to_display_name,
+            session.attributed_to_username,
+            'Pengimpor Data CSV',
+          )}
         </Descriptions.Item>
         <Descriptions.Item label="Total">{session.total}</Descriptions.Item>
         <Descriptions.Item label="Kata baru">{session.created_count}</Descriptions.Item>

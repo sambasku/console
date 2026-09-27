@@ -295,7 +295,9 @@ export function ConsoleLayout() {
               <Button type="text" style={{ height: '100%' }}>
                 <Space size={8}>
                   <Avatar size="small" icon={<UserOutlined />} />
-                  <Typography.Text strong>{user?.username ?? 'Pengguna'}</Typography.Text>
+                  <Typography.Text strong>
+                    {user?.display_name?.trim() || user?.username || 'Pengguna'}
+                  </Typography.Text>
                   {user ? <Tag color="blue">{ROLE_LABELS[user.role as UserRole] ?? user.role}</Tag> : null}
                 </Space>
               </Button>

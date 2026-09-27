@@ -30,6 +30,7 @@ import { CreateCampaignDrawer } from './create-campaign-drawer';
 
 const APPROVE_COOLDOWN_KEY = 'notification.review_approve_push_cooldown_minutes';
 const REJECT_COOLDOWN_KEY = 'notification.review_reject_push_cooldown_minutes';
+const WORD_COMMENT_COOLDOWN_KEY = 'notification.word_comment_push_cooldown_minutes';
 
 export function NotificationCampaignsPage() {
   const { user } = useAuth();
@@ -43,6 +44,7 @@ export function NotificationCampaignsPage() {
   const [cooldownForm] = Form.useForm<{
     approve_minutes: string;
     reject_minutes: string;
+    word_comment_minutes: string;
   }>();
 
   const items = useMemo(
@@ -83,7 +85,7 @@ export function NotificationCampaignsPage() {
       />
 
       <Card
-        title="Cooldown push hasil review"
+        title="Cooldown push (review & komentar)"
         size="small"
         style={{ marginBottom: 16 }}
         loading={settingsQuery.isLoading}
@@ -94,16 +96,19 @@ export function NotificationCampaignsPage() {
           key={JSON.stringify({
             a: settingsMap[APPROVE_COOLDOWN_KEY],
             r: settingsMap[REJECT_COOLDOWN_KEY],
+            c: settingsMap[WORD_COMMENT_COOLDOWN_KEY],
           })}
           initialValues={{
             approve_minutes: settingsMap[APPROVE_COOLDOWN_KEY] ?? '360',
             reject_minutes: settingsMap[REJECT_COOLDOWN_KEY] ?? '360',
+            word_comment_minutes: settingsMap[WORD_COMMENT_COOLDOWN_KEY] ?? '3',
           }}
           onFinish={async (values) => {
             try {
               await settingsMutations.patchSettings.mutateAsync([
                 { key: APPROVE_COOLDOWN_KEY, value: values.approve_minutes },
                 { key: REJECT_COOLDOWN_KEY, value: values.reject_minutes },
+                { key: WORD_COMMENT_COOLDOWN_KEY, value: values.word_comment_minutes },
               ]);
               message.success('Cooldown push disimpan');
             } catch (err) {
@@ -112,9 +117,8 @@ export function NotificationCampaignsPage() {
           }}
         >
           <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-            Push FCM pertama per jenis keputusan (setujui / tolak) langsung dikirim. Push
-            berikutnya ke user yang sama ditahan selama jeda ini. Inbox in-app tetap langsung.
-            Nilai 0 = tanpa cooldown.
+            Push FCM pertama per channel langsung dikirim. Push berikutnya ke user yang sama
+            ditahan selama jeda ini. Inbox in-app tetap langsung. Nilai 0 = tanpa cooldown.
           </Typography.Paragraph>
           <Flex gap={16} wrap>
             <Form.Item
@@ -153,10 +157,28 @@ export function NotificationCampaignsPage() {
             >
               <Input inputMode="numeric" />
             </Form.Item>
+            <Form.Item
+              name="word_comment_minutes"
+              label="Jeda komentar diskusi (menit)"
+              rules={[
+                { required: true, message: 'Wajib diisi' },
+                {
+                  validator: async (_, value: string) => {
+                    const n = Number(value);
+                    if (!Number.isInteger(n) || n < 0 || n > 10080) {
+                      throw new Error('Bilangan 0-10080');
+                    }
+                  },
+                },
+              ]}
+              style={{ minWidth: 200 }}
+            >
+              <Input inputMode="numeric" />
+            </Form.Item>
           </Flex>
           <Popconfirm
-            title="Simpan cooldown push review?"
-            description="Perubahan berlaku segera untuk review berikutnya."
+            title="Simpan cooldown push?"
+            description="Perubahan berlaku segera untuk push berikutnya."
             okText="Simpan"
             onConfirm={() => cooldownForm.submit()}
           >

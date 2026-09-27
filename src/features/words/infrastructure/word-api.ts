@@ -322,8 +322,10 @@ export type WordImportSession = {
   id: string;
   triggered_by: string;
   triggered_by_username: string | null;
+  triggered_by_display_name: string | null;
   attributed_to: string;
   attributed_to_username: string | null;
+  attributed_to_display_name: string | null;
   source_label: string | null;
   status: WordImportSessionStatus;
   total: number;

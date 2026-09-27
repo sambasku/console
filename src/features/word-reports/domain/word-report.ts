@@ -30,6 +30,7 @@ export interface WordReportListItem {
   word_status: string;
   user_id: string;
   username: string | null;
+  display_name: string | null;
   reason_code: TakedownReasonCode;
   note: string | null;
   status: WordReportStatus;

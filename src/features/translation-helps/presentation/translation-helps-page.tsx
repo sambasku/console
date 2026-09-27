@@ -75,7 +75,7 @@ export function TranslationHelpsPage() {
         cell: (info) => {
           const name = info.getValue();
           return name ? (
-            <UserInfoLink username={name} />
+            <UserInfoLink username={name} label={info.row.original.display_name} />
           ) : (
             <Typography.Text type="secondary">Anonim</Typography.Text>
           );

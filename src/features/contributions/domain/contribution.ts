@@ -29,6 +29,7 @@ export interface ContributionListItem {
   id: string;
   user_id: string;
   contributor_username: string;
+  contributor_display_name: string | null;
   entity_type: EntityType;
   entity_id: string;
   action: string;

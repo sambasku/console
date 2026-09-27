@@ -67,7 +67,11 @@ export function WordReportsPage() {
         size: 140,
         cell: (info) => {
           const name = info.getValue();
-          return name ? <UserInfoLink username={name} /> : <Typography.Text type="secondary">-</Typography.Text>;
+          return name ? (
+            <UserInfoLink username={name} label={info.row.original.display_name} />
+          ) : (
+            <Typography.Text type="secondary">-</Typography.Text>
+          );
         },
       }),
       columnHelper.accessor('created_at', {

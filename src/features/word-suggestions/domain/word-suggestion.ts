@@ -16,6 +16,7 @@ export interface SuggestionListItem {
   word_lemma: string;
   contributor_id: string;
   contributor_username: string | null;
+  contributor_display_name: string | null;
   reason: string;
   reason_code: SuggestionReasonCode;
   status: SuggestionStatus;
@@ -39,6 +40,7 @@ export interface SuggestionDetail {
     word_lemma: string;
     contributor_id: string;
     contributor_username: string | null;
+    contributor_display_name: string | null;
     reason: string;
     reason_code: SuggestionReasonCode;
     proposed_changes: Record<string, unknown>;

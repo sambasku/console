@@ -17,7 +17,7 @@ const SOMET_DETAIL = {
   is_verified: true,
   is_corrected: false,
   self_verified: true,
-  verified_by: { username: 'admin', role: 'admin' },
+  verified_by: { username: 'admin', display_name: 'Admin', role: 'admin' },
   verified_at: '2026-09-22T03:08:44.000Z',
   meanings: [
     {

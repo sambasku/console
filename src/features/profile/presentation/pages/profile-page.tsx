@@ -6,13 +6,14 @@ import { ROLE_LABELS } from '@/features/auth/domain/user';
 import { ChangePasswordForm } from '../components/change-password-form';
 
 /**
- * Halaman Profil - identitas akun (username + role dari sesi) + menu
- * section di kiri, konten section di kanan (settings-style). Semua role
- * login boleh akses. Email tidak tersedia di sesi web (klaim JWT hanya
- * sub/role/username) - menyusul via /auth/me kalau dibutuhkan.
+ * Halaman Profil - identitas akun (display_name + username + role dari
+ * sesi) + menu section di kiri, konten section di kanan (settings-style).
+ * Semua role login boleh akses. Email tidak tersedia di sesi web (klaim
+ * JWT hanya sub/role/username) - menyusul via /auth/me kalau dibutuhkan.
  */
 export function ProfilePage() {
   const { user } = useAuth();
+  const displayName = user?.display_name?.trim() || user?.username || '-';
 
   return (
     <>
@@ -28,8 +29,11 @@ export function ProfilePage() {
               <Space direction="vertical" size={12} align="center" style={{ width: '100%' }}>
                 <Avatar size={72} icon={<UserOutlined />} />
                 <Typography.Text strong style={{ fontSize: 16 }}>
-                  {user?.username ?? '-'}
+                  {displayName}
                 </Typography.Text>
+                {user?.username && displayName !== user.username ? (
+                  <Typography.Text type="secondary">@{user.username}</Typography.Text>
+                ) : null}
                 <Tag color="blue">{user ? (ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ?? user.role) : '-'}</Tag>
               </Space>
             </Card>

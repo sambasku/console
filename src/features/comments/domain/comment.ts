@@ -24,6 +24,7 @@ export interface AdminCommentItem {
   word_lemma: string | null;
   user_id: string;
   username: string | null;
+  display_name: string | null;
   body: string;
   body_original: string | null;
   is_censored: boolean;

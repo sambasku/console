@@ -1,5 +1,7 @@
 export interface PublicProfile {
   username: string;
+  displayName: string;
+  bio: string | null;
   role: string;
   isVerifier: boolean;
   joinedAt: string;
@@ -13,6 +15,8 @@ export interface PublicProfile {
 
 export interface PublicProfileWire {
   username: string;
+  display_name: string;
+  bio?: string | null;
   role: string;
   is_verifier: boolean;
   joined_at: string;
@@ -44,8 +48,11 @@ export interface PublicActivityWire {
 
 /** Wire GET /users/:username → model UI. Tidak menyalin id / email / phone. */
 export function normalizePublicProfile(data: PublicProfileWire): PublicProfile {
+  const displayName = data.display_name?.trim() || data.username;
   return {
     username: data.username,
+    displayName,
+    bio: data.bio ?? null,
     role: data.role,
     isVerifier: data.is_verifier,
     joinedAt: data.joined_at,

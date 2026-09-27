@@ -17,6 +17,7 @@ import {
   Typography,
 } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { personLabel } from '@/shared/utils/person-label';
 import { normalizeError } from '@/shared/api/error';
 import { ImageCensorEditor } from '@/features/translation-helps/presentation/image-censor-editor';
 import {
@@ -203,7 +204,12 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
           </Text>
           <div>
             <Text type="secondary">
-              oleh {detail.contribution.contributor_username} · aksi {detail.contribution.action}
+              oleh{' '}
+              {personLabel(
+                detail.contribution.contributor_display_name,
+                detail.contribution.contributor_username,
+              )}{' '}
+              · aksi {detail.contribution.action}
             </Text>
           </div>
         </div>
