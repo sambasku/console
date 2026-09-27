@@ -1,4 +1,4 @@
-import type { ActivityDailyPoint } from '../../domain/dashboard-stats';
+import type { ActivityDailyPoint } from '../domain/dashboard-stats';
 
 export type TodayMetricKey = 'contributions' | 'votes' | 'comments' | 'newUsers';
 
