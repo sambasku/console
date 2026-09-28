@@ -12,13 +12,21 @@ export class ApiError extends Error {
   readonly status: number;
   readonly errorCode: string;
   readonly details: ApiFieldError[] | null;
+  readonly data: Record<string, unknown> | null;
 
-  constructor(status: number, errorCode: string, message: string, details: ApiFieldError[] | null = null) {
+  constructor(
+    status: number,
+    errorCode: string,
+    message: string,
+    details: ApiFieldError[] | null = null,
+    data: Record<string, unknown> | null = null,
+  ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.errorCode = errorCode;
     this.details = details;
+    this.data = data;
   }
 
   /** details → map field → pesan, untuk di-inject ke error inline Form antd. */
@@ -50,7 +58,13 @@ export function normalizeError(err: unknown, fallbackMessage = 'Terjadi kesalaha
     const envelope = err.response?.data;
     const status = err.response?.status ?? 0;
     if (status !== 0 && envelope && envelope.success === false) {
-      return new ApiError(status, envelope.error_code, envelope.message, envelope.details);
+      return new ApiError(
+        status,
+        envelope.error_code,
+        envelope.message,
+        envelope.details,
+        envelope.data ?? null,
+      );
     }
     return new ApiError(status, err.code === 'ECONNABORTED' ? 'TIMEOUT_ERROR' : 'NETWORK_ERROR', fallbackMessage, null);
   }

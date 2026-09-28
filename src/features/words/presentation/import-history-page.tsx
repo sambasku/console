@@ -1,14 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ReloadOutlined } from '@ant-design/icons';
-import { Alert, Button, Flex, Tag, Typography } from 'antd';
+import { Alert, Button, Flex, Input, Tag, Typography } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
+import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { useImportSessionList } from '../application/use-import-sessions';
 import type { WordImportSession, WordImportSessionStatus } from '../infrastructure/word-api';
+import { SUPPORT_TYPE_LABEL } from './import-attribution-fields';
 
 const columnHelper = createColumnHelper<WordImportSession>();
 
@@ -28,8 +30,10 @@ const STATUS_COLOR: Record<WordImportSessionStatus, string> = {
 
 export function ImportHistoryPage() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
-    useImportSessionList();
+    useImportSessionList(debouncedSearch);
 
   const columns = useMemo(
     () => [
@@ -39,8 +43,8 @@ export function ImportHistoryPage() {
         cell: (info) => formatDateTime(info.getValue() ?? info.row.original.created_at),
       }),
       columnHelper.accessor('source_label', {
-        header: 'Sumber',
-        size: 200,
+        header: 'Sumber file',
+        size: 160,
         cell: (info) => (
           <Button
             type="link"
@@ -52,6 +56,32 @@ export function ImportHistoryPage() {
             {info.getValue() || 'Tanpa label'}
           </Button>
         ),
+      }),
+      columnHelper.accessor('support_name', {
+        header: 'Data Pendukung',
+        size: 220,
+        cell: (info) => {
+          const row = info.row.original;
+          const name = info.getValue();
+          if (!name && !row.support_title) {
+            return (
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                -
+              </Typography.Text>
+            );
+          }
+          const typeLabel = row.support_type ? SUPPORT_TYPE_LABEL[row.support_type] : null;
+          return (
+            <Flex vertical style={{ minWidth: 0 }}>
+              <Typography.Text ellipsis>{name || row.support_title}</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                {[typeLabel, row.support_title && name ? row.support_title : null]
+                  .filter(Boolean)
+                  .join(' · ') || '-'}
+              </Typography.Text>
+            </Flex>
+          );
+        },
       }),
       columnHelper.accessor('attributed_to_username', {
         header: 'Atribusi',
@@ -100,7 +130,7 @@ export function ImportHistoryPage() {
     <>
       <PageHeader
         title="Riwayat impor"
-        subtitle="Sesi impor massal (CSV / lembar) - atribusi data ke Pengimpor Data CSV."
+        subtitle="Sesi impor massal (CSV / lembar) - Data Pendukung dan atribusi creator per batch."
         extra={
           <Flex gap={8}>
             <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
@@ -109,6 +139,13 @@ export function ImportHistoryPage() {
             <Button onClick={() => navigate({ to: '/words' })}>Kembali ke Kata</Button>
           </Flex>
         }
+      />
+      <Input.Search
+        allowClear
+        placeholder="Cari nama situs, judul, alamat, atau label file…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ marginBottom: 16, maxWidth: 420 }}
       />
       {isError ? (
         <Alert

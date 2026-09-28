@@ -8,11 +8,15 @@ import {
 
 const PAGE_LIMIT = 20;
 
-export function useImportSessionList() {
+export function useImportSessionList(q?: string) {
+  const query = (q ?? '').trim();
   return useCursorList<WordImportSession>({
-    queryKey: ['word-import-sessions'],
+    queryKey: ['word-import-sessions', query],
     fetcher: (pageParam, signal) =>
-      listWordImportSessionsRequest({ limit: PAGE_LIMIT, cursor: pageParam }, signal),
+      listWordImportSessionsRequest(
+        { limit: PAGE_LIMIT, cursor: pageParam, q: query || undefined },
+        signal,
+      ),
   });
 }
 

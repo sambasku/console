@@ -25,6 +25,7 @@ import {
   useEstimateAudience,
   useTemplateList,
 } from '../application/use-campaigns';
+import { CampaignImageField } from './campaign-image-field';
 
 interface Props {
   open: boolean;
@@ -36,6 +37,7 @@ interface FormValues {
   template_id?: string;
   title?: string;
   body?: string;
+  image_url?: string | null;
   deep_link_kind?: DeepLinkKind;
   deep_link_value?: string;
   audience_type: CampaignAudienceType;
@@ -101,6 +103,7 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
     form.setFieldsValue({
       title: t.title,
       body: t.body,
+      image_url: t.imageUrl,
       deep_link_kind: t.deepLinkKind,
       deep_link_value: t.deepLinkValue ?? undefined,
     });
@@ -113,6 +116,7 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
         template_id: values.template_id || null,
         title: values.title,
         body: values.body,
+        image_url: values.image_url ?? null,
         deep_link_kind: values.deep_link_kind,
         deep_link_value: values.deep_link_value ?? null,
         audience_type: values.audience_type,
@@ -163,6 +167,9 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
         </Form.Item>
         <Form.Item name="body" label="Isi" rules={[{ required: true, message: 'Isi wajib' }]}>
           <Input.TextArea rows={4} maxLength={500} showCount />
+        </Form.Item>
+        <Form.Item name="image_url" label="Gambar (opsional)">
+          <CampaignImageField />
         </Form.Item>
         <Form.Item name="deep_link_kind" label="Deep link">
           <Select

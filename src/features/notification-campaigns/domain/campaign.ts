@@ -13,6 +13,7 @@ export interface NotificationTemplate {
   name: string;
   title: string;
   body: string;
+  imageUrl: string | null;
   deepLinkKind: DeepLinkKind;
   deepLinkValue: string | null;
   createdBy: string;
@@ -25,6 +26,7 @@ export interface NotificationCampaign {
   templateId: string | null;
   title: string;
   body: string;
+  imageUrl: string | null;
   deepLinkKind: DeepLinkKind;
   deepLinkValue: string | null;
   audienceType: CampaignAudienceType;

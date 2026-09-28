@@ -14,6 +14,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Descriptions,
   Flex,
   Image,
@@ -30,44 +31,46 @@ import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { UserInfoLink } from '@/shared/components/user-info-modal';
 import { normalizeError } from '@/shared/api/error';
-import { useTranslationHelpDetail } from '../application/use-translation-help-detail';
+import { useDiscussionDetail } from '../application/use-discussion-detail';
 import {
-  useApproveTranslationHelp,
-  usePinTranslationHelpReply,
-  useRejectTranslationHelp,
-  useTakedownTranslationHelp,
-  useTakedownTranslationHelpReply,
-} from '../application/use-translation-help-mutations';
+  useApproveDiscussion,
+  usePinDiscussionReply,
+  useRejectDiscussion,
+  useTakedownDiscussion,
+  useTakedownDiscussionReply,
+} from '../application/use-discussion-mutations';
 import {
-  TRANSLATION_HELP_STATUS_LABELS,
-  TRANSLATION_HELP_STATUS_TAG_COLOR,
+  DISCUSSION_STATUS_LABELS,
+  DISCUSSION_STATUS_TAG_COLOR,
   previewImageUrl,
-} from '../domain/translation-help';
+} from '../domain/discussion';
 import { ImageCensorEditor } from './image-censor-editor';
 
 const { Paragraph, Text } = Typography;
 
 /**
- * Detail moderasi tanya terjemahan - /translation-helps/:id.
+ * Detail moderasi ruang diskusi - /discussions/:id.
  * Pending + gambar: editor sensor opsional sebelum Setujui (multipart file_0..).
  */
-export function TranslationHelpDetailPage() {
+export function DiscussionDetailPage() {
   const { message, modal } = AntdApp.useApp();
   const navigate = useNavigate();
-  const { id } = useParams({ from: '/console-layout/translation-helps/$id' });
+  const { id } = useParams({ from: '/console-layout/discussions/$id' });
 
-  const detailQuery = useTranslationHelpDetail(id);
-  const approveMutation = useApproveTranslationHelp();
-  const rejectMutation = useRejectTranslationHelp();
-  const takedownMutation = useTakedownTranslationHelp();
-  const pinMutation = usePinTranslationHelpReply();
-  const takedownReplyMutation = useTakedownTranslationHelpReply();
+  const detailQuery = useDiscussionDetail(id);
+  const approveMutation = useApproveDiscussion();
+  const rejectMutation = useRejectDiscussion();
+  const takedownMutation = useTakedownDiscussion();
+  const pinMutation = usePinDiscussionReply();
+  const takedownReplyMutation = useTakedownDiscussionReply();
 
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectNote, setRejectNote] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   /** Blob tersensor per indeks gambar; null = belum diubah. */
   const [censoredBlobs, setCensoredBlobs] = useState<(Blob | null)[]>([]);
+  /** Flag kekerasan per indeks. */
+  const [violenceFlags, setViolenceFlags] = useState<boolean[]>([]);
 
   const detail = detailQuery.data;
   const isPending = detail?.status === 'pending_review';
@@ -79,6 +82,12 @@ export function TranslationHelpDetailPage() {
     if (censoredBlobs.length === detail.images.length) return censoredBlobs;
     return detail.images.map((_, i) => censoredBlobs[i] ?? null);
   }, [detail, censoredBlobs]);
+
+  const violenceSlots = useMemo(() => {
+    if (!detail) return [];
+    if (violenceFlags.length === detail.images.length) return violenceFlags;
+    return detail.images.map((_, i) => violenceFlags[i] ?? false);
+  }, [detail, violenceFlags]);
 
   const censoredPreviewUrls = useMemo(() => {
     return censoredSlots.map((blob) => (blob ? URL.createObjectURL(blob) : null));
@@ -101,19 +110,60 @@ export function TranslationHelpDetailPage() {
 
   const handleApprove = async () => {
     if (!detail) return;
-    try {
+
+    const runApprove = async () => {
       const files = hasImages ? censoredSlots : undefined;
       const anyCensored = files?.some((f) => f != null && f.size > 0);
+      const contentWarnings = hasImages
+        ? violenceSlots.map((v) => (v ? (['kekerasan'] as string[]) : []))
+        : undefined;
       await approveMutation.mutateAsync({
         id: detail.id,
         censoredFiles: anyCensored ? files : undefined,
+        contentWarnings,
       });
-      message.success('Tanya terjemahan disetujui dan ditayangkan.');
+      message.success('Ruang diskusi disetujui dan ditayangkan.');
       setCensoredBlobs([]);
+      setViolenceFlags([]);
       setEditingIndex(null);
-    } catch (err) {
-      message.warning(normalizeError(err).message || 'Gagal menyetujui');
+    };
+
+    if (!hasImages) {
+      try {
+        await runApprove();
+      } catch (err) {
+        message.warning(normalizeError(err).message || 'Gagal menyetujui');
+      }
+      return;
     }
+
+    const n = detail.images.length;
+    const m = censoredSlots.filter((f) => f != null && f.size > 0).length;
+    const k = violenceSlots.filter(Boolean).length;
+    modal.confirm({
+      title: 'Pastikan semua foto aman',
+      content: (
+        <Space direction="vertical" size={8}>
+          <Text>
+            Anda menyetujui {n} foto ({m} tersensor · {k} ber-flag kekerasan).
+          </Text>
+          <Text type="secondary">
+            Pastikan foto bukan NSFW, aman ditayangkan publik, data sensitif sudah
+            disensor bila perlu, dan flag kekerasan sudah ditempel bila perlu.
+          </Text>
+        </Space>
+      ),
+      okText: 'Saya sudah memeriksa, setujui',
+      cancelText: 'Batal',
+      onOk: async () => {
+        try {
+          await runApprove();
+        } catch (err) {
+          message.warning(normalizeError(err).message || 'Gagal menyetujui');
+          throw err;
+        }
+      },
+    });
   };
 
   const submitReject = async () => {
@@ -125,7 +175,7 @@ export function TranslationHelpDetailPage() {
     }
     try {
       await rejectMutation.mutateAsync({ id: detail.id, note });
-      message.success('Tanya terjemahan ditolak.');
+      message.success('Diskusi ditolak.');
       setRejectOpen(false);
       setRejectNote('');
     } catch (err) {
@@ -144,7 +194,7 @@ export function TranslationHelpDetailPage() {
       onOk: async () => {
         try {
           await takedownMutation.mutateAsync({ id: detail.id });
-          message.success('Tanya terjemahan ditarik dari feed.');
+          message.success('Diskusi ditarik dari feed.');
         } catch (err) {
           message.warning(normalizeError(err).message || 'Gagal menarik');
           throw err;
@@ -156,7 +206,7 @@ export function TranslationHelpDetailPage() {
   const handlePin = async (replyId: string) => {
     if (!detail) return;
     try {
-      await pinMutation.mutateAsync({ helpId: detail.id, replyId });
+      await pinMutation.mutateAsync({ discussionId: detail.id, replyId });
       message.success('Balasan dipin sebagai jawaban terbaik.');
     } catch (err) {
       message.warning(normalizeError(err).message || 'Gagal memin balasan');
@@ -183,20 +233,20 @@ export function TranslationHelpDetailPage() {
   };
 
   if (detailQuery.isPending) {
-    return <PageLoading tip="Memuat detail tanya terjemahan…" />;
+    return <PageLoading tip="Memuat detail ruang diskusi…" />;
   }
 
   if (detailQuery.isError || !detail) {
     return (
       <>
-        <PageHeader title="Tanya Terjemahan" subtitle="Gagal memuat detail." />
+        <PageHeader title="Ruang Diskusi" subtitle="Gagal memuat detail." />
         <Alert
           type="error"
           showIcon
           message="Tidak dapat membuka entri ini"
           description={detailQuery.error?.message ?? 'Entri tidak ditemukan atau akses ditolak.'}
           action={
-            <Button onClick={() => navigate({ to: '/translation-helps' })} style={{ whiteSpace: 'nowrap' }}>
+            <Button onClick={() => navigate({ to: '/discussions' })} style={{ whiteSpace: 'nowrap' }}>
               Kembali
             </Button>
           }
@@ -210,7 +260,7 @@ export function TranslationHelpDetailPage() {
   return (
     <>
       <PageHeader
-        title="Detail Tanya Terjemahan"
+        title="Detail Ruang Diskusi"
         subtitle={
           detail.username
             ? `Dari ${personLabel(detail.display_name, detail.username)} · ${formatDateTime(detail.created_at)}`
@@ -221,7 +271,7 @@ export function TranslationHelpDetailPage() {
             <Button icon={<ReloadOutlined />} onClick={() => detailQuery.refetch()} loading={detailQuery.isFetching}>
               Muat ulang
             </Button>
-            <Button icon={<RollbackOutlined />} onClick={() => navigate({ to: '/translation-helps' })}>
+            <Button icon={<RollbackOutlined />} onClick={() => navigate({ to: '/discussions' })}>
               Kembali
             </Button>
           </Space>
@@ -238,8 +288,8 @@ export function TranslationHelpDetailPage() {
               key: 'status',
               label: 'Status',
               children: (
-                <Tag color={TRANSLATION_HELP_STATUS_TAG_COLOR[detail.status]}>
-                  {TRANSLATION_HELP_STATUS_LABELS[detail.status]}
+                <Tag color={DISCUSSION_STATUS_TAG_COLOR[detail.status]}>
+                  {DISCUSSION_STATUS_LABELS[detail.status]}
                 </Tag>
               ),
             },
@@ -277,12 +327,20 @@ export function TranslationHelpDetailPage() {
 
         <Card size="small" title="Isi permintaan">
           {detail.body ? (
-            <Paragraph style={{ marginBottom: hasImages ? 16 : 0, whiteSpace: 'pre-wrap' }}>
+            <Paragraph style={{ marginBottom: hasImages || detail.link_url ? 16 : 0, whiteSpace: 'pre-wrap' }}>
               {detail.body}
             </Paragraph>
           ) : (
             <Text type="secondary">Tanpa teks - hanya lampiran gambar.</Text>
           )}
+
+          {detail.link_url ? (
+            <Paragraph style={{ marginBottom: hasImages ? 16 : 0 }}>
+              <a href={detail.link_url} target="_blank" rel="noopener noreferrer">
+                {detail.link_url}
+              </a>
+            </Paragraph>
+          ) : null}
 
           {hasImages ? (
             <Image.PreviewGroup>
@@ -319,6 +377,19 @@ export function TranslationHelpDetailPage() {
                       {local ? (
                         <Tag color="blue" style={{ position: 'absolute', top: 4, left: 4, margin: 0 }}>
                           Tersensor
+                        </Tag>
+                      ) : null}
+                      {violenceSlots[index] ? (
+                        <Tag
+                          color="orange"
+                          style={{
+                            position: 'absolute',
+                            top: local ? 28 : 4,
+                            left: 4,
+                            margin: 0,
+                          }}
+                        >
+                          Kekerasan
                         </Tag>
                       ) : null}
                     </div>
@@ -372,6 +443,25 @@ export function TranslationHelpDetailPage() {
                 ) : (
                   <Text type="secondary">Pilih gambar di atas untuk membuka editor.</Text>
                 )}
+                <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                  {detail.images.map((img, index) => (
+                    <Checkbox
+                      key={`violence-${img.provider_file_id}`}
+                      checked={violenceSlots[index]}
+                      disabled={busy}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setViolenceFlags((prev) => {
+                          const next = detail.images.map((_, i) => prev[i] ?? false);
+                          next[index] = checked;
+                          return next;
+                        });
+                      }}
+                    >
+                      Gambar {index + 1}: foto berisi kekerasan
+                    </Checkbox>
+                  ))}
+                </Space>
               </Space>
             </Card>
           </>
@@ -499,7 +589,7 @@ export function TranslationHelpDetailPage() {
       </Space>
 
       <Modal
-        title="Tolak tanya terjemahan"
+        title="Tolak ruang diskusi"
         open={rejectOpen}
         onCancel={() => {
           setRejectOpen(false);

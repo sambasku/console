@@ -34,7 +34,7 @@ export interface WordImagesFieldProps {
 /**
  * Section "7. Gambar (opsional)" untuk form tambah & edit kata.
  * Preview pakai state lokal (langsung re-render saat file dipilih).
- * Upload: kompresi 720×720 @ JPEG 80 dulu (selaras mobile), lalu
+ * Upload: kompresi 720×720 @ WebP 80 dulu (selaras mobile), lalu
  * multipart ke GitHub. Media Explorer: URL stock tanpa upload.
  */
 export function WordImagesField({ value, onChange }: WordImagesFieldProps) {

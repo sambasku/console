@@ -2,22 +2,11 @@ import { client } from '@/shared/api/client';
 import type { ApiOkEnvelope } from '@/shared/api/types';
 import { compressImageForUpload } from '@/shared/utils/compress-image';
 
-/**
- * Upload gambar kata lewat API (GitHub) - multipart ke POST /api/v1/images.
- * Kompresi dulu (max 720×720, WebP 80) selaras mobile.
- * ImageKit tetap dipakai laporan bug / bukti verifikator (endpoint token terpisah).
- */
-export interface UploadedImage {
-  url: string;
-  file_id: string;
-  provider: string;
-  sha: string;
-}
-
-export async function uploadWordImage(
+/** Upload gambar campaign ke POST /images?purpose=campaign (GitHub → jsDelivr). */
+export async function uploadCampaignImage(
   file: File,
   onProgress?: (percent: number) => void,
-): Promise<UploadedImage> {
+): Promise<string> {
   const compressed = await compressImageForUpload(file);
   const maxBytes = 5 * 1024 * 1024;
   if (compressed.size > maxBytes) {
@@ -33,7 +22,7 @@ export async function uploadWordImage(
       provider_file_id: string;
       sha: string;
     }>
-  >('/images?purpose=word', form, {
+  >('/images?purpose=campaign', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (e) => {
       if (e.total && onProgress) {
@@ -42,11 +31,5 @@ export async function uploadWordImage(
     },
   });
 
-  const data = res.data.data;
-  return {
-    url: data.url,
-    file_id: data.provider_file_id,
-    provider: data.provider,
-    sha: data.sha,
-  };
+  return res.data.data.url;
 }

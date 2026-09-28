@@ -8,40 +8,40 @@ import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { UserInfoLink } from '@/shared/components/user-info-modal';
 import { useAuth } from '@/shared/auth/use-auth';
-import { useTranslationHelpList } from '../application/use-translation-help-list';
+import { useDiscussionList } from '../application/use-discussion-list';
 import {
-  TRANSLATION_HELP_STATUS_LABELS,
-  TRANSLATION_HELP_STATUS_TAG_COLOR,
+  DISCUSSION_STATUS_LABELS,
+  DISCUSSION_STATUS_TAG_COLOR,
   previewImageUrl,
-  type TranslationHelpListItem,
-  type TranslationHelpStatus,
-} from '../domain/translation-help';
+  type DiscussionListItem,
+  type DiscussionStatus,
+} from '../domain/discussion';
 
-const columnHelper = createColumnHelper<TranslationHelpListItem>();
+const columnHelper = createColumnHelper<DiscussionListItem>();
 
-type StatusTab = TranslationHelpStatus | 'all';
+type StatusTab = DiscussionStatus | 'all';
 
-const STATUS_TABS: { key: StatusTab; label: string; status?: TranslationHelpStatus }[] = [
-  { key: 'pending_review', label: TRANSLATION_HELP_STATUS_LABELS.pending_review, status: 'pending_review' },
-  { key: 'published', label: TRANSLATION_HELP_STATUS_LABELS.published, status: 'published' },
-  { key: 'rejected', label: TRANSLATION_HELP_STATUS_LABELS.rejected, status: 'rejected' },
-  { key: 'taken_down', label: TRANSLATION_HELP_STATUS_LABELS.taken_down, status: 'taken_down' },
+const STATUS_TABS: { key: StatusTab; label: string; status?: DiscussionStatus }[] = [
+  { key: 'pending_review', label: DISCUSSION_STATUS_LABELS.pending_review, status: 'pending_review' },
+  { key: 'published', label: DISCUSSION_STATUS_LABELS.published, status: 'published' },
+  { key: 'rejected', label: DISCUSSION_STATUS_LABELS.rejected, status: 'rejected' },
+  { key: 'taken_down', label: DISCUSSION_STATUS_LABELS.taken_down, status: 'taken_down' },
   { key: 'all', label: 'Semua' },
 ];
 
-function canModerateTranslationHelps(role: string | undefined): boolean {
+function canModerateDiscussions(role: string | undefined): boolean {
   return role === 'root' || role === 'admin' || role === 'reviewer' || role === 'editor';
 }
 
-export function TranslationHelpsPage() {
+export function DiscussionsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const canModerate = canModerateTranslationHelps(user?.role);
+  const canModerate = canModerateDiscussions(user?.role);
   const [statusTab, setStatusTab] = useState<StatusTab>('pending_review');
   const status = STATUS_TABS.find((t) => t.key === statusTab)?.status;
 
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
-    useTranslationHelpList({ status, enabled: canModerate });
+    useDiscussionList({ status, enabled: canModerate });
 
   const columns = useMemo(
     () => [
@@ -64,8 +64,8 @@ export function TranslationHelpsPage() {
         header: 'Status',
         size: 120,
         cell: (info) => (
-          <Tag color={TRANSLATION_HELP_STATUS_TAG_COLOR[info.getValue()]}>
-            {TRANSLATION_HELP_STATUS_LABELS[info.getValue()]}
+          <Tag color={DISCUSSION_STATUS_TAG_COLOR[info.getValue()]}>
+            {DISCUSSION_STATUS_LABELS[info.getValue()]}
           </Tag>
         ),
       }),
@@ -122,7 +122,7 @@ export function TranslationHelpsPage() {
               icon={<ToolOutlined />}
               onClick={() =>
                 navigate({
-                  to: '/translation-helps/$id',
+                  to: '/discussions/$id',
                   params: { id: info.row.original.id },
                 })
               }
@@ -147,7 +147,7 @@ export function TranslationHelpsPage() {
       <Alert
         type="warning"
         showIcon
-        message="Hanya admin, root, reviewer, dan editor yang dapat memoderasi tanya terjemahan."
+        message="Hanya admin, root, reviewer, dan editor yang dapat memoderasi ruang diskusi."
       />
     );
   }
@@ -155,8 +155,8 @@ export function TranslationHelpsPage() {
   return (
     <>
       <PageHeader
-        title="Tanya Terjemahan"
-        subtitle="Antrean pertanyaan terjemahan dari aplikasi."
+        title="Ruang Diskusi"
+        subtitle="Antrean thread Ruang Diskusi dari aplikasi."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

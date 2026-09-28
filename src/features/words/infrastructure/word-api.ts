@@ -36,6 +36,34 @@ export async function createWordRequest(body: CreateWordRequest): Promise<Create
   return res.data.data;
 }
 
+/** POST /api/v1/contributions/duplicate-confirm - vote + riwayat saat exact makna. */
+export async function confirmDuplicateMeaningRequest(body: {
+  word_id: string;
+  meaning_id: string;
+  value: 1 | -1;
+}): Promise<{
+  word_id: string;
+  meaning_id: string;
+  lemma: string;
+  my_vote: 1 | -1 | null;
+  upvotes: number;
+  downvotes: number;
+  message: string;
+}> {
+  const res = await client.post<
+    ApiOkEnvelope<{
+      word_id: string;
+      meaning_id: string;
+      lemma: string;
+      my_vote: 1 | -1 | null;
+      upvotes: number;
+      downvotes: number;
+      message: string;
+    }>
+  >('/contributions/duplicate-confirm', body);
+  return res.data.data;
+}
+
 /**
  * GET /api/v1/admin/words/:id - detail pribadi admin untuk prefill form edit.
  * Bedanya dari GET publik: status SEMUA boleh tampil (draft/pending_review/
@@ -135,6 +163,7 @@ export interface ImportWordResultItem {
 export async function importWordsRequest(body: {
   mode: 'validate' | 'commit';
   items: ImportWordPayload[];
+  attributed_to?: string;
 }): Promise<ImportWordResultItem[]> {
   const res = await client.post<ApiOkEnvelope<{ items: ImportWordResultItem[] }>>('/admin/words/import', body);
   return res.data.data.items;
@@ -318,6 +347,8 @@ export type WordImportSessionItem = {
   message?: string;
 };
 
+export type WordImportSupportType = 'web' | 'book' | 'article' | 'other';
+
 export type WordImportSession = {
   id: string;
   triggered_by: string;
@@ -327,6 +358,16 @@ export type WordImportSession = {
   attributed_to_username: string | null;
   attributed_to_display_name: string | null;
   source_label: string | null;
+  support_name: string | null;
+  support_type: WordImportSupportType | null;
+  support_address: string | null;
+  support_title: string | null;
+  support_desc: string | null;
+  claimed_by: string | null;
+  claimed_by_username: string | null;
+  claimed_by_display_name: string | null;
+  claimed_at: string | null;
+  can_claim: boolean;
   status: WordImportSessionStatus;
   total: number;
   created_count: number;
@@ -341,6 +382,12 @@ export type WordImportSession = {
 export type SaveWordImportSessionBody = {
   id: string;
   source_label?: string | null;
+  attributed_to?: string;
+  support_name?: string | null;
+  support_type?: WordImportSupportType | null;
+  support_address?: string | null;
+  support_title?: string | null;
+  support_desc?: string | null;
   status: WordImportSessionStatus;
   total: number;
   created_count: number;
@@ -363,13 +410,17 @@ export async function saveWordImportSessionRequest(
 
 /** GET /api/v1/admin/words/import-sessions - daftar riwayat impor. */
 export async function listWordImportSessionsRequest(
-  params: { limit?: number; cursor?: string } = {},
+  params: { limit?: number; cursor?: string; q?: string } = {},
   signal?: AbortSignal,
 ): Promise<CursorPage<WordImportSession>> {
   const res = await client.get<ApiCursorPageEnvelope<WordImportSession>>(
     '/admin/words/import-sessions',
     {
-      params: { limit: params.limit ?? 20, cursor: params.cursor },
+      params: {
+        limit: params.limit ?? 20,
+        cursor: params.cursor,
+        q: params.q || undefined,
+      },
       signal,
     },
   );
@@ -384,6 +435,18 @@ export async function getWordImportSessionRequest(
   const res = await client.get<ApiOkEnvelope<WordImportSession>>(
     `/admin/words/import-sessions/${id}`,
     { signal },
+  );
+  return res.data.data;
+}
+
+/** POST /api/v1/admin/words/import-sessions/:id/claim - klaim ke user. */
+export async function claimWordImportSessionRequest(
+  id: string,
+  body: { attributed_to: string },
+): Promise<WordImportSession> {
+  const res = await client.post<ApiOkEnvelope<WordImportSession>>(
+    `/admin/words/import-sessions/${id}/claim`,
+    body,
   );
   return res.data.data;
 }

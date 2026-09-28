@@ -14,6 +14,7 @@ interface TemplateWire {
   name: string;
   title: string;
   body: string;
+  image_url: string | null;
   deep_link_kind: DeepLinkKind;
   deep_link_value: string | null;
   created_by: string;
@@ -26,6 +27,7 @@ interface CampaignWire {
   template_id: string | null;
   title: string;
   body: string;
+  image_url: string | null;
   deep_link_kind: DeepLinkKind;
   deep_link_value: string | null;
   audience_type: CampaignAudienceType;
@@ -48,6 +50,7 @@ function mapTemplate(w: TemplateWire): NotificationTemplate {
     name: w.name,
     title: w.title,
     body: w.body,
+    imageUrl: w.image_url ?? null,
     deepLinkKind: w.deep_link_kind,
     deepLinkValue: w.deep_link_value,
     createdBy: w.created_by,
@@ -62,6 +65,7 @@ function mapCampaign(w: CampaignWire): NotificationCampaign {
     templateId: w.template_id,
     title: w.title,
     body: w.body,
+    imageUrl: w.image_url ?? null,
     deepLinkKind: w.deep_link_kind,
     deepLinkValue: w.deep_link_value,
     audienceType: w.audience_type,
@@ -94,6 +98,7 @@ export async function createTemplateRequest(body: {
   name: string;
   title: string;
   body: string;
+  image_url?: string | null;
   deep_link_kind: DeepLinkKind;
   deep_link_value?: string | null;
 }): Promise<NotificationTemplate> {
@@ -110,6 +115,7 @@ export async function updateTemplateRequest(
     name: string;
     title: string;
     body: string;
+    image_url: string | null;
     deep_link_kind: DeepLinkKind;
     deep_link_value: string | null;
   }>,
@@ -176,6 +182,7 @@ export async function createCampaignRequest(body: {
   template_id?: string | null;
   title?: string;
   body?: string;
+  image_url?: string | null;
   deep_link_kind?: DeepLinkKind;
   deep_link_value?: string | null;
   audience_type: CampaignAudienceType;

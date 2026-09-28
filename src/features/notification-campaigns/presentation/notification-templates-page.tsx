@@ -26,11 +26,14 @@ import {
   useTemplateList,
   useUpdateTemplate,
 } from '../application/use-campaigns';
+import { CampaignImageField } from './campaign-image-field';
+import { displayImageUrl } from '@/shared/utils/display-image-url';
 
 interface TemplateFormValues {
   name: string;
   title: string;
   body: string;
+  image_url?: string | null;
   deep_link_kind: DeepLinkKind;
   deep_link_value?: string;
 }
@@ -49,6 +52,7 @@ export function NotificationTemplatesPage() {
   const deepLinkKind = Form.useWatch('deep_link_kind', form);
   const previewTitle = Form.useWatch('title', form);
   const previewBody = Form.useWatch('body', form);
+  const previewImageUrl = Form.useWatch('image_url', form);
 
   const items = data?.data ?? [];
 
@@ -77,6 +81,7 @@ export function NotificationTemplatesPage() {
                   name: row.name,
                   title: row.title,
                   body: row.body,
+                  image_url: row.imageUrl,
                   deep_link_kind: row.deepLinkKind,
                   deep_link_value: row.deepLinkValue ?? undefined,
                 });
@@ -116,6 +121,7 @@ export function NotificationTemplatesPage() {
           name: values.name,
           title: values.title,
           body: values.body,
+          image_url: values.image_url ?? null,
           deep_link_kind: values.deep_link_kind,
           deep_link_value: values.deep_link_value ?? null,
         });
@@ -125,6 +131,7 @@ export function NotificationTemplatesPage() {
           name: values.name,
           title: values.title,
           body: values.body,
+          image_url: values.image_url ?? null,
           deep_link_kind: values.deep_link_kind,
           deep_link_value: values.deep_link_value ?? null,
         });
@@ -188,6 +195,9 @@ export function NotificationTemplatesPage() {
           <Form.Item name="body" label="Isi" rules={[{ required: true, message: 'Isi wajib' }]}>
             <Input.TextArea rows={4} maxLength={500} showCount placeholder="Maks. ~150 karakter disarankan untuk FCM" />
           </Form.Item>
+          <Form.Item name="image_url" label="Gambar (opsional)">
+            <CampaignImageField />
+          </Form.Item>
           <Form.Item name="deep_link_kind" label="Deep link">
             <Select
               options={(Object.keys(DEEP_LINK_KIND_LABELS) as DeepLinkKind[]).map((k) => ({
@@ -224,6 +234,19 @@ export function NotificationTemplatesPage() {
                 {previewBody || 'Isi notifikasi'}
               </Typography.Text>
             </div>
+            {previewImageUrl ? (
+              <img
+                src={displayImageUrl(previewImageUrl, { width: 280, height: 120 })}
+                alt=""
+                style={{
+                  marginTop: 8,
+                  maxWidth: '100%',
+                  maxHeight: 100,
+                  objectFit: 'cover',
+                  borderRadius: 6,
+                }}
+              />
+            ) : null}
           </div>
         </Form>
         <Button type="link" onClick={() => refetch()} style={{ padding: 0, marginTop: 16 }}>

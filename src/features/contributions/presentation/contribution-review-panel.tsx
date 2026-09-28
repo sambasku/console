@@ -19,7 +19,7 @@ import {
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
 import { normalizeError } from '@/shared/api/error';
-import { ImageCensorEditor } from '@/features/translation-helps/presentation/image-censor-editor';
+import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
 import {
   CONTRIBUTION_STATUS_LABELS,
   ENTITY_TYPE_LABELS,

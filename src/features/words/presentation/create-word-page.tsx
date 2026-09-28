@@ -12,6 +12,7 @@ import {
   Form,
   Grid,
   Input,
+  Modal,
   Row,
   Segmented,
   Select,
@@ -34,6 +35,7 @@ import {
 import { useCategoryOptions, useDialectOptions, useLanguageOptions, useWordClassOptions } from '../application/use-reference-data';
 import type { CreateWordFormValues } from '../domain/create-word';
 import { type WordStatus } from '../domain/word';
+import { confirmDuplicateMeaningRequest } from '../infrastructure/word-api';
 import {
   MeaningFields,
   PendingPronunciationAudioField,
@@ -90,6 +92,12 @@ export function CreateWordPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fillMode, setFillMode] = useState<FormFillMode>('simple');
   const [kbbiOpen, setKbbiOpen] = useState(false);
+  const [duplicateVote, setDuplicateVote] = useState<{
+    wordId: string;
+    meaningId: string;
+    lemma: string;
+  } | null>(null);
+  const [duplicateVoting, setDuplicateVoting] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<PendingPronunciationAudio | null>(null);
   /** Draft audio per contoh - diunggah berurutan setelah create + GET detail. */
   const [pendingExampleAudios, setPendingExampleAudios] = useState<
@@ -98,7 +106,9 @@ export function CreateWordPage() {
   const pendingExampleMetaRef = useRef<
     Record<string, { meaningIndex: number; exampleIndex: number; sourceSentence: string }>
   >({});
-  const missParams = useMemo(() => readMissSearchParams(), []);
+  // State (bukan useMemo) supaya setelah create sukses bisa dikosongkan -
+  // entri berikutnya tidak terikat search-miss yang sama.
+  const [missParams, setMissParams] = useState(readMissSearchParams);
 
   const wordType = Form.useWatch('word_type', form) ?? 'word';
   const isContributor = user?.role === 'contributor';
@@ -225,8 +235,77 @@ export function CreateWordPage() {
     [dialectQuery.data],
   );
 
+  /** Reset form + draft lokal supaya tetap di /words/new untuk entri berikutnya. */
+  const resetFormForNextEntry = () => {
+    setSubmitError(null);
+    setDuplicateVote(null);
+    setKbbiOpen(false);
+    setPendingAudio(null);
+    setPendingExampleAudios({});
+    pendingExampleMetaRef.current = {};
+
+    const hadMiss = Boolean(missParams.fromMiss || missParams.term);
+    setMissParams({});
+
+    form.resetFields();
+    form.setFieldsValue({
+      language_id: defaultLanguageIds.sourceId,
+      word_type: 'word',
+      dialect_id: defaultDialectId ?? undefined,
+      lemma: undefined,
+      lemma_allows_comma: false,
+      notes: undefined,
+      pronunciation: undefined,
+      images: [],
+      related_words: [],
+      variants: [],
+      category_ids: [],
+      meanings: [
+        {
+          word_class_id: umumWordClassId,
+          definition: '',
+          is_have_definition: false,
+          is_have_translation: true,
+          order_index: 1,
+          translations: defaultLanguageIds.targetId
+            ? [
+                {
+                  language_id: defaultLanguageIds.targetId,
+                  translation_type: 'direct' as const,
+                  translation_text: '',
+                },
+              ]
+            : [],
+          examples: [],
+        },
+      ],
+    });
+
+    if (hadMiss) {
+      void navigate({ to: '/words/new', search: {}, replace: true });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmitError = (err: unknown) => {
     if (err instanceof ApiError) {
+      if (
+        err.errorCode === 'DUPLICATE_MEANING' &&
+        err.data &&
+        typeof err.data.word_id === 'string' &&
+        typeof err.data.meaning_id === 'string'
+      ) {
+        setDuplicateVote({
+          wordId: err.data.word_id,
+          meaningId: err.data.meaning_id,
+          lemma:
+            typeof err.data.lemma === 'string' && err.data.lemma.trim()
+              ? err.data.lemma
+              : 'kata ini',
+        });
+        setSubmitError(null);
+        return;
+      }
       const fieldErrors = err.fieldErrors();
       const entries = Object.entries(fieldErrors);
       if (entries.length > 0) {
@@ -247,6 +326,25 @@ export function CreateWordPage() {
       }
     } else {
       setSubmitError('Gagal menyimpan kata. Coba lagi.');
+    }
+  };
+
+  const castDuplicateVote = async (value: 1 | -1) => {
+    if (!duplicateVote) return;
+    setDuplicateVoting(true);
+    try {
+      const res = await confirmDuplicateMeaningRequest({
+        word_id: duplicateVote.wordId,
+        meaning_id: duplicateVote.meaningId,
+        value,
+      });
+      message.success(res.message);
+      setDuplicateVote(null);
+    } catch (voteErr) {
+      const normalized = voteErr instanceof ApiError ? voteErr : null;
+      message.error(normalized?.message ?? 'Gagal mencatat dukungan');
+    } finally {
+      setDuplicateVoting(false);
     }
   };
 
@@ -392,7 +490,7 @@ export function CreateWordPage() {
               if (missParams.fromMiss) {
                 void queryClient.invalidateQueries({ queryKey: ['search-misses'] });
               }
-              navigate({ to: '/words' });
+              resetFormForNextEntry();
             })();
           },
           onError: handleSubmitError,
@@ -807,6 +905,37 @@ export function CreateWordPage() {
           message.success(`${parts.join(', ')} diisi dari KBBI - silakan review`);
         }}
       />
+
+      <Modal
+        open={duplicateVote !== null}
+        title="Kata ini sudah ditemukan"
+        onCancel={() => setDuplicateVote(null)}
+        footer={
+          <Space wrap>
+            <Button onClick={() => setDuplicateVote(null)}>Batal</Button>
+            <Button
+              loading={duplicateVoting}
+              onClick={() => void castDuplicateVote(-1)}
+            >
+              Tidak mendukung
+            </Button>
+            <Button
+              type="primary"
+              loading={duplicateVoting}
+              onClick={() => void castDuplicateVote(1)}
+            >
+              Dukung
+            </Button>
+          </Space>
+        }
+      >
+        {duplicateVote && (
+          <Typography.Paragraph>
+            Pilih dukunganmu agar tercatat di riwayat perubahan{' '}
+            <Typography.Text strong>{duplicateVote.lemma}</Typography.Text>.
+          </Typography.Paragraph>
+        )}
+      </Modal>
 
       <Flex
         justify={md ? 'space-between' : 'flex-start'}

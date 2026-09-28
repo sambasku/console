@@ -13,6 +13,11 @@ import { importWordsRequest, saveWordImportSessionRequest, type ImportWordPayloa
 import { generateOpaqueId } from '@/shared/utils/opaque-id';
 import { ImportSheet } from './import-sheet';
 import { KbbiDefinitionPickerModal } from './kbbi-definition-picker-modal';
+import {
+  EMPTY_IMPORT_SUPPORT,
+  ImportAttributionFields,
+  type ImportSupportDraft,
+} from './import-attribution-fields';
 
 interface MeaningDraft {
   rowNumber: number;
@@ -121,6 +126,7 @@ function isRetryableImportError(err: ApiError): boolean {
 
 async function importOneWithRetry(
   item: ImportWordPayload,
+  attributedTo: string | undefined,
   onAttempt?: (attempt: number) => void,
   isCancelled?: () => boolean,
 ): Promise<ImportWordResultItem> {
@@ -129,7 +135,11 @@ async function importOneWithRetry(
     if (isCancelled?.()) throw new ImportCancelledError();
     onAttempt?.(attempt);
     try {
-      const part = await importWordsRequest({ mode: 'commit', items: [item] });
+      const part = await importWordsRequest({
+        mode: 'commit',
+        items: [item],
+        attributed_to: attributedTo,
+      });
       const result = part[0];
       if (!result) {
         throw normalizeError(new Error('Respons impor kosong'), 'Respons impor kosong');
@@ -283,6 +293,8 @@ export function ImportWordsDrawer({
   const [sourceLabel, setSourceLabel] = useState<string>();
   const [chooserOpen, setChooserOpen] = useState(true);
   const [find, setFind] = useState('');
+  const [support, setSupport] = useState<ImportSupportDraft>(EMPTY_IMPORT_SUPPORT);
+  const [attributedTo, setAttributedTo] = useState<string | undefined>();
   const [kbbiTarget, setKbbiTarget] = useState<{
     wordId: string;
     rowNumber: number;
@@ -316,6 +328,8 @@ export function ImportWordsDrawer({
     setAppliedNotes('');
     setNotes('');
     setFind('');
+    setSupport(EMPTY_IMPORT_SUPPORT);
+    setAttributedTo(undefined);
     setResume(undefined);
     setChooserOpen(true);
   };
@@ -424,6 +438,12 @@ export function ImportWordsDrawer({
         await saveWordImportSessionRequest({
           id: sessionId,
           source_label: sourceLabel ?? null,
+          attributed_to: attributedTo,
+          support_name: support.name.trim() || null,
+          support_type: support.type ?? null,
+          support_address: support.address.trim() || null,
+          support_title: support.title.trim() || null,
+          support_desc: support.desc.trim() || null,
           status,
           total,
           created_count: counters.created,
@@ -469,6 +489,7 @@ export function ImportWordsDrawer({
         });
         const result = await importOneWithRetry(
           item,
+          attributedTo,
           (attempt) => {
             setProgress({
               phase: 'sending',
@@ -1042,6 +1063,13 @@ export function ImportWordsDrawer({
               onClose={() => setResume(undefined)}
             />
           ) : null}
+          <ImportAttributionFields
+            support={support}
+            onSupportChange={setSupport}
+            attributedTo={attributedTo}
+            onAttributedToChange={setAttributedTo}
+            disabled={busy}
+          />
           <Flex
             gap={8}
             align="center"

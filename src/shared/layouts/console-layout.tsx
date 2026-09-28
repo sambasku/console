@@ -38,7 +38,7 @@ const { Sider, Header, Content } = Layout;
 const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
-  '/translation-helps': { icon: <MessageOutlined />, label: 'Tanya' },
+  '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
@@ -72,7 +72,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Analitik',
   words: 'Kata',
   contributions: 'Review',
-  'translation-helps': 'Tanya Terjemahan',
+  'discussions': 'Ruang Diskusi',
   'word-suggestions': 'Usul Edit',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
@@ -126,7 +126,7 @@ export function ConsoleLayout() {
 
     const kamusChildren = (Object.entries(KAMUS_ROUTES) as [KamusRoute, (typeof KAMUS_ROUTES)[KamusRoute]][])
       .filter(([key]) =>
-        key === '/word-reports' || key === '/translation-helps'
+        key === '/word-reports' || key === '/discussions'
           ? canModerateContent || user?.role === 'editor'
           : key === '/vote-moderation' || key === '/word-suggestions'
             ? canModerateContent
@@ -195,7 +195,7 @@ export function ConsoleLayout() {
                 : undefined
         : segments[0] === 'contributions' && segments[1]
           ? 'Detail Kontribusi'
-          : segments[0] === 'translation-helps' && segments[1]
+          : segments[0] === 'discussions' && segments[1]
             ? 'Detail'
             : segments[0] === 'verifier-applications' && segments[1]
               ? 'Detail pengajuan'

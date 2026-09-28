@@ -24,8 +24,8 @@ import { AuditLogsPage } from '@/features/audit/presentation/audit-logs-page';
 import { BugReportsPage } from '@/features/bug-reports/presentation/bug-reports-page';
 import { WordReportsPage } from '@/features/word-reports/presentation/word-reports-page';
 import { WordReportDetailPage } from '@/features/word-reports/presentation/word-report-detail-page';
-import { TranslationHelpsPage } from '@/features/translation-helps/presentation/translation-helps-page';
-import { TranslationHelpDetailPage } from '@/features/translation-helps/presentation/translation-help-detail-page';
+import { DiscussionsPage } from '@/features/discussions/presentation/discussions-page';
+import { DiscussionDetailPage } from '@/features/discussions/presentation/discussion-detail-page';
 import { UsersPage } from '@/features/users/presentation/users-page';
 import { VerifierApplicationsPage } from '@/features/verifier-applications/presentation/verifier-applications-page';
 import { VerifierApplicationDetailPage } from '@/features/verifier-applications/presentation/verifier-application-detail-page';
@@ -220,16 +220,16 @@ const bugReportsRoute = createRoute({
   component: BugReportsPage,
 });
 
-const translationHelpsRoute = createRoute({
+const discussionsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
-  path: '/translation-helps',
-  component: TranslationHelpsPage,
+  path: '/discussions',
+  component: DiscussionsPage,
 });
 
-const translationHelpDetailRoute = createRoute({
+const discussionDetailRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
-  path: '/translation-helps/$id',
-  component: TranslationHelpDetailPage,
+  path: '/discussions/$id',
+  component: DiscussionDetailPage,
 });
 
 const wordReportsRoute = createRoute({
@@ -334,8 +334,8 @@ const routeTree = rootRoute.addChildren([
     editWordRoute,
     contributionsRoute,
     contributionDetailRoute,
-    translationHelpsRoute,
-    translationHelpDetailRoute,
+    discussionsRoute,
+    discussionDetailRoute,
     commentsRoute,
     commentBlocklistRoute,
     searchMissesRoute,

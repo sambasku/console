@@ -4,7 +4,7 @@ export const PHOTO_UPLOAD_MAX_HEIGHT = 720;
 export const PHOTO_UPLOAD_QUALITY = 0.8;
 
 /**
- * Resize (tidak ada sisi > 720) + JPEG quality 80.
+ * Resize (tidak ada sisi > 720) + WebP quality 80.
  * File non-image atau gagal decode → dikembalikan apa adanya.
  */
 export async function compressImageForUpload(
@@ -29,7 +29,7 @@ export async function compressImageForUpload(
     const width = Math.max(1, Math.round(bitmap.width * scale));
     const height = Math.max(1, Math.round(bitmap.height * scale));
 
-    if (scale >= 1 && file.type === 'image/jpeg' && file.size < 200_000) {
+    if (scale >= 1 && file.type === 'image/webp' && file.size < 200_000) {
       // Sudah kecil & dalam batas - skip re-encode
       return file;
     }
@@ -42,13 +42,13 @@ export async function compressImageForUpload(
     ctx.drawImage(bitmap, 0, 0, width, height);
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, 'image/jpeg', quality),
+      canvas.toBlob(resolve, 'image/webp', quality),
     );
     if (!blob) return file;
 
     const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
-    return new File([blob], `${baseName}.jpg`, {
-      type: 'image/jpeg',
+    return new File([blob], `${baseName}.webp`, {
+      type: 'image/webp',
       lastModified: file.lastModified,
     });
   } finally {

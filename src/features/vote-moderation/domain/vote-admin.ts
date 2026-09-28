@@ -5,8 +5,8 @@ export type AdminVoteTargetType =
   | 'pronunciation'
   | 'word_image'
   | 'comment'
-  | 'translation_help_reply'
-  | 'translation_help';
+  | 'discussion_reply'
+  | 'discussion';
 
 export interface AdminVoteListItem {
   id: string;
@@ -38,8 +38,8 @@ export const TARGET_TYPE_LABELS: Record<AdminVoteTargetType, string> = {
   pronunciation: 'Pelafalan',
   word_image: 'Gambar Kata',
   comment: 'Komentar',
-  translation_help_reply: 'Balasan Terjemahan',
-  translation_help: 'Pertanyaan Terjemahan',
+  discussion_reply: 'Balasan Diskusi',
+  discussion: 'Pertanyaan Diskusi',
 };
 
 export const TARGET_TYPE_TAG_COLOR: Record<AdminVoteTargetType, string> = {
@@ -49,8 +49,8 @@ export const TARGET_TYPE_TAG_COLOR: Record<AdminVoteTargetType, string> = {
   pronunciation: 'orange',
   word_image: 'cyan',
   comment: 'green',
-  translation_help_reply: 'magenta',
-  translation_help: 'volcano',
+  discussion_reply: 'magenta',
+  discussion: 'volcano',
 };
 
 export const VALUE_LABELS: Record<1 | -1, string> = {

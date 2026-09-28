@@ -5,7 +5,7 @@ export const ALL_SCOPES = [
   'vote.write',
   'comment.write',
   'contribute.write',
-  'translation_help.write',
+  'discussion.write',
   'bookmark.write',
   'profile.read',
   'device.write',
