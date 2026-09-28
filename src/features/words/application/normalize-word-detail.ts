@@ -135,6 +135,7 @@ function audio(raw: unknown): WordDetailAudio[] {
       mime_type: strOr(item.mime_type),
       ...(typeof item.file_size === 'number' ? { file_size: item.file_size } : {}),
       ...(typeof item.status === 'string' ? { status: item.status } : {}),
+      ...(typeof item.is_verified === 'boolean' ? { is_verified: item.is_verified } : {}),
       example_id: str(item.example_id),
     },
   ];
