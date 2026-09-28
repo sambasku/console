@@ -26,6 +26,7 @@ export async function listContributionsRequest(
     params: {
       status: params.status,
       entity_type: params.entityType,
+      mine: params.mine === true ? true : undefined,
       limit: params.limit ?? 20,
       cursor: params.cursor,
     },
@@ -86,5 +87,11 @@ export async function correctContributionRequest(
   body: CorrectContributionRequest,
 ): Promise<ReviewDecisionResult> {
   const res = await client.post<ApiOkEnvelope<ReviewDecisionResult>>(`/admin/contributions/${id}/correct`, body);
+  return res.data.data;
+}
+
+/** POST /api/v1/admin/contributions/:id/reopen - buka ulang keputusan (append-only). */
+export async function reopenContributionRequest(id: string): Promise<ReviewDecisionResult> {
+  const res = await client.post<ApiOkEnvelope<ReviewDecisionResult>>(`/admin/contributions/${id}/reopen`);
   return res.data.data;
 }

@@ -40,11 +40,18 @@ export interface ContributionListItem {
   search_miss_id?: string | null;
   search_miss_term?: string | null;
   search_miss_direction?: 'lemma' | 'translation' | null;
+  reopened_by?: string | null;
+  /** Hanya bila list mine=true */
+  review_status?: ContributionStatus | null;
+  review_comment?: string | null;
+  reviewed_at?: string | null;
 }
 
 export interface ListContributionsParams {
   status?: ContributionStatus;
   entityType?: EntityType;
+  /** true = riwayat verifikasi milik user auth */
+  mine?: boolean;
   limit?: number;
   cursor?: string;
 }
@@ -76,6 +83,7 @@ export interface ContributionReview {
 export interface ContributionDetailPayload {
   contribution: ContributionListItem;
   review: ContributionReview | null;
+  prior_reviews?: ContributionReview[];
   entity: unknown;
 }
 
@@ -214,6 +222,7 @@ export type ContributionDetailView =
   | {
       contribution: ContributionListItem;
       review: ContributionReview | null;
+      priorReviews: ContributionReview[];
       entityType: 'word';
       word: WordEntityView;
       /** payload entity mentah - dipakai prefill form koreksi (tetap tersimpan) */
@@ -222,6 +231,7 @@ export type ContributionDetailView =
   | {
       contribution: ContributionListItem;
       review: ContributionReview | null;
+      priorReviews: ContributionReview[];
       entityType: Exclude<EntityType, 'word'>;
       child: ChildEntityView<
         PronunciationChildData | WordImageChildData | WordAudioChildData | ExampleChildData
@@ -230,13 +240,14 @@ export type ContributionDetailView =
       rawEntity: unknown;
     };
 
-/** Hasil keputusan review (approve/reject/correct) - POST /:id/... */
+/** Hasil keputusan review (approve/reject/correct/reopen) - POST /:id/... */
 export interface ReviewDecisionResult {
   contribution_id: string;
   entity_type: EntityType;
   entity_id: string;
-  status: ContributionStatus;
+  status: ContributionStatus | 'pending';
   is_corrected?: boolean;
+  reopened_by?: string | null;
   /** Makna digabung ke kata published yang sudah ada (12-api §8) */
   merged_into_word_id?: string;
 }

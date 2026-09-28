@@ -38,12 +38,14 @@ interface ChildEntityLike {
 export function normalizeContributionDetail(payload: ContributionDetailPayload): ContributionDetailView {
   const contribution = normalizeContributionMeta(payload?.contribution);
   const review = payload?.review ?? null;
+  const priorReviews = Array.isArray(payload?.prior_reviews) ? payload.prior_reviews : [];
   const entity = payload?.entity;
 
   if (contribution.entity_type === 'word') {
     return {
       contribution,
       review,
+      priorReviews,
       entityType: 'word',
       word: normalizeWordEntity(entity),
       rawEntity: entity,
@@ -56,6 +58,7 @@ export function normalizeContributionDetail(payload: ContributionDetailPayload):
   return {
     contribution,
     review,
+    priorReviews,
     entityType: childType,
     child: normalizeChildEntity(childType, entity),
     rawEntity: entity,
@@ -96,6 +99,7 @@ function normalizeContributionMeta(
       (pickDefined(r, ['search_miss_direction', 'searchMissDirection']) as
         | ContributionDetailPayload['contribution']['search_miss_direction']
         | undefined) ?? undefined,
+    reopened_by: asString(pickDefined(r, ['reopened_by', 'reopenedBy'])) ?? null,
   };
 }
 

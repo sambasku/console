@@ -7,17 +7,21 @@ const PAGE_LIMIT = 20;
 export interface UseContributionListArgs {
   status?: ContributionStatus;
   entityType?: EntityType;
+  mine?: boolean;
   enabled?: boolean;
 }
 
 /** Antrean review kontribusi - filter status/jenis entitas + cursor pagination. */
 export function useContributionList(args: UseContributionListArgs = {}) {
-  const { status, entityType, enabled } = args;
+  const { status, entityType, mine, enabled } = args;
 
   return useCursorList<ContributionListItem>({
-    queryKey: ['contributions', { status, entityType }],
+    queryKey: ['contributions', { status, entityType, mine: mine === true }],
     fetcher: (pageParam, signal) =>
-      listContributionsRequest({ status, entityType, limit: PAGE_LIMIT, cursor: pageParam }, signal),
+      listContributionsRequest(
+        { status, entityType, mine: mine === true ? true : undefined, limit: PAGE_LIMIT, cursor: pageParam },
+        signal,
+      ),
     enabled,
   });
 }

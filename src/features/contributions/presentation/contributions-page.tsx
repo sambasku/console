@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ReloadOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, App as AntdApp, Button, Col, Empty, Flex, List, Row, Select, Tabs, Tag, Typography, theme } from 'antd';
+import { Alert, App as AntdApp, Button, Col, Empty, Flex, List, Row, Select, Switch, Tabs, Tag, Typography, theme } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
@@ -56,6 +56,7 @@ export function ContributionsPage() {
 
   const [statusTab, setStatusTab] = useState<StatusTab>('pending');
   const [entityType, setEntityType] = useState<EntityType | undefined>();
+  const [mineOnly, setMineOnly] = useState(false);
 
   const status = STATUS_TABS.find((t) => t.key === statusTab)?.status;
 
@@ -63,6 +64,7 @@ export function ContributionsPage() {
     useContributionList({
       status,
       entityType,
+      mine: mineOnly,
       enabled: user?.role === 'reviewer' || user?.role === 'admin' || user?.role === 'root',
     });
 
@@ -126,14 +128,32 @@ export function ContributionsPage() {
   return (
     <>
       <PageHeader
-        title="Antrean Review"
-        subtitle="Tinjau di tempat yang sama - setujui/tolak/koreksi lalu lanjut otomatis ke usulan berikutnya."
+        title={mineOnly ? 'Riwayat Verifikasi Saya' : 'Antrean Review'}
+        subtitle={
+          mineOnly
+            ? 'Keputusan yang Anda berikan - buka ulang untuk memperbaiki kesalahan, atau cabut verifikasi kata.'
+            : 'Tinjau di tempat yang sama - setujui/tolak/koreksi lalu lanjut otomatis ke usulan berikutnya.'
+        }
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang
           </Button>
         }
       />
+      <Flex wrap gap={16} align="center" style={{ marginBottom: 8 }}>
+        <Flex align="center" gap={8}>
+          <Switch
+            checked={mineOnly}
+            onChange={(checked) => {
+              setMineOnly(checked);
+              if (checked && statusTab === 'pending') setStatusTab('all');
+              if (!checked) setStatusTab('pending');
+              selectId(undefined);
+            }}
+          />
+          <Typography.Text>Riwayat saya</Typography.Text>
+        </Flex>
+      </Flex>
       <Tabs
         activeKey={statusTab}
         onChange={(key) => setStatusTab(key as StatusTab)}
