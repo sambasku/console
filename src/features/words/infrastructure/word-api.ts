@@ -158,12 +158,14 @@ export interface ImportWordResultItem {
   meanings_added: number;
   meanings_skipped: number;
   message?: string;
+  word_id?: string;
 }
 
 export async function importWordsRequest(body: {
   mode: 'validate' | 'commit';
   items: ImportWordPayload[];
   attributed_to?: string;
+  import_session_id?: string;
 }): Promise<ImportWordResultItem[]> {
   const res = await client.post<ApiOkEnvelope<{ items: ImportWordResultItem[] }>>('/admin/words/import', body);
   return res.data.data.items;
@@ -345,6 +347,7 @@ export type WordImportSessionItem = {
   outcome: ImportWordResultItem['outcome'];
   meanings_added: number;
   message?: string;
+  word_id?: string;
 };
 
 export type WordImportSupportType = 'web' | 'book' | 'article' | 'other';
@@ -377,6 +380,8 @@ export type WordImportSession = {
   items: WordImportSessionItem[];
   created_at: string;
   finished_at: string | null;
+  rolled_back_at: string | null;
+  rolled_back_by: string | null;
 };
 
 export type SaveWordImportSessionBody = {
@@ -448,6 +453,16 @@ export async function claimWordImportSessionRequest(
     `/admin/words/import-sessions/${id}/claim`,
     body,
   );
+  return res.data.data;
+}
+
+/** POST /api/v1/admin/words/import-sessions/:id/rollback - soft-delete kata sesi. */
+export async function rollbackWordImportSessionRequest(
+  id: string,
+): Promise<{ session_id: string; deleted_count: number; session: WordImportSession }> {
+  const res = await client.post<
+    ApiOkEnvelope<{ session_id: string; deleted_count: number; session: WordImportSession }>
+  >(`/admin/words/import-sessions/${id}/rollback`);
   return res.data.data;
 }
 

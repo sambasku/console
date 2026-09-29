@@ -22,7 +22,7 @@ import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { listAdminUsersRequest } from '@/features/users/infrastructure/user-admin-api';
 import { useImportSession } from '../application/use-import-sessions';
-import { claimWordImportSessionRequest, type WordImportSessionStatus } from '../infrastructure/word-api';
+import { claimWordImportSessionRequest, rollbackWordImportSessionRequest, type WordImportSessionStatus } from '../infrastructure/word-api';
 import { SUPPORT_TYPE_LABEL } from './import-attribution-fields';
 
 const STATUS_LABEL: Record<WordImportSessionStatus, string> = {
@@ -47,7 +47,7 @@ const OUTCOME_LABEL: Record<string, string> = {
 };
 
 export function ImportHistoryDetailPage() {
-  const { message } = AntdApp.useApp();
+  const { message, modal } = AntdApp.useApp();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { id } = useParams({ from: '/console-layout/words/import-history/$id' });
@@ -59,6 +59,7 @@ export function ImportHistoryDetailPage() {
   const [userSearch, setUserSearch] = useState('');
   const [userOptions, setUserOptions] = useState<{ value: string; label: string }[]>([]);
   const [claiming, setClaiming] = useState(false);
+  const [rollingBack, setRollingBack] = useState(false);
   const debouncedUserSearch = useDebouncedValue(userSearch, 300);
 
   useEffect(() => {
@@ -126,6 +127,41 @@ export function ImportHistoryDetailPage() {
     }
   };
 
+  const confirmRollback = () => {
+    if (!session) return;
+    modal.confirm({
+      title: 'Tarik semua kata impor ini?',
+      content: (
+        <Typography.Paragraph style={{ marginBottom: 0 }}>
+          Soft-delete semua kata yang dibuat oleh sesi ini ({session.created_count} kata baru).
+          Makna yang hanya ditambah ke lemma yang sudah ada sebelumnya tidak ikut ditarik.
+          Tidak bisa dibatalkan kecuali restore manual per kata.
+        </Typography.Paragraph>
+      ),
+      okText: 'Tarik semua',
+      okButtonProps: { danger: true },
+      cancelText: 'Batal',
+      onOk: async () => {
+        setRollingBack(true);
+        try {
+          const result = await rollbackWordImportSessionRequest(session.id);
+          message.success(
+            result.deleted_count > 0
+              ? `${result.deleted_count} kata berhasil ditarik`
+              : 'Tidak ada kata aktif yang perlu ditarik',
+          );
+          void queryClient.invalidateQueries({ queryKey: ['word-import-sessions'] });
+          void query.refetch();
+        } catch (err) {
+          message.error(normalizeError(err).message);
+          throw err;
+        } finally {
+          setRollingBack(false);
+        }
+      },
+    });
+  };
+
   if (query.isPending) return <PageLoading tip="Memuat sesi impor…" />;
 
   if (query.isError || !session) {
@@ -164,12 +200,30 @@ export function ImportHistoryDetailPage() {
                 Klaim ke user
               </Button>
             ) : null}
+            <Button
+              danger
+              loading={rollingBack}
+              disabled={!!session.rolled_back_at || session.created_count === 0}
+              onClick={confirmRollback}
+            >
+              {session.rolled_back_at ? 'Sudah ditarik' : 'Tarik semua kata impor'}
+            </Button>
             <Button type="primary" icon={<DownloadOutlined />} onClick={downloadReport}>
               Unduh CSV
             </Button>
           </Flex>
         }
       />
+
+      {session.rolled_back_at ? (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message="Sesi ini sudah di-rollback"
+          description={`Kata baru dari batch ini sudah di-soft-delete pada ${formatDateTime(session.rolled_back_at)}.`}
+        />
+      ) : null}
 
       <Descriptions
         bordered
@@ -191,6 +245,7 @@ export function ImportHistoryDetailPage() {
             'Pengimpor Data CSV',
           )}
         </Descriptions.Item>
+        <Descriptions.Item label="Nama penunjang">{session.support_name || '-'}</Descriptions.Item>
         <Descriptions.Item label="Diklaim oleh">
           {session.claimed_by
             ? personLabel(
@@ -202,6 +257,9 @@ export function ImportHistoryDetailPage() {
         </Descriptions.Item>
         <Descriptions.Item label="Waktu klaim">
           {session.claimed_at ? formatDateTime(session.claimed_at) : '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="Rollback">
+          {session.rolled_back_at ? formatDateTime(session.rolled_back_at) : '-'}
         </Descriptions.Item>
         <Descriptions.Item label="Total">{session.total}</Descriptions.Item>
         <Descriptions.Item label="Kata baru">{session.created_count}</Descriptions.Item>

@@ -35,6 +35,7 @@ import { NotificationTemplatesPage } from '@/features/notification-campaigns/pre
 import { ProfilePage } from '@/features/profile/presentation/pages/profile-page';
 import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
+import { SystemDatabasePage } from '@/features/system/presentation/system-database-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -298,6 +299,12 @@ const oauthRoute = createRoute({
   component: OauthPage,
 });
 
+const systemDatabaseRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/system/database',
+  component: SystemDatabasePage,
+});
+
 /**
  * Alias path `/console-layout/...` → path nyata (tanpa prefix layout id).
  *
@@ -355,6 +362,7 @@ const routeTree = rootRoute.addChildren([
     profileRoute,
     legalRoute,
     oauthRoute,
+    systemDatabaseRoute,
   ]),
 ]);
 

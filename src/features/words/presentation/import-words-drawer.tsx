@@ -127,6 +127,7 @@ function isRetryableImportError(err: ApiError): boolean {
 async function importOneWithRetry(
   item: ImportWordPayload,
   attributedTo: string | undefined,
+  importSessionId: string | undefined,
   onAttempt?: (attempt: number) => void,
   isCancelled?: () => boolean,
 ): Promise<ImportWordResultItem> {
@@ -139,6 +140,7 @@ async function importOneWithRetry(
         mode: 'commit',
         items: [item],
         attributed_to: attributedTo,
+        import_session_id: importSessionId,
       });
       const result = part[0];
       if (!result) {
@@ -455,6 +457,7 @@ export function ImportWordsDrawer({
             outcome: item.outcome,
             meanings_added: item.meanings_added,
             message: item.message,
+            ...(item.word_id ? { word_id: item.word_id } : {}),
           })),
         });
         void queryClient.invalidateQueries({ queryKey: ['word-import-sessions'] });
@@ -490,6 +493,7 @@ export function ImportWordsDrawer({
         const result = await importOneWithRetry(
           item,
           attributedTo,
+          sessionId,
           (attempt) => {
             setProgress({
               phase: 'sending',
