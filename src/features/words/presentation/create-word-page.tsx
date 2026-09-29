@@ -282,7 +282,11 @@ export function CreateWordPage() {
     });
 
     if (hadMiss) {
-      void navigate({ to: '/words/new', search: {}, replace: true });
+      void navigate({
+        to: '/words/new',
+        search: { from_miss: undefined, term: undefined, direction: undefined },
+        replace: true,
+      });
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
