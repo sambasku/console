@@ -8,6 +8,7 @@ import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { useAuth } from '@/shared/auth/use-auth';
 import { useWordSuggestionList } from '../application/use-word-suggestion-list';
+import { summarizeSuggestionChanges } from '../domain/describe-suggestion-changes';
 import {
   SUGGESTION_STATUS_LABELS,
   type SuggestionListItem,
@@ -70,20 +71,11 @@ export function WordSuggestionsPage() {
         id: 'summary',
         header: 'Ringkasan',
         size: 200,
-        cell: (info) => {
-          const s = info.row.original.summary_changes;
-          const parts: string[] = [];
-          if (s.lemma) parts.push('lemma');
-          if (s.notes) parts.push('catatan');
-          if (s.meanings_count) parts.push(`makna×${s.meanings_count}`);
-          if (s.categories_added || s.categories_removed) {
-            parts.push(`kat±${s.categories_added + s.categories_removed}`);
-          }
-          if (s.relations_count) parts.push(`relasi×${s.relations_count}`);
-          if (s.variants_count) parts.push(`varian×${s.variants_count}`);
-          if (s.images_count) parts.push(`gambar×${s.images_count}`);
-          return <Typography.Text type="secondary">{parts.join(', ') || '-'}</Typography.Text>;
-        },
+        cell: (info) => (
+          <Typography.Text type="secondary">
+            {summarizeSuggestionChanges(info.row.original.summary_changes)}
+          </Typography.Text>
+        ),
       }),
       columnHelper.accessor('status', {
         header: 'Status',

@@ -3,6 +3,7 @@ import {
   App,
   Button,
   Card,
+  Collapse,
   Descriptions,
   Flex,
   Image,
@@ -17,12 +18,23 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
+import { useCategoryOptions, useWordClassOptions } from '@/features/words/application/use-reference-data';
 import {
   useApproveWordSuggestion,
   useRejectWordSuggestion,
   useWordSuggestionDetail,
 } from '../application/use-word-suggestion-actions';
-import { REASON_CODE_LABELS, SUGGESTION_STATUS_LABELS } from '../domain/word-suggestion';
+import {
+  describeSuggestionChanges,
+  suggestionChangesAreEmpty,
+  type ReplaceLine,
+  type SuggestionChangeView,
+} from '../domain/describe-suggestion-changes';
+import {
+  REASON_CODE_LABELS,
+  SUGGESTION_STATUS_LABELS,
+  type SuggestionDetail,
+} from '../domain/word-suggestion';
 
 type AddedImage = {
   url: string;
@@ -51,7 +63,39 @@ function WordSuggestionDetail({ id }: { id: string }) {
   const [censoredByKey, setCensoredByKey] = useState<Record<string, Blob>>({});
   const [censorTarget, setCensorTarget] = useState<{ key: string; url: string } | null>(null);
 
+  const categoryQuery = useCategoryOptions();
+  const wordClassQuery = useWordClassOptions();
   const addedImages = useMemo(() => data?.diff.images?.added ?? [], [data]);
+  const changes = useMemo(() => {
+    if (!data) return null;
+    const categoryById = new Map((categoryQuery.data ?? []).map((item) => [item.id, item.name]));
+    const classById = new Map((wordClassQuery.data ?? []).map((item) => [item.id, item.name]));
+    const categoriesReady = Boolean(categoryQuery.data) || categoryQuery.isError;
+    const classesReady = Boolean(wordClassQuery.data) || wordClassQuery.isError;
+    const lemmaByWordId = new Map<string, string>();
+    for (const relation of data.current_word.relations) {
+      if (relation.lemma) lemmaByWordId.set(relation.word_id, relation.lemma);
+    }
+    for (const relation of [
+      ...(data.diff.relations?.added ?? []),
+      ...(data.diff.relations?.removed ?? []),
+    ]) {
+      if (relation.lemma) lemmaByWordId.set(relation.word_id, relation.lemma);
+    }
+    return describeSuggestionChanges({
+      proposed: data.suggestion.proposed_changes,
+      current: data.current_word,
+      categoryName: (id) => categoryById.get(id) ?? (categoriesReady ? 'Kategori tidak dikenal' : ''),
+      wordClassName: (id) => classById.get(id) ?? (classesReady ? 'Kelas kata tidak dikenal' : ''),
+      relationLemma: (wordId) => lemmaByWordId.get(wordId),
+    });
+  }, [
+    categoryQuery.data,
+    categoryQuery.isError,
+    data,
+    wordClassQuery.data,
+    wordClassQuery.isError,
+  ]);
   const pending = data?.suggestion.status === 'pending';
 
   if (isLoading) return <PageLoading tip="Memuat usulan…" />;
@@ -64,17 +108,12 @@ function WordSuggestionDetail({ id }: { id: string }) {
   }
 
   const { suggestion, current_word, diff } = data;
-  const hasMainDiff =
-    diff.lemma.changed ||
-    diff.notes.changed ||
-    diff.meanings.length > 0 ||
-    diff.categories.added.length + diff.categories.removed.length > 0 ||
-    (diff.relations?.added.length ?? 0) + (diff.relations?.removed.length ?? 0) > 0 ||
-    (diff.variants?.added.length ?? 0) + (diff.variants?.removed.length ?? 0) > 0 ||
+  const preview = changes;
+  const hasImageDiff =
     (diff.images?.added.length ?? 0) +
       (diff.images?.removed.length ?? 0) +
       (diff.images?.set_primary.length ?? 0) >
-      0;
+    0;
 
   const onApprove = () => {
     modal.confirm({
@@ -142,72 +181,17 @@ function WordSuggestionDetail({ id }: { id: string }) {
         </Descriptions>
       </Card>
 
-      <Card title="Diff">
-        {diff.lemma.changed && (
-          <Typography.Paragraph>
-            Kata: <Typography.Text delete>{diff.lemma.current}</Typography.Text> →{' '}
-            <Typography.Text strong>{diff.lemma.proposed}</Typography.Text>
-          </Typography.Paragraph>
-        )}
-        {diff.notes.changed && (
-          <Typography.Paragraph>
-            Catatan: <Typography.Text delete>{diff.notes.current ?? '-'}</Typography.Text> →{' '}
-            <Typography.Text strong>{diff.notes.proposed ?? '-'}</Typography.Text>
-          </Typography.Paragraph>
-        )}
-        {diff.meanings.map((m, i) => (
-          <Typography.Paragraph key={i}>
-            Makna {m.meaning_id ?? '(baru)'}:
-            {m.changes.map((ch, j) => (
-              <span key={j}>
-                {' '}
-                {ch.current ?? '-'} → {ch.proposed ?? '-'}
-              </span>
-            ))}
-          </Typography.Paragraph>
-        ))}
-        {(diff.categories.added.length > 0 || diff.categories.removed.length > 0) && (
-          <Typography.Paragraph>
-            Kategori: +{diff.categories.added.length} / −{diff.categories.removed.length}
-          </Typography.Paragraph>
-        )}
-        {diff.relations &&
-          (diff.relations.added.length > 0 || diff.relations.removed.length > 0) && (
-            <Typography.Paragraph>
-              Relasi:{' '}
-              {diff.relations.added.map((r, i) => (
-                <Tag key={`a-${i}`} color="green">
-                  +{r.relation_type} {r.lemma ?? r.word_id}
-                </Tag>
-              ))}
-              {diff.relations.removed.map((r, i) => (
-                <Tag key={`r-${i}`} color="red">
-                  −{r.relation_type} {r.lemma ?? r.word_id}
-                </Tag>
-              ))}
-            </Typography.Paragraph>
-          )}
-        {diff.variants &&
-          (diff.variants.added.length > 0 || diff.variants.removed.length > 0) && (
-            <Typography.Paragraph>
-              Varian:{' '}
-              {diff.variants.added.map((v, i) => (
-                <Tag key={`va-${i}`} color="green">
-                  +{v.form}
-                </Tag>
-              ))}
-              {diff.variants.removed.map((v, i) => (
-                <Tag key={`vr-${i}`} color="red">
-                  −{v.form}
-                </Tag>
-              ))}
-            </Typography.Paragraph>
-          )}
-        {diff.images && (
+      <Card title="Perubahan">
+        {preview ? <SuggestionChangePreview view={preview} /> : null}
+        {preview && suggestionChangesAreEmpty(preview) && !hasImageDiff ? (
+          <Typography.Text type="secondary">Tidak ada perubahan yang bisa ditampilkan.</Typography.Text>
+        ) : null}
+        {diff.images ? (
           <>
             {diff.images.added.length > 0 && (
               <Image.PreviewGroup>
-                <Space direction="vertical" size={8} style={{ marginBottom: 8 }}>
+                <Space direction="vertical" size={8} style={{ marginTop: 12, marginBottom: 8 }}>
+                  <Typography.Text strong>Gambar baru</Typography.Text>
                   {diff.images.added.map((img, i) => {
                     const key = decisionKey(img, i);
                     const decision = imageDecisions[key] ?? 'approve';
@@ -224,7 +208,6 @@ function WordSuggestionDetail({ id }: { id: string }) {
                         />
                         <Space size={4} wrap>
                           {img.is_primary ? <Tag color="geekblue">Utama</Tag> : null}
-                          {img.provider ? <Tag>{img.provider}</Tag> : null}
                           {hasCensor ? <Tag color="orange">Tersensor</Tag> : null}
                         </Space>
                         {pending ? (
@@ -282,35 +265,54 @@ function WordSuggestionDetail({ id }: { id: string }) {
             )}
             {pending && diff.images.added.some((i) => i.provider === 'imagekit') ? (
               <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-                Foto ImageKit: Tayangkan (opsional sensor) → GitHub publik; Jangan tayangkan →
-                dihapus.
+                Tayangkan menyimpan foto ke arsip publik. Jangan tayangkan menghapus foto ini.
+                Sensor opsional sebelum tayang.
               </Typography.Text>
             ) : null}
-            {diff.images.removed.length > 0 && (
-              <Typography.Paragraph type="secondary">
-                Hapus gambar: {diff.images.removed.map((i) => i.image_id).join(', ')}
-              </Typography.Paragraph>
-            )}
-            {diff.images.set_primary.length > 0 && (
-              <Typography.Paragraph type="secondary">
-                Set primary: {diff.images.set_primary.map((i) => i.image_id).join(', ')}
-              </Typography.Paragraph>
-            )}
+            {diff.images.removed.length > 0 ? (
+              <Space direction="vertical" size={8} style={{ marginTop: 12 }}>
+                <Typography.Text strong>Gambar dihapus</Typography.Text>
+                {diff.images.removed.map((item) => (
+                  <ExistingImageRow
+                    key={item.image_id}
+                    image={current_word.images.find((row) => row.id === item.image_id)}
+                    caption="Dihapus dari kata"
+                    strike
+                  />
+                ))}
+              </Space>
+            ) : null}
+            {diff.images.set_primary.length > 0 ? (
+              <Space direction="vertical" size={8} style={{ marginTop: 12 }}>
+                <Typography.Text strong>Gambar utama</Typography.Text>
+                {diff.images.set_primary.map((item) => (
+                  <ExistingImageRow
+                    key={item.image_id}
+                    image={current_word.images.find((row) => row.id === item.image_id)}
+                    caption="Jadikan gambar utama"
+                  />
+                ))}
+              </Space>
+            ) : null}
           </>
-        )}
-        {!hasMainDiff && (
-          <Typography.Text type="secondary">
-            Tidak ada diff field utama (cek proposed_changes mentah).
-          </Typography.Text>
-        )}
-        <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
-          Kata saat ini: {current_word.lemma} / {current_word.meanings.length} makna /{' '}
-          {current_word.relations?.length ?? 0} relasi / {current_word.variants?.length ?? 0}{' '}
-          varian / {current_word.images?.length ?? 0} gambar
+        ) : null}
+        <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
+          Kata yang tayang sekarang: {current_word.lemma}
         </Typography.Paragraph>
-        <pre style={{ fontSize: 12, overflow: 'auto', maxHeight: 200 }}>
-          {JSON.stringify(suggestion.proposed_changes, null, 2)}
-        </pre>
+        <Collapse
+          ghost
+          items={[
+            {
+              key: 'raw',
+              label: 'Data teknis',
+              children: (
+                <pre style={{ fontSize: 12, overflow: 'auto', maxHeight: 200, margin: 0 }}>
+                  {JSON.stringify(suggestion.proposed_changes, null, 2)}
+                </pre>
+              ),
+            },
+          ]}
+        />
       </Card>
 
       {pending && (
@@ -356,6 +358,121 @@ function WordSuggestionDetail({ id }: { id: string }) {
           />
         </Modal>
       ) : null}
+    </Flex>
+  );
+}
+
+function displayText(value: string | null): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : 'kosong';
+}
+
+function ReplaceLineView({ line }: { line: ReplaceLine }) {
+  return (
+    <div style={{ marginTop: 8 }}>
+      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        {line.label}
+      </Typography.Text>
+      <div style={{ fontSize: 16, lineHeight: 1.5 }}>
+        {line.before != null ? <Typography.Text delete>{displayText(line.before)}</Typography.Text> : null}
+        {line.before != null && line.after != null ? (
+          <Typography.Text type="secondary"> → </Typography.Text>
+        ) : null}
+        {line.after != null ? <Typography.Text strong>{displayText(line.after)}</Typography.Text> : null}
+      </div>
+    </div>
+  );
+}
+
+function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
+  const relationLines = [...view.relations.added, ...view.relations.removed];
+  const variantLines = [...view.variants.added, ...view.variants.removed];
+  const hasCategories = view.categories.added.length > 0 || view.categories.removed.length > 0;
+
+  return (
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      {view.texts.map((line) => (
+        <ReplaceLineView key={line.label} line={line} />
+      ))}
+      {view.meanings.map((meaning, index) => (
+        <div
+          key={`${meaning.heading}-${index}`}
+          style={{
+            border: '1px solid var(--ant-color-border-secondary, rgba(0,0,0,0.06))',
+            borderRadius: 8,
+            padding: 12,
+          }}
+        >
+          <Typography.Text strong>{meaning.heading}</Typography.Text>
+          {meaning.lines.map((line) => (
+            <ReplaceLineView key={line.label} line={line} />
+          ))}
+        </div>
+      ))}
+      {hasCategories ? (
+        <div>
+          <Typography.Text strong>Kategori</Typography.Text>
+          <div style={{ marginTop: 8 }}>
+            <Space size={4} wrap>
+              {view.categories.added.map((name, index) => (
+                <Tag key={`add-${index}`} color="green">
+                  + {name}
+                </Tag>
+              ))}
+              {view.categories.removed.map((name, index) => (
+                <Tag key={`remove-${index}`} color="red">
+                  - {name}
+                </Tag>
+              ))}
+            </Space>
+          </div>
+        </div>
+      ) : null}
+      {relationLines.length > 0 ? (
+        <div>
+          <Typography.Text strong>Relasi</Typography.Text>
+          {relationLines.map((line, index) => (
+            <div key={`${line}-${index}`} style={{ marginTop: 4 }}>
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {variantLines.length > 0 ? (
+        <div>
+          <Typography.Text strong>Varian</Typography.Text>
+          {variantLines.map((line, index) => (
+            <div key={`${line}-${index}`} style={{ marginTop: 4 }}>
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </Space>
+  );
+}
+
+function ExistingImageRow({
+  image,
+  caption,
+  strike,
+}: {
+  image: SuggestionDetail['current_word']['images'][number] | undefined;
+  caption: string;
+  strike?: boolean;
+}) {
+  if (!image) {
+    return <Typography.Text type="secondary">Gambar tidak ditemukan pada kata saat ini.</Typography.Text>;
+  }
+  return (
+    <Flex align="center" gap={8}>
+      <Image src={image.url} width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
+      <div>
+        <div>{strike ? <Typography.Text delete>{caption}</Typography.Text> : caption}</div>
+        {image.alt_text?.trim() ? (
+          <Typography.Text type="secondary">{image.alt_text}</Typography.Text>
+        ) : null}
+      </div>
     </Flex>
   );
 }

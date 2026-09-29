@@ -4,17 +4,14 @@ import {
   Alert,
   App as AntdApp,
   Button,
-  Card,
-  Descriptions,
   Flex,
   Form,
   Input,
   Modal,
   Radio,
-  Space,
-  Spin,
   Tag,
   Typography,
+  Spin,
 } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
@@ -32,8 +29,8 @@ import {
   type RejectReasonPresetId,
 } from '../domain/reject-reason-presets';
 import { nextPendingId } from '../application/next-pending-id';
+import type { ReviewCommitInput } from '../application/review-submit-queue';
 import { useContributionDetail } from '../application/use-contribution-detail';
-import { useReviewContribution } from '../application/use-review-contribution';
 import { useReopenContribution } from '../application/use-reopen-contribution';
 import { ContributionEntityView } from './contribution-entity-view';
 import { CorrectContributionDrawer } from './correct-contribution-drawer';
@@ -64,15 +61,16 @@ export interface ContributionReviewPanelProps {
   queueIds: string[];
   /** Dipanggil setelah usulan ditutup; `nextId` null = antrean habis. */
   onDecided: (nextId: string | null) => void;
+  /** Setujui/tolak: parent drop + advance segera, request di belakang. */
+  onCommit: (input: ReviewCommitInput) => void;
 }
 
 /**
  * Panel tinjau kanan (master-detail): metadata + entity + aksi sticky.
  * Approve inline (catatan opsional); tolak lewat modal; koreksi drawer.
  */
-export function ContributionReviewPanel({ id, queueIds, onDecided }: ContributionReviewPanelProps) {
+export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: ContributionReviewPanelProps) {
   const detailQuery = useContributionDetail(id);
-  const reviewMutation = useReviewContribution();
   const reopenMutation = useReopenContribution();
   const unverifyWord = useUnverifyWord();
   const pauseContribution = useSetCanContribute();
@@ -128,36 +126,23 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
     }
   }, [detail, detailQuery, message, unverifyWord]);
 
-  const approve = useCallback(async () => {
-    if (!detail || !isPending || reviewMutation.isPending) return;
-    try {
-      const result = await reviewMutation.mutateAsync({
-        id: detail.contribution.id,
-        decision: 'approve',
-        comment: approveComment.trim() || undefined,
-        imageDecisions:
-          detail.entityType === 'word' && detail.word.images.length > 0
-            ? detail.word.images.map((img) => ({
-                image_id: img.id,
-                decision: imageDecisions[img.id] ?? 'approve',
-              }))
-            : undefined,
-        censoredByImageId:
-          Object.keys(censoredByImageId).length > 0 ? censoredByImageId : undefined,
-      });
-      const label = CONTRIBUTION_STATUS_LABELS[result.status] ?? result.status;
-      if (result.merged_into_word_id) {
-        message.success(
-          `Kontribusi disetujui - makna digabung ke kata yang sudah tayang (${label}).`,
-        );
-      } else {
-        message.success(`Kontribusi disetujui (${label}).`);
-      }
-      finishDecision();
-    } catch (err) {
-      message.error(normalizeError(err).message);
-    }
-  }, [approveComment, censoredByImageId, detail, finishDecision, imageDecisions, isPending, message, reviewMutation]);
+  const approve = useCallback(() => {
+    if (!detail || !isPending) return;
+    onCommit({
+      id: detail.contribution.id,
+      decision: 'approve',
+      comment: approveComment.trim() || undefined,
+      imageDecisions:
+        detail.entityType === 'word' && detail.word.images.length > 0
+          ? detail.word.images.map((img) => ({
+              image_id: img.id,
+              decision: imageDecisions[img.id] ?? 'approve',
+            }))
+          : undefined,
+      censoredByImageId: Object.keys(censoredByImageId).length > 0 ? censoredByImageId : undefined,
+      listItem: detail.contribution,
+    });
+  }, [approveComment, censoredByImageId, detail, imageDecisions, isPending, onCommit]);
 
   const resetRejectForm = () => {
     setRejectPresetId(DEFAULT_REJECT_REASON_PRESET);
@@ -166,22 +151,17 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
 
   const resolvedRejectComment = resolveRejectComment(rejectPresetId, rejectOtherComment);
 
-  const submitReject = async () => {
+  const submitReject = () => {
     if (!detail || !resolvedRejectComment) return;
-    try {
-      const result = await reviewMutation.mutateAsync({
-        id: detail.contribution.id,
-        decision: 'reject',
-        comment: resolvedRejectComment,
-      });
-      const label = CONTRIBUTION_STATUS_LABELS[result.status] ?? result.status;
-      message.success(`Kontribusi ditolak (${label}).`);
-      setRejectOpen(false);
-      resetRejectForm();
-      finishDecision();
-    } catch (err) {
-      message.error(normalizeError(err).message);
-    }
+    const comment = resolvedRejectComment;
+    setRejectOpen(false);
+    resetRejectForm();
+    onCommit({
+      id: detail.contribution.id,
+      decision: 'reject',
+      comment,
+      listItem: detail.contribution,
+    });
   };
 
   useEffect(() => {
@@ -223,24 +203,41 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
 
   const entityLabel = ENTITY_TYPE_LABELS[detail.contribution.entity_type] ?? detail.contribution.entity_type;
   const titlePrefix = detail.entityType === 'word' ? detail.word.lemma : detail.child.wordLemma ?? 'entri';
+  const searchMiss = detail.contribution.search_miss_id
+    ? `${detail.contribution.search_miss_term ?? detail.contribution.search_miss_id}${
+        detail.contribution.search_miss_direction
+          ? ` (${detail.contribution.search_miss_direction === 'translation' ? 'Indonesia → Sambas' : 'Sambas → Indonesia'})`
+          : ''
+      }`
+    : null;
 
   return (
     <Flex vertical style={{ height: '100%', minHeight: 0 }}>
-      <Flex justify="space-between" align="flex-start" wrap gap={8} style={{ marginBottom: 12 }}>
-        <div>
-          <Text strong style={{ fontSize: 16 }}>
-            {entityLabel} - {titlePrefix}
+      <Flex justify="space-between" align="flex-start" gap={8} style={{ flex: 'none', marginBottom: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <Text strong style={{ fontSize: 22, lineHeight: 1.2, display: 'block', wordBreak: 'break-word' }}>
+            {titlePrefix}
           </Text>
-          <div>
-            <Text type="secondary">
+          <Flex wrap gap={6} align="center" style={{ marginTop: 4 }}>
+            <Tag style={{ marginInlineEnd: 0 }}>{entityLabel}</Tag>
+            <Tag color={STATUS_TAG_COLOR[detail.contribution.status]} style={{ marginInlineEnd: 0 }}>
+              {CONTRIBUTION_STATUS_LABELS[detail.contribution.status]}
+            </Tag>
+            <Text type="secondary" style={{ fontSize: 12 }}>
               oleh{' '}
               {personLabel(
                 detail.contribution.contributor_display_name,
                 detail.contribution.contributor_username,
               )}{' '}
-              · aksi {detail.contribution.action}
+              · {detail.contribution.action} · {formatDateTime(detail.contribution.created_at)}
             </Text>
-          </div>
+            {searchMiss ? <Tag color="purple">{searchMiss}</Tag> : null}
+          </Flex>
+          {isPending && detail.entityType === 'word' ? (
+            <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
+              Jika ejaan sama sudah tayang, Setujui menggabungkan makna ke entri itu.
+            </Text>
+          ) : null}
         </div>
         {detail.contribution.contributor_username !== 'anonim' ? (
           <Button
@@ -260,121 +257,68 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
         ) : null}
       </Flex>
 
-      <div style={{ flex: 1, overflow: 'auto', paddingBottom: isPending ? 8 : 0 }}>
-        <Space direction="vertical" size={16} style={{ width: '100%' }}>
-          {isPending && detail.entityType === 'word' ? (
-            <Alert
-              type="info"
-              showIcon
-              message="Satu kata tayang per bahasa"
-              description="Jika kata dengan ejaan sama sudah tayang, Setujui akan menggabungkan makna ke entri itu (bukan membuat entri kedua)."
-            />
-          ) : null}
-          <Descriptions
-            size="small"
-            column={1}
-            bordered
-            items={[
-              {
-                key: 'status',
-                label: 'Status',
-                children: (
-                  <Tag color={STATUS_TAG_COLOR[detail.contribution.status]}>
-                    {CONTRIBUTION_STATUS_LABELS[detail.contribution.status]}
-                  </Tag>
-                ),
-              },
-              {
-                key: 'submitted',
-                label: 'Dikirim',
-                children: formatDateTime(detail.contribution.created_at),
-              },
-              ...(detail.contribution.search_miss_id
-                ? [
-                    {
-                      key: 'search_miss',
-                      label: 'Pencarian',
-                      children: (
-                        <Tag color="purple">
-                          {detail.contribution.search_miss_term ?? detail.contribution.search_miss_id}
-                          {detail.contribution.search_miss_direction
-                            ? ` (${detail.contribution.search_miss_direction === 'translation' ? 'Indonesia → Sambas' : 'Sambas → Indonesia'})`
-                            : ''}
-                        </Tag>
-                      ),
-                    },
-                  ]
-                : []),
-            ]}
-          />
-
-          <ContributionEntityView
-            detail={detail}
-            imageDecisions={moderateImages ? imageDecisions : undefined}
-            onImageDecision={
-              moderateImages
-                ? (imageId, decision) => {
-                    setImageDecisions((prev) => ({ ...prev, [imageId]: decision }));
-                    if (decision === 'reject') {
-                      setCensoredByImageId((prev) => {
-                        if (!prev[imageId]) return prev;
-                        const next = { ...prev };
-                        delete next[imageId];
-                        return next;
-                      });
-                    }
-                  }
-                : undefined
-            }
-            censoredByImageId={allowCensor ? censoredByImageId : undefined}
-            onRequestCensor={allowCensor ? (img) => setCensorTarget(img) : undefined}
-            onClearCensor={
-              allowCensor
-                ? (imageId) =>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <ContributionEntityView
+          detail={detail}
+          imageDecisions={moderateImages ? imageDecisions : undefined}
+          onImageDecision={
+            moderateImages
+              ? (imageId, decision) => {
+                  setImageDecisions((prev) => ({ ...prev, [imageId]: decision }));
+                  if (decision === 'reject') {
                     setCensoredByImageId((prev) => {
                       if (!prev[imageId]) return prev;
                       const next = { ...prev };
                       delete next[imageId];
                       return next;
-                    })
-                : undefined
-            }
-          />
-
-          {detail.review ? (
-            <Card size="small" title="Keputusan Verifikator">
-              <Space direction="vertical" size={4}>
-                <Text>{detail.review.comment || 'Tanpa catatan.'}</Text>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {formatDateTime(detail.review.created_at)}
-                </Text>
-              </Space>
-            </Card>
-          ) : null}
-
-          {detail.priorReviews.length > 0 ? (
-            <Card size="small" title="Riwayat keputusan">
-              <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                {detail.priorReviews.map((row, index) => (
-                  <div key={`${row.created_at}-${index}`}>
-                    <Tag color={STATUS_TAG_COLOR[row.status] ?? 'default'}>
-                      {CONTRIBUTION_STATUS_LABELS[row.status] ?? row.status}
-                    </Tag>
-                    <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                      {formatDateTime(row.created_at)}
-                    </Text>
-                    {row.comment ? (
-                      <div>
-                        <Text style={{ fontSize: 13 }}>{row.comment}</Text>
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </Space>
-            </Card>
-          ) : null}
-        </Space>
+                    });
+                  }
+                }
+              : undefined
+          }
+          censoredByImageId={allowCensor ? censoredByImageId : undefined}
+          onRequestCensor={allowCensor ? (img) => setCensorTarget(img) : undefined}
+          onClearCensor={
+            allowCensor
+              ? (imageId) =>
+                  setCensoredByImageId((prev) => {
+                    if (!prev[imageId]) return prev;
+                    const next = { ...prev };
+                    delete next[imageId];
+                    return next;
+                  })
+              : undefined
+          }
+        />
       </div>
+
+      {detail.review || detail.priorReviews.length > 0 ? (
+        <div style={{ flex: 'none', maxHeight: 72, overflow: 'auto', marginTop: 8 }}>
+          {detail.review ? (
+            <div>
+              <Tag color={STATUS_TAG_COLOR[detail.review.status] ?? 'default'}>
+                {CONTRIBUTION_STATUS_LABELS[detail.review.status] ?? detail.review.status}
+              </Tag>
+              <Text style={{ fontSize: 12 }}>{detail.review.comment || 'Tanpa catatan.'}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {' '}
+                · {formatDateTime(detail.review.created_at)}
+              </Text>
+            </div>
+          ) : null}
+          {detail.priorReviews.map((row, index) => (
+            <div key={`${row.created_at}-${index}`}>
+              <Tag color={STATUS_TAG_COLOR[row.status] ?? 'default'}>
+                {CONTRIBUTION_STATUS_LABELS[row.status] ?? row.status}
+              </Tag>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {formatDateTime(row.created_at)}
+                {row.comment ? ` · ${row.comment}` : ''}
+              </Text>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {!isPending ? (
         <div
@@ -420,36 +364,29 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
             background: 'var(--ant-color-bg-container, #fff)',
           }}
         >
-          <Form layout="vertical" style={{ marginBottom: 8 }}>
-            <Form.Item label="Catatan (opsional, untuk Setujui)" style={{ marginBottom: 8 }}>
-              <Input.TextArea
-                rows={2}
-                placeholder="Catatan opsional untuk kontributor"
-                value={approveComment}
-                maxLength={2000}
-                onChange={(e) => setApproveComment(e.target.value)}
-              />
-            </Form.Item>
-          </Form>
-          <Flex justify="flex-end" wrap gap={8}>
+          <Input
+            placeholder="Catatan opsional untuk kontributor"
+            value={approveComment}
+            maxLength={2000}
+            onChange={(e) => setApproveComment(e.target.value)}
+            style={{ marginBottom: 8 }}
+          />
+          <Flex justify="space-between" align="center" wrap gap={8}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              A setujui · R tolak · J/K pindah
+            </Text>
+            <Flex wrap gap={8}>
             <Button danger icon={<CloseOutlined />} onClick={() => setRejectOpen(true)}>
               Tolak
             </Button>
             <Button icon={<EditOutlined />} onClick={() => setCorrectOpen(true)}>
               Koreksi
             </Button>
-            <Button
-              type="primary"
-              icon={<CheckOutlined />}
-              loading={reviewMutation.isPending}
-              onClick={() => void approve()}
-            >
+            <Button type="primary" icon={<CheckOutlined />} onClick={approve}>
               Setujui
             </Button>
+            </Flex>
           </Flex>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 8 }}>
-            Pintasan: A setujui · R tolak · J/K pindah antrean
-          </Text>
         </div>
       ) : null}
 
@@ -463,10 +400,9 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
         okText="Tolak"
         okButtonProps={{
           danger: true,
-          loading: reviewMutation.isPending,
           disabled: !resolvedRejectComment,
         }}
-        onOk={() => void submitReject()}
+        onOk={submitReject}
       >
         <Form layout="vertical">
           <Form.Item label="Alasan penolakan" required style={{ marginBottom: 12 }}>

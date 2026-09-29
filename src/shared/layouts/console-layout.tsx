@@ -282,20 +282,22 @@ export function ConsoleLayout() {
             decoding="async"
           />
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[currentMenuKey]}
-          openKeys={openKeys}
-          onOpenChange={setOpenKeys}
-          items={menuItems}
-          onClick={({ key }) => {
-            // Parent group key ('kamus') tidak navigate - hanya leaf path
-            if (key.startsWith('/')) {
-              navigate({ to: key as MenuRoute });
-            }
-          }}
-        />
+        <div className="console-layout__sider-menu">
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[currentMenuKey]}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
+            items={menuItems}
+            onClick={({ key }) => {
+              // Parent group key ('kamus') tidak navigate - hanya leaf path
+              if (key.startsWith('/')) {
+                navigate({ to: key as MenuRoute });
+              }
+            }}
+          />
+        </div>
       </Sider>
       <Layout>
         <Header
