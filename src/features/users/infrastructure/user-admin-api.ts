@@ -9,6 +9,7 @@ export interface AdminUserWire {
   role: string;
   is_active: boolean;
   can_contribute: boolean;
+  contribute_muted_until: string | null;
   created_at: string;
   updated_at: string | null;
 }

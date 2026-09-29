@@ -7,7 +7,7 @@ import {
 } from '../compress-image';
 
 describe('compress-image constants', () => {
-  it('selaras spek mobile 720 / 0.8', () => {
+  it('selaras spek mobile 720 / 0.8 (output WebP)', () => {
     expect(PHOTO_UPLOAD_MAX_WIDTH).toBe(720);
     expect(PHOTO_UPLOAD_MAX_HEIGHT).toBe(720);
     expect(PHOTO_UPLOAD_QUALITY).toBe(0.8);

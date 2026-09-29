@@ -33,6 +33,7 @@ export interface WordDetailAudio {
   mime_type: string;
   file_size?: number | null;
   status?: string;
+  is_verified?: boolean;
   example_id?: string | null;
 }
 

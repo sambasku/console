@@ -41,6 +41,7 @@ export function useUpdateTemplate() {
       name?: string;
       title?: string;
       body?: string;
+      image_url?: string | null;
       deep_link_kind?: DeepLinkKind;
       deep_link_value?: string | null;
     }) => updateTemplateRequest(id, body),

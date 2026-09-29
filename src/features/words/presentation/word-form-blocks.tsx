@@ -36,9 +36,12 @@ import {
   REGISTER_LABELS,
   USAGE_LABEL_LABELS,
   WARNING_LABELS,
+  WORD_STATUSES,
+  WORD_STATUS_LABELS,
   WORD_TYPES,
   WORD_TYPE_LABELS,
   type UsageLabel,
+  type WordStatus,
 } from '../domain/word';
 import { pickUmumWordClassId, type DefaultLanguageIds } from '../application/create-word-utils';
 import { matchWordClassId } from '../application/match-word-class';
@@ -1337,13 +1340,30 @@ export function WordAudioPlayerRow({
   dialectLabel,
   isExample = false,
 }: WordAudioPlayerRowProps) {
+  const statusTag = (() => {
+    if (audio.status === 'pending_review') {
+      return <Tag color="orange">{WORD_STATUS_LABELS.pending_review}</Tag>;
+    }
+    if (audio.status && audio.status !== 'published') {
+      const label =
+        (WORD_STATUSES as readonly string[]).includes(audio.status)
+          ? WORD_STATUS_LABELS[audio.status as WordStatus]
+          : audio.status;
+      return <Tag>{label}</Tag>;
+    }
+    if (audio.status === 'published' && audio.is_verified === false) {
+      return <Tag color="orange">Menunggu pengecekan</Tag>;
+    }
+    return null;
+  })();
+
   return (
     <Flex gap={12} wrap align="flex-start" style={{ width: '100%' }}>
       <SafeAudioPlayer url={audio.url} maxWidth={360} />
       <Space direction="vertical" size={2} style={{ flex: 1, minWidth: 200 }}>
         <Space size={4} wrap>
           {audio.is_primary ? <Tag color="geekblue">Utama</Tag> : null}
-          {audio.status && audio.status !== 'published' ? <Tag>{audio.status}</Tag> : null}
+          {statusTag}
           {isExample ? <Tag>Contoh</Tag> : <Tag color="purple">Lemma</Tag>}
         </Space>
         <Text type="secondary">
@@ -1352,7 +1372,7 @@ export function WordAudioPlayerRow({
           Dialek: {dialectLabel}
         </Text>
         <Text type="secondary">
-          Penutur: {audio.speaker_name?.trim() || '-'}
+          Penutur: {audio.speaker_name?.trim() || 'Anonim'}
           {' · '}
           Durasi: {formatAudioDurationMs(audio.duration_ms)}
           {' · '}

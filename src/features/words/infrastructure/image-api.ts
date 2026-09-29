@@ -4,7 +4,7 @@ import { compressImageForUpload } from '@/shared/utils/compress-image';
 
 /**
  * Upload gambar kata lewat API (GitHub) - multipart ke POST /api/v1/images.
- * Kompresi dulu (max 720×720, JPEG 80) selaras mobile.
+ * Kompresi dulu (max 720×720, WebP 80) selaras mobile.
  * ImageKit tetap dipakai laporan bug / bukti verifikator (endpoint token terpisah).
  */
 export interface UploadedImage {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import {
+  AlertOutlined,
   AuditOutlined,
   BookOutlined,
   CommentOutlined,
@@ -22,6 +23,8 @@ import {
   WarningOutlined,
   FileProtectOutlined,
   ApiOutlined,
+  CloudServerOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons';
 import { Avatar, Breadcrumb, Button, Dropdown, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -38,7 +41,7 @@ const { Sider, Header, Content } = Layout;
 const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
-  '/translation-helps': { icon: <MessageOutlined />, label: 'Tanya' },
+  '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
@@ -53,26 +56,34 @@ const NOTIFICATION_ROUTES = {
   '/notification-campaigns': { icon: <SendOutlined />, label: 'Campaign' },
 } as const;
 
+/** Leaf routes di bawah grup System. */
+const SYSTEM_ROUTES = {
+  '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
+} as const;
+
 type KamusRoute = keyof typeof KAMUS_ROUTES;
 type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
+type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/dashboard'
   | '/users'
+  | '/abuse'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
   | '/legal'
   | '/oauth';
-type MenuRoute = KamusRoute | NotificationRoute | TopRoute;
+type MenuRoute = KamusRoute | NotificationRoute | SystemRoute | TopRoute;
 
 const KAMUS_GROUP_KEY = 'kamus';
 const NOTIFICATION_GROUP_KEY = 'notifikasi';
+const SYSTEM_GROUP_KEY = 'system';
 
 const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Analitik',
   words: 'Kata',
   contributions: 'Review',
-  'translation-helps': 'Tanya Terjemahan',
+  'discussions': 'Ruang Diskusi',
   'word-suggestions': 'Usul Edit',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
@@ -82,12 +93,15 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'audit-logs': 'Audit Log',
   'bug-reports': 'Laporan Masalah',
   users: 'Pengguna',
+  abuse: 'Abuse',
   'verifier-applications': 'Pengajuan verifikator',
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',
+  system: 'System',
+  database: 'Database',
 };
 
 function topPath(pathname: string): string {
@@ -98,6 +112,7 @@ function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
+  if (pathname.startsWith('/system')) return SYSTEM_GROUP_KEY;
   return null;
 }
 
@@ -126,7 +141,7 @@ export function ConsoleLayout() {
 
     const kamusChildren = (Object.entries(KAMUS_ROUTES) as [KamusRoute, (typeof KAMUS_ROUTES)[KamusRoute]][])
       .filter(([key]) =>
-        key === '/word-reports' || key === '/translation-helps'
+        key === '/word-reports' || key === '/discussions'
           ? canModerateContent || user?.role === 'editor'
           : key === '/vote-moderation' || key === '/word-suggestions'
             ? canModerateContent
@@ -147,6 +162,7 @@ export function ConsoleLayout() {
     ];
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
+      items.push({ key: '/abuse', icon: <AlertOutlined />, label: 'Abuse' });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,
@@ -166,6 +182,14 @@ export function ConsoleLayout() {
       items.push({ key: '/bug-reports', icon: <FlagOutlined />, label: 'Laporan Masalah' });
       items.push({ key: '/legal', icon: <FileProtectOutlined />, label: 'Legal' });
       items.push({ key: '/oauth', icon: <ApiOutlined />, label: 'OAuth' });
+      items.push({
+        key: SYSTEM_GROUP_KEY,
+        icon: <CloudServerOutlined />,
+        label: 'System',
+        children: (
+          Object.entries(SYSTEM_ROUTES) as [SystemRoute, (typeof SYSTEM_ROUTES)[SystemRoute]][]
+        ).map(([key, { icon, label }]) => ({ key, icon, label })),
+      });
     }
     items.push({ key: '/audit-logs', icon: <AuditOutlined />, label: 'Audit Log' });
     return items;
@@ -175,13 +199,23 @@ export function ConsoleLayout() {
     const segments = pathname.split('/').filter(Boolean);
     const label = BREADCRUMB_LABELS[segments[0]] ?? 'Halaman';
     const inNotificationGroup = groupKeyForPath(pathname) === NOTIFICATION_GROUP_KEY;
+    const inSystemGroup = groupKeyForPath(pathname) === SYSTEM_GROUP_KEY;
     const items = [
       { title: 'Konsol' },
       ...(inNotificationGroup ? [{ title: 'Notifikasi' }] : []),
-      ...(segments.length ? [{ title: label }] : []),
+      ...(inSystemGroup
+        ? [
+            { title: 'System' },
+            ...(segments[1] ? [{ title: BREADCRUMB_LABELS[segments[1]] ?? segments[1] }] : []),
+          ]
+        : segments.length
+          ? [{ title: label }]
+          : []),
     ];
     const subLabel =
-      segments[0] === 'words'
+      segments[0] === 'system'
+        ? undefined
+        : segments[0] === 'words'
         ? segments[1] === 'new'
           ? 'Tambah Kata'
           : segments[1] === 'import-history'
@@ -195,7 +229,7 @@ export function ConsoleLayout() {
                 : undefined
         : segments[0] === 'contributions' && segments[1]
           ? 'Detail Kontribusi'
-          : segments[0] === 'translation-helps' && segments[1]
+          : segments[0] === 'discussions' && segments[1]
             ? 'Detail'
             : segments[0] === 'verifier-applications' && segments[1]
               ? 'Detail pengajuan'
@@ -214,7 +248,12 @@ export function ConsoleLayout() {
     }
   }, [isLoggedIn, navigate]);
 
-  const currentMenuKey = topPath(pathname) === '/' ? '/dashboard' : topPath(pathname);
+  const currentMenuKey =
+    pathname.startsWith('/system/')
+      ? pathname
+      : topPath(pathname) === '/'
+        ? '/dashboard'
+        : topPath(pathname);
   const activeGroupKey = groupKeyForPath(pathname);
 
   // Controlled openKeys: route di bawah grup → parent tetap expand;

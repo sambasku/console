@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { CheckOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, EditOutlined, RedoOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import {
   Alert,
   App as AntdApp,
@@ -19,7 +19,7 @@ import {
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
 import { normalizeError } from '@/shared/api/error';
-import { ImageCensorEditor } from '@/features/translation-helps/presentation/image-censor-editor';
+import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
 import {
   CONTRIBUTION_STATUS_LABELS,
   ENTITY_TYPE_LABELS,
@@ -34,9 +34,11 @@ import {
 import { nextPendingId } from '../application/next-pending-id';
 import { useContributionDetail } from '../application/use-contribution-detail';
 import { useReviewContribution } from '../application/use-review-contribution';
+import { useReopenContribution } from '../application/use-reopen-contribution';
 import { ContributionEntityView } from './contribution-entity-view';
 import { CorrectContributionDrawer } from './correct-contribution-drawer';
 import { useSetCanContribute } from '@/features/users/application/use-update-user-role';
+import { useUnverifyWord } from '@/features/words/application/use-word-verify';
 
 const { Text } = Typography;
 
@@ -71,6 +73,8 @@ export interface ContributionReviewPanelProps {
 export function ContributionReviewPanel({ id, queueIds, onDecided }: ContributionReviewPanelProps) {
   const detailQuery = useContributionDetail(id);
   const reviewMutation = useReviewContribution();
+  const reopenMutation = useReopenContribution();
+  const unverifyWord = useUnverifyWord();
   const pauseContribution = useSetCanContribute();
   const { message } = AntdApp.useApp();
 
@@ -87,6 +91,9 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
 
   const detail = detailQuery.data;
   const isPending = detail?.contribution.status === 'pending';
+  const canUnverifyWord = Boolean(
+    detail?.entityType === 'word' && detail.word.isVerified && !isPending,
+  );
   const moderateImages = Boolean(isPending && detail?.entityType === 'word' && detail.word.images.length > 0);
   const allowCensor = Boolean(
     isPending &&
@@ -98,6 +105,28 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
   const finishDecision = useCallback(() => {
     onDecided(nextPendingId(queueIds, id));
   }, [id, onDecided, queueIds]);
+
+  const reopen = useCallback(async () => {
+    if (!detail || isPending || reopenMutation.isPending) return;
+    try {
+      await reopenMutation.mutateAsync(detail.contribution.id);
+      message.success('Keputusan dibuka ulang - tinjau ulang sekarang');
+      await detailQuery.refetch();
+    } catch (err) {
+      message.error(normalizeError(err).message);
+    }
+  }, [detail, detailQuery, isPending, message, reopenMutation]);
+
+  const unverify = useCallback(async () => {
+    if (!detail || detail.entityType !== 'word' || unverifyWord.isPending) return;
+    try {
+      await unverifyWord.mutateAsync(detail.word.id);
+      message.success('Verifikasi kata dicabut');
+      await detailQuery.refetch();
+    } catch (err) {
+      message.error(normalizeError(err).message);
+    }
+  }, [detail, detailQuery, message, unverifyWord]);
 
   const approve = useCallback(async () => {
     if (!detail || !isPending || reviewMutation.isPending) return;
@@ -322,8 +351,65 @@ export function ContributionReviewPanel({ id, queueIds, onDecided }: Contributio
               </Space>
             </Card>
           ) : null}
+
+          {detail.priorReviews.length > 0 ? (
+            <Card size="small" title="Riwayat keputusan">
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                {detail.priorReviews.map((row, index) => (
+                  <div key={`${row.created_at}-${index}`}>
+                    <Tag color={STATUS_TAG_COLOR[row.status] ?? 'default'}>
+                      {CONTRIBUTION_STATUS_LABELS[row.status] ?? row.status}
+                    </Tag>
+                    <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                      {formatDateTime(row.created_at)}
+                    </Text>
+                    {row.comment ? (
+                      <div>
+                        <Text style={{ fontSize: 13 }}>{row.comment}</Text>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </Space>
+            </Card>
+          ) : null}
         </Space>
       </div>
+
+      {!isPending ? (
+        <div
+          style={{
+            borderTop: '1px solid rgba(0,0,0,0.06)',
+            paddingTop: 12,
+            marginTop: 8,
+            background: 'var(--ant-color-bg-container, #fff)',
+          }}
+        >
+          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+            Buka ulang menahan item dari antrean global sampai ada keputusan baru. Cabut
+            verifikasi hanya menghapus stempel kata, tanpa mengubah keputusan kontribusi.
+          </Text>
+          <Flex justify="flex-end" wrap gap={8}>
+            {canUnverifyWord ? (
+              <Button
+                icon={<SafetyCertificateOutlined />}
+                loading={unverifyWord.isPending}
+                onClick={() => void unverify()}
+              >
+                Cabut verifikasi
+              </Button>
+            ) : null}
+            <Button
+              type="primary"
+              icon={<RedoOutlined />}
+              loading={reopenMutation.isPending}
+              onClick={() => void reopen()}
+            >
+              Buka ulang
+            </Button>
+          </Flex>
+        </div>
+      ) : null}
 
       {isPending ? (
         <div

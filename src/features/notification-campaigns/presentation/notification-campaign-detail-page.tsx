@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
 import { formatDateTime } from '@/shared/utils/format-datetime';
+import { displayImageUrl } from '@/shared/utils/display-image-url';
 import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
 import {
@@ -127,6 +128,20 @@ export function NotificationCampaignDetailPage() {
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Isi">{data.body}</Descriptions.Item>
+        {data.imageUrl ? (
+          <Descriptions.Item label="Gambar">
+            <img
+              src={displayImageUrl(data.imageUrl, { width: 480, height: 240 })}
+              alt="Gambar campaign"
+              style={{
+                maxWidth: 320,
+                maxHeight: 160,
+                objectFit: 'cover',
+                borderRadius: 8,
+              }}
+            />
+          </Descriptions.Item>
+        ) : null}
         <Descriptions.Item label="Audience">
           {AUDIENCE_LABELS[data.audienceType]}
         </Descriptions.Item>

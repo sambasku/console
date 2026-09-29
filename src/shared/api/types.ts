@@ -18,6 +18,8 @@ export interface ApiErrorEnvelope {
   error_code: string;
   message: string;
   details: ApiFieldError[] | null;
+  /** Opsional - mis. DUPLICATE_MEANING. */
+  data?: Record<string, unknown> | null;
 }
 
 /**

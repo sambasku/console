@@ -16,7 +16,7 @@ import {
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
-import { ImageCensorEditor } from '@/features/translation-helps/presentation/image-censor-editor';
+import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
 import {
   useApproveWordSuggestion,
   useRejectWordSuggestion,

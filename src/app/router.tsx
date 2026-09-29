@@ -24,9 +24,10 @@ import { AuditLogsPage } from '@/features/audit/presentation/audit-logs-page';
 import { BugReportsPage } from '@/features/bug-reports/presentation/bug-reports-page';
 import { WordReportsPage } from '@/features/word-reports/presentation/word-reports-page';
 import { WordReportDetailPage } from '@/features/word-reports/presentation/word-report-detail-page';
-import { TranslationHelpsPage } from '@/features/translation-helps/presentation/translation-helps-page';
-import { TranslationHelpDetailPage } from '@/features/translation-helps/presentation/translation-help-detail-page';
+import { DiscussionsPage } from '@/features/discussions/presentation/discussions-page';
+import { DiscussionDetailPage } from '@/features/discussions/presentation/discussion-detail-page';
 import { UsersPage } from '@/features/users/presentation/users-page';
+import { AbusePage } from '@/features/abuse/presentation/abuse-page';
 import { VerifierApplicationsPage } from '@/features/verifier-applications/presentation/verifier-applications-page';
 import { VerifierApplicationDetailPage } from '@/features/verifier-applications/presentation/verifier-application-detail-page';
 import { NotificationCampaignsPage } from '@/features/notification-campaigns/presentation/notification-campaigns-page';
@@ -35,6 +36,7 @@ import { NotificationTemplatesPage } from '@/features/notification-campaigns/pre
 import { ProfilePage } from '@/features/profile/presentation/pages/profile-page';
 import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
+import { SystemDatabasePage } from '@/features/system/presentation/system-database-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -220,16 +222,16 @@ const bugReportsRoute = createRoute({
   component: BugReportsPage,
 });
 
-const translationHelpsRoute = createRoute({
+const discussionsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
-  path: '/translation-helps',
-  component: TranslationHelpsPage,
+  path: '/discussions',
+  component: DiscussionsPage,
 });
 
-const translationHelpDetailRoute = createRoute({
+const discussionDetailRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
-  path: '/translation-helps/$id',
-  component: TranslationHelpDetailPage,
+  path: '/discussions/$id',
+  component: DiscussionDetailPage,
 });
 
 const wordReportsRoute = createRoute({
@@ -248,6 +250,12 @@ const usersRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/users',
   component: UsersPage,
+});
+
+const abuseRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/abuse',
+  component: AbusePage,
 });
 
 const verifierApplicationsRoute = createRoute({
@@ -298,6 +306,12 @@ const oauthRoute = createRoute({
   component: OauthPage,
 });
 
+const systemDatabaseRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/system/database',
+  component: SystemDatabasePage,
+});
+
 /**
  * Alias path `/console-layout/...` → path nyata (tanpa prefix layout id).
  *
@@ -334,8 +348,8 @@ const routeTree = rootRoute.addChildren([
     editWordRoute,
     contributionsRoute,
     contributionDetailRoute,
-    translationHelpsRoute,
-    translationHelpDetailRoute,
+    discussionsRoute,
+    discussionDetailRoute,
     commentsRoute,
     commentBlocklistRoute,
     searchMissesRoute,
@@ -347,6 +361,7 @@ const routeTree = rootRoute.addChildren([
     auditLogsRoute,
     bugReportsRoute,
     usersRoute,
+    abuseRoute,
     verifierApplicationsRoute,
     verifierApplicationDetailRoute,
     notificationCampaignsRoute,
@@ -355,6 +370,7 @@ const routeTree = rootRoute.addChildren([
     profileRoute,
     legalRoute,
     oauthRoute,
+    systemDatabaseRoute,
   ]),
 ]);
 
