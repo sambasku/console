@@ -76,12 +76,33 @@ body {
 
 /* Sider selalu menempel di viewport: menu navigasi tidak ikut scroll
    bersama konten (perilaku konsol admin standar). Lebar collapse tetap
-   otomatis karena posisi sticky masih in-flow (tanpa margin manual). */
+   otomatis karena posisi sticky masih in-flow (tanpa margin manual).
+   min-height: 0 menahan flex item agar tidak memanjang ikut menu yang
+   di-expand; scroll ada di __sider-menu, bukan di sider (trigger mobile
+   yang menjulur keluar tidak boleh terpotong). */
 .console-layout .ant-layout-sider {
   position: sticky;
   top: 0;
+  align-self: flex-start;
   height: 100vh;
-  overflow: auto;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  min-height: 0;
+}
+
+.console-layout .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.console-layout__sider-menu {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .console-layout__sider-brand {

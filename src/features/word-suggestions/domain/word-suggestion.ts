@@ -3,6 +3,15 @@
 export type SuggestionStatus = 'pending' | 'approved' | 'rejected' | 'corrected';
 
 export type SuggestionReasonCode =
+  | 'change_meaning'
+  | 'change_word_class'
+  | 'add_meaning'
+  | 'add_photo'
+  | 'change_photo'
+  | 'synonym'
+  | 'antonym'
+  | 'spelling_variant'
+  | 'lemma_notes'
   | 'typo'
   | 'inaccurate_definition'
   | 'missing_example'
@@ -98,6 +107,15 @@ export const SUGGESTION_STATUS_LABELS: Record<SuggestionStatus, string> = {
 };
 
 export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
+  change_meaning: 'Ubah makna',
+  change_word_class: 'Ubah kelas kata',
+  add_meaning: 'Tambah makna',
+  add_photo: 'Tambah foto',
+  change_photo: 'Ubah foto',
+  synonym: 'Sinonim',
+  antonym: 'Antonim',
+  spelling_variant: 'Variasi penulisan',
+  lemma_notes: 'Lemma atau catatan',
   typo: 'Kesalahan penulisan',
   inaccurate_definition: 'Definisi kurang tepat',
   missing_example: 'Kurang contoh',

@@ -3,7 +3,11 @@ import { QueryClient } from '@tanstack/react-query';
 import type { InfiniteData } from '@tanstack/react-query';
 import type { CursorPage } from '@/shared/api/types';
 import type { ContributionListItem } from '@/features/contributions/domain/contribution';
-import { dropContributionFromListCaches } from '@/features/contributions/application/drop-contribution-from-cache';
+import {
+  dropContributionFromListCaches,
+  restoreContributionToListFront,
+} from '@/features/contributions/application/drop-contribution-from-cache';
+import { shouldRestoreFailedReview } from '@/features/contributions/application/review-submit-queue';
 
 function item(id: string): ContributionListItem {
   return {
@@ -44,5 +48,34 @@ describe('dropContributionFromListCaches', () => {
     const next = client.getQueryData<InfiniteData<CursorPage<ContributionListItem>>>(listKey);
     expect(next?.pages[0]?.data.map((row) => row.id)).toEqual(['b']);
     expect(client.getQueryData(detailKey)).toEqual({ keep: true });
+  });
+});
+
+describe('restoreContributionToListFront', () => {
+  it('menaruh item di depan cache yang cocok, tidak di tab lain', () => {
+    const client = new QueryClient();
+    const pendingKey = ['contributions', { status: 'pending', entityType: undefined, mine: false }] as const;
+    const approvedKey = ['contributions', { status: 'approved', entityType: undefined, mine: false }] as const;
+    const page = (ids: string[]): InfiniteData<CursorPage<ContributionListItem>> => ({
+      pages: [{ data: ids.map(item), meta: { limit: 20, next_cursor: null, has_more: false } }],
+      pageParams: [undefined],
+    });
+
+    client.setQueryData(pendingKey, page(['b', 'c']));
+    client.setQueryData(approvedKey, page(['x']));
+
+    restoreContributionToListFront(client, item('a'));
+
+    const pending = client.getQueryData<InfiniteData<CursorPage<ContributionListItem>>>(pendingKey);
+    const approved = client.getQueryData<InfiniteData<CursorPage<ContributionListItem>>>(approvedKey);
+    expect(pending?.pages[0]?.data.map((row) => row.id)).toEqual(['a', 'b', 'c']);
+    expect(approved?.pages[0]?.data.map((row) => row.id)).toEqual(['x']);
+  });
+});
+
+describe('shouldRestoreFailedReview', () => {
+  it('tidak memunculkan ulang bila usulan sudah diproses', () => {
+    expect(shouldRestoreFailedReview('CONTRIBUTION_ALREADY_REVIEWED')).toBe(false);
+    expect(shouldRestoreFailedReview('NETWORK_ERROR')).toBe(true);
   });
 });

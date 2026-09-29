@@ -7,7 +7,8 @@ import { personLabel } from '@/shared/utils/person-label';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { PageHeader } from '@/shared/components/page-header';
 import { useContributionList } from '../application/use-contribution-list';
-import { adjacentPendingId } from '../application/next-pending-id';
+import { adjacentPendingId, nextPendingId } from '../application/next-pending-id';
+import { useReviewSubmitQueue, type ReviewCommitInput } from '../application/review-submit-queue';
 import { normalizeContributionDetail } from '../application/contribution-mappers';
 import {
   CONTRIBUTION_STATUS_LABELS,
@@ -21,6 +22,9 @@ import { useAuth } from '@/shared/auth/use-auth';
 import { ContributionReviewPanel } from './contribution-review-panel';
 
 const contributionsRouteApi = getRouteApi('/console-layout/contributions');
+
+/** Tinggi panel tinjau: sisa viewport setelah header konsol, padding, judul, tab, dan filter. */
+const REVIEW_PANE_HEIGHT = 'calc(100dvh - 340px)';
 
 /** Tabs antrean review (default: Menunggu). */
 type StatusTab = ContributionStatus | 'all';
@@ -68,13 +72,12 @@ export function ContributionsPage() {
       enabled: user?.role === 'reviewer' || user?.role === 'admin' || user?.role === 'root',
     });
 
-  const queueIds = useMemo(() => items.map((item) => item.id), [items]);
-
   const selectId = useCallback(
     (id: string | undefined) => {
       void navigate({
         search: (prev) => ({ ...prev, id }),
         replace: true,
+        resetScroll: false,
       });
     },
     [navigate],
@@ -88,6 +91,24 @@ export function ContributionsPage() {
       }
     },
     [message, selectId],
+  );
+
+  const { enqueue, suppressedIds } = useReviewSubmitQueue(selectId);
+
+  const visibleItems = useMemo(
+    () => items.filter((item) => !suppressedIds.has(item.id)),
+    [items, suppressedIds],
+  );
+  const queueIds = useMemo(() => visibleItems.map((item) => item.id), [visibleItems]);
+
+  const commitReview = useCallback(
+    (input: ReviewCommitInput) => {
+      const nextId = nextPendingId(queueIds, input.id);
+      if (!enqueue(input)) return;
+      message.success(input.decision === 'approve' ? 'Kontribusi disetujui.' : 'Kontribusi ditolak.');
+      handleDecided(nextId);
+    },
+    [enqueue, handleDecided, message, queueIds],
   );
 
   // Prefetch detail item berikutnya.
@@ -175,7 +196,7 @@ export function ContributionsPage() {
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Gagal memuat data" description={error?.message} />
       ) : null}
 
-      <Row gutter={[16, 16]} style={{ minHeight: 'calc(100vh - 260px)' }}>
+      <Row gutter={[16, 16]} style={{ minHeight: REVIEW_PANE_HEIGHT }}>
         <Col xs={24} md={9} lg={8} xl={7}>
           <div
             style={{
@@ -189,7 +210,7 @@ export function ContributionsPage() {
           >
             <List
               loading={isLoading || (isFetching && !items.length)}
-              dataSource={items}
+              dataSource={visibleItems}
               locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Tidak ada usulan" /> }}
               renderItem={(item) => {
                 const selected = item.id === selectedId;
@@ -227,7 +248,7 @@ export function ContributionsPage() {
             />
             <Flex justify="center" align="center" gap={12} style={{ padding: 12 }}>
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {items.length} dimuat
+                {visibleItems.length} dimuat
               </Typography.Text>
               {hasMore ? (
                 <Button size="small" onClick={() => loadMore()} loading={isFetchingNextPage}>
@@ -245,7 +266,7 @@ export function ContributionsPage() {
               borderRadius: token.borderRadiusLG,
               padding: 16,
               minHeight: 320,
-              height: 'min(70vh, calc(100vh - 260px))',
+              height: REVIEW_PANE_HEIGHT,
               overflow: 'hidden',
               background: token.colorBgContainer,
               display: 'flex',
@@ -258,10 +279,11 @@ export function ContributionsPage() {
                 id={selectedId}
                 queueIds={queueIds}
                 onDecided={handleDecided}
+                onCommit={commitReview}
               />
             ) : (
               <Flex align="center" justify="center" style={{ flex: 1 }}>
-                <Empty description={items.length ? 'Pilih usulan di kiri untuk meninjau' : 'Tidak ada yang menunggu'} />
+                <Empty description={visibleItems.length ? 'Pilih usulan di kiri untuk meninjau' : 'Tidak ada yang menunggu'} />
               </Flex>
             )}
           </div>
@@ -271,7 +293,7 @@ export function ContributionsPage() {
       <style>{`
         @media (min-width: 768px) {
           .contribution-queue-list {
-            max-height: min(70vh, calc(100vh - 260px)) !important;
+            max-height: ${REVIEW_PANE_HEIGHT} !important;
           }
         }
       `}</style>
