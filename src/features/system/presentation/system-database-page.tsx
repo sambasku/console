@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   App as AntdApp,
+  Badge,
   Button,
   Card,
   Flex,
@@ -9,8 +10,8 @@ import {
   Space,
   Switch,
   Table,
-  Tag,
   Typography,
+  theme,
 } from 'antd';
 import { CloudServerOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PageHeader } from '@/shared/components/page-header';
@@ -21,7 +22,7 @@ import {
   useDatabaseBackupLogs,
   useTriggerDatabaseBackup,
 } from '../application/use-database-backup';
-import type { DatabaseBackupLog } from '../domain/database-backup';
+import { isBackupActive, type DatabaseBackupLog } from '../domain/database-backup';
 
 function formatBytes(n: number | null): string {
   if (n == null) return '-';
@@ -38,22 +39,61 @@ function formatDuration(ms: number | null): string {
   return `${Math.floor(s / 60)} m ${s % 60} dtk`;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  succeeded: 'success',
-  failed: 'error',
-  running: 'processing',
-};
+/** Kuning berdenyut = berjalan, merah = gagal, hijau = berhasil. */
+function BackupStatusBadge({ status }: { status: string }) {
+  const { token } = theme.useToken();
+  if (isBackupActive(status)) {
+    return <Badge status="processing" color={token.colorWarning} text="Berjalan" />;
+  }
+  if (status === 'failed') return <Badge status="error" text="Gagal" />;
+  if (status === 'succeeded') return <Badge status="success" text="Berhasil" />;
+  return <Badge status="default" text={status} />;
+}
+
+function LatestBackupStatus({ row }: { row: DatabaseBackupLog }) {
+  const detail = isBackupActive(row.status)
+    ? `Diproses di latar belakang sejak ${formatDateTime(row.createdAt)}`
+    : row.status === 'failed'
+      ? (row.errorMessage ?? 'Backup gagal')
+      : `${formatBytes(row.sizeBytes)} · ${formatDuration(row.durationMs)}`;
+  return (
+    <Flex vertical gap={2}>
+      <Space size={8}>
+        <BackupStatusBadge status={row.status} />
+        {row.dryRun ? <Typography.Text type="secondary">dry-run</Typography.Text> : null}
+      </Space>
+      <Typography.Text type={row.status === 'failed' ? 'danger' : 'secondary'} style={{ fontSize: 12 }}>
+        {detail}
+      </Typography.Text>
+    </Flex>
+  );
+}
 
 /**
  * System > Database - trigger backup encrypted ke sambasku/sqlite + tabel log.
+ * Status dipantau di sini (poll), admin tidak perlu membuka GitHub Actions.
  */
 export function SystemDatabasePage() {
   const { user } = useAuth();
   const canManage = user?.role === 'admin' || user?.role === 'root';
   const { message } = AntdApp.useApp();
   const [dryRun, setDryRun] = useState(false);
+  const [trackedId, setTrackedId] = useState<string | null>(null);
   const logsQuery = useDatabaseBackupLogs(canManage);
   const trigger = useTriggerDatabaseBackup();
+
+  const items = logsQuery.data?.items ?? [];
+  const tracked = trackedId ? items.find((i) => i.id === trackedId) : undefined;
+  const latest = tracked ?? items[0];
+  const anyActive = items.some((i) => isBackupActive(i.status));
+
+  const notifiedId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!tracked || isBackupActive(tracked.status) || notifiedId.current === tracked.id) return;
+    notifiedId.current = tracked.id;
+    if (tracked.status === 'succeeded') message.success('Backup berhasil');
+    else message.error(`Backup gagal: ${tracked.errorMessage ?? 'lihat riwayat'}`);
+  }, [tracked, message]);
 
   const columns = useMemo(
     () => [
@@ -83,7 +123,7 @@ export function SystemDatabasePage() {
         dataIndex: 'status',
         key: 'status',
         width: 110,
-        render: (s: string) => <Tag color={STATUS_COLOR[s] ?? 'default'}>{s}</Tag>,
+        render: (s: string) => <BackupStatusBadge status={s} />,
       },
       {
         title: 'Mulai / Selesai',
@@ -155,12 +195,8 @@ export function SystemDatabasePage() {
   const onBackup = async () => {
     try {
       const res = await trigger.mutateAsync(dryRun);
-      message.success(
-        dryRun
-          ? 'Dry-run dimulai - refresh tabel setelah workflow selesai'
-          : 'Backup dimulai - refresh tabel setelah workflow selesai',
-      );
-      window.open(res.htmlUrl, '_blank', 'noopener,noreferrer');
+      setTrackedId(res.logId);
+      message.info(dryRun ? 'Dry-run dimulai' : 'Backup dimulai');
     } catch (err) {
       message.error(normalizeError(err).message);
     }
@@ -181,31 +217,36 @@ export function SystemDatabasePage() {
       <Alert
         type="info"
         showIcon
-        message="Log ditulis oleh CI sqlite setelah job selesai (bukan segera setelah klik)."
-        description="Secret DATABASE_URL di repo sqlite menentukan DB yang di-backup dan tempat INSERT log. Pastikan sama dengan Turso environment console ini. Size = file .tar.gz.age terenkripsi."
+        message="Status backup diperbarui otomatis di halaman ini."
+        description="Secret DATABASE_URL di repo sqlite menentukan DB yang di-backup dan tempat log diperbarui. Pastikan sama dengan Turso environment console ini; jika beda, status akan timeout (gagal) setelah 30 menit. Size = file .tar.gz.age terenkripsi."
       />
 
       <Card size="small" title="Aksi backup">
-        <Flex align="center" gap={16} wrap="wrap">
-          <Space>
-            <Switch checked={dryRun} onChange={setDryRun} />
-            <Typography.Text>Dry run (tanpa GitHub Release)</Typography.Text>
-          </Space>
-          <Popconfirm
-            title={dryRun ? 'Jalankan dry-run backup?' : 'Jalankan backup + Release?'}
-            description="Workflow di sambasku/sqlite akan di-dispatch. Ops bisa memakan 1–2 menit."
-            okText="Jalankan"
-            cancelText="Batal"
-            onConfirm={() => void onBackup()}
-          >
-            <Button
-              type="primary"
-              icon={<CloudServerOutlined />}
-              loading={trigger.isPending}
+        <Flex align="center" justify="space-between" gap={16} wrap="wrap">
+          <Flex align="center" gap={16} wrap="wrap">
+            <Space>
+              <Switch checked={dryRun} onChange={setDryRun} disabled={anyActive} />
+              <Typography.Text>Dry run (tanpa GitHub Release)</Typography.Text>
+            </Space>
+            <Popconfirm
+              title={dryRun ? 'Jalankan dry-run backup?' : 'Jalankan backup + Release?'}
+              description="Backup berjalan di latar belakang, biasanya 1-2 menit."
+              okText="Jalankan"
+              cancelText="Batal"
+              disabled={anyActive}
+              onConfirm={() => void onBackup()}
             >
-              Jalankan backup
-            </Button>
-          </Popconfirm>
+              <Button
+                type="primary"
+                icon={<CloudServerOutlined />}
+                loading={trigger.isPending}
+                disabled={anyActive}
+              >
+                {anyActive ? 'Backup berjalan...' : 'Jalankan backup'}
+              </Button>
+            </Popconfirm>
+          </Flex>
+          {latest ? <LatestBackupStatus row={latest} /> : null}
         </Flex>
       </Card>
 
@@ -214,11 +255,11 @@ export function SystemDatabasePage() {
           rowKey="id"
           size="small"
           loading={logsQuery.isLoading}
-          dataSource={logsQuery.data?.items ?? []}
+          dataSource={items}
           columns={columns}
           pagination={false}
           scroll={{ x: 960 }}
-          locale={{ emptyText: 'Belum ada log - jalankan backup, lalu refresh setelah CI selesai' }}
+          locale={{ emptyText: 'Belum ada log - jalankan backup' }}
         />
       </Card>
     </Flex>

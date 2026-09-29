@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ReloadOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Flex, Input, Popconfirm, Result, Select, Table, Tabs, Tooltip, Typography } from 'antd';
+import { Alert, Button, Drawer, Flex, Input, Popconfirm, Result, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import { DataTable } from '@/shared/components/data-table';
 import { PageHeader } from '@/shared/components/page-header';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -197,13 +197,86 @@ function UserEventsTab() {
   );
 }
 
+function AnonMutesDrawer({
+  open,
+  onClose,
+  onFocus,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onFocus: (kind: AnonSubjectKind, key: string) => void;
+}) {
+  const mutes = useAnonMutes(true);
+  const lift = useLiftAnonMute();
+  const rows = mutes.data ?? [];
+
+  return (
+    <Drawer
+      title={`Mute aktif (${rows.length})`}
+      open={open}
+      onClose={onClose}
+      size="large"
+      extra={
+        <Button size="small" icon={<ReloadOutlined />} onClick={() => mutes.refetch()}>
+          Muat ulang
+        </Button>
+      }
+    >
+      {mutes.isError ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Gagal memuat mute aktif" description={mutes.error?.message} /> : null}
+      <Table<AnonMute>
+        size="small"
+        loading={mutes.isLoading}
+        dataSource={rows}
+        rowKey={(m) => `${m.subject_kind}:${m.subject_key}`}
+        pagination={false}
+        locale={{ emptyText: 'Tidak ada IP atau perangkat yang sedang di-mute.' }}
+        scroll={{ x: 'max-content' }}
+        columns={[
+          { title: 'Jenis', dataIndex: 'subject_kind', width: 100, render: (k: AnonSubjectKind) => SUBJECT_KIND_LABELS[k] ?? k },
+          {
+            title: 'IP / Perangkat',
+            dataIndex: 'subject_key',
+            render: (key: string, m) => (
+              <Button type="link" size="small" style={{ padding: 0 }} onClick={() => onFocus(m.subject_kind, key)}>
+                {key}
+              </Button>
+            ),
+          },
+          { title: 'Berlaku s/d', dataIndex: 'muted_until', width: 180, render: (v: string) => formatDateTime(v) },
+          {
+            title: 'Aksi',
+            key: 'actions',
+            width: 120,
+            render: (_, m) => (
+              <Popconfirm
+                title={`Cabut mute ${m.subject_key}?`}
+                description="Skor abuse ikut direset supaya tidak langsung ter-mute lagi."
+                okText="Cabut mute"
+                cancelText="Batal"
+                onConfirm={() => lift.mutateAsync({ subjectKind: m.subject_kind, subjectKey: m.subject_key })}
+              >
+                <Button
+                  size="small"
+                  loading={lift.isPending && lift.variables?.subjectKey === m.subject_key}
+                >
+                  Cabut mute
+                </Button>
+              </Popconfirm>
+            ),
+          },
+        ]}
+      />
+    </Drawer>
+  );
+}
+
 const anonColumnHelper = createColumnHelper<AnonAbuseEvent>();
 
 function AnonTab() {
   const [filters, setFilters] = useState<AnonAbuseFilters>({});
   const [keyInput, setKeyInput] = useState('');
-  const mutes = useAnonMutes(true);
-  const lift = useLiftAnonMute();
+  const [mutesOpen, setMutesOpen] = useState(false);
+  const muteCount = useAnonMutes(true).data?.length ?? 0;
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
     useAnonAbuseEvents(filters, true);
 
@@ -271,67 +344,8 @@ function AnonTab() {
     manualPagination: true,
   });
 
-  const muteRows = mutes.data ?? [];
-
   return (
     <>
-      <Card
-        size="small"
-        title={`Mute aktif (${muteRows.length})`}
-        style={{ marginBottom: 24 }}
-        extra={
-          <Button size="small" icon={<ReloadOutlined />} onClick={() => mutes.refetch()}>
-            Muat ulang
-          </Button>
-        }
-      >
-        {mutes.isError ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Gagal memuat mute aktif" description={mutes.error?.message} /> : null}
-        <Table<AnonMute>
-          size="small"
-          loading={mutes.isLoading}
-          dataSource={muteRows}
-          rowKey={(m) => `${m.subject_kind}:${m.subject_key}`}
-          pagination={false}
-          locale={{ emptyText: 'Tidak ada IP atau perangkat yang sedang di-mute.' }}
-          scroll={{ x: 'max-content' }}
-          columns={[
-            { title: 'Jenis', dataIndex: 'subject_kind', width: 100, render: (k: AnonSubjectKind) => SUBJECT_KIND_LABELS[k] ?? k },
-            {
-              title: 'IP / Perangkat',
-              dataIndex: 'subject_key',
-              render: (key: string, m) => (
-                <Button type="link" size="small" style={{ padding: 0 }} onClick={() => focusSubject(m.subject_kind, key)}>
-                  {key}
-                </Button>
-              ),
-            },
-            { title: 'Berlaku s/d', dataIndex: 'muted_until', width: 180, render: (v: string) => formatDateTime(v) },
-            {
-              title: 'Aksi',
-              key: 'actions',
-              width: 120,
-              render: (_, m) => (
-                <Popconfirm
-                  title={`Cabut mute ${m.subject_key}?`}
-                  description="Skor abuse ikut direset supaya tidak langsung ter-mute lagi."
-                  okText="Cabut mute"
-                  cancelText="Batal"
-                  onConfirm={() => lift.mutateAsync({ subjectKind: m.subject_kind, subjectKey: m.subject_key })}
-                >
-                  <Button
-                    size="small"
-                    loading={lift.isPending && lift.variables?.subjectKey === m.subject_key}
-                  >
-                    Cabut mute
-                  </Button>
-                </Popconfirm>
-              ),
-            },
-          ]}
-        />
-      </Card>
-
-      <Typography.Title level={5}>Riwayat sinyal tamu</Typography.Title>
       <Flex wrap gap={12} align="center" style={{ marginBottom: 16 }}>
         <Select
           placeholder="Semua jenis"
@@ -360,12 +374,24 @@ function AnonTab() {
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
           Muat ulang
         </Button>
+        <Button danger={muteCount > 0} onClick={() => setMutesOpen(true)}>
+          Mute aktif ({muteCount})
+        </Button>
       </Flex>
 
       {isError ? <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Gagal memuat data" description={error?.message} /> : null}
 
       <DataTable table={table} rowKey={(r) => r.id} loading={isLoading || (isFetching && !items.length)} />
       <ListFooter count={items.length} hasMore={hasMore} loadMore={() => loadMore()} loading={isFetchingNextPage} />
+
+      <AnonMutesDrawer
+        open={mutesOpen}
+        onClose={() => setMutesOpen(false)}
+        onFocus={(kind, key) => {
+          focusSubject(kind, key);
+          setMutesOpen(false);
+        }}
+      />
     </>
   );
 }

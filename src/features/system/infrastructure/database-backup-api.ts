@@ -61,19 +61,17 @@ export async function triggerDatabaseBackupRequest(
   const res = await client.post<
     ApiOkEnvelope<{
       accepted: true;
-      workflow: string;
-      ref: string;
+      log_id: string;
+      status: string;
       dry_run: boolean;
-      html_url: string;
     }>
   >('/admin/system/database/backup', { dry_run: dryRun }, { signal });
   const d = res.data.data;
   return {
     accepted: true,
-    workflow: d.workflow,
-    ref: d.ref,
+    logId: d.log_id,
+    status: d.status,
     dryRun: d.dry_run,
-    htmlUrl: d.html_url,
   };
 }
 

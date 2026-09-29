@@ -1,4 +1,15 @@
-export type DatabaseBackupLogStatus = 'running' | 'succeeded' | 'failed' | string;
+/** `running` = legacy; alur baru pending -> processing -> succeeded | failed. */
+export type DatabaseBackupLogStatus =
+  | 'pending'
+  | 'processing'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | string;
+
+export function isBackupActive(status: DatabaseBackupLogStatus): boolean {
+  return status === 'pending' || status === 'processing' || status === 'running';
+}
 
 export interface DatabaseBackupLog {
   id: string;
@@ -25,10 +36,9 @@ export interface DatabaseBackupLog {
 
 export interface TriggerBackupResult {
   accepted: true;
-  workflow: string;
-  ref: string;
+  logId: string;
+  status: DatabaseBackupLogStatus;
   dryRun: boolean;
-  htmlUrl: string;
 }
 
 export interface BackupLogListResult {
