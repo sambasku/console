@@ -3,6 +3,7 @@ import {
   listDatabaseBackupLogsRequest,
   triggerDatabaseBackupRequest,
 } from '../infrastructure/database-backup-api';
+import { isBackupActive } from '../domain/database-backup';
 
 const listKey = ['admin-database-backup-logs'] as const;
 
@@ -13,8 +14,7 @@ export function useDatabaseBackupLogs(enabled: boolean) {
     enabled,
     refetchInterval: (q) => {
       const items = q.state.data?.items ?? [];
-      const pending = items.some((i) => i.status === 'running');
-      return pending ? 15_000 : false;
+      return items.some((i) => isBackupActive(i.status)) ? 4_000 : false;
     },
   });
 }
@@ -23,8 +23,8 @@ export function useTriggerDatabaseBackup() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dryRun: boolean) => triggerDatabaseBackupRequest(dryRun),
-    onSuccess: () => {
-      // Log muncul setelah CI selesai - refetch ringan agar tabel tidak stale lama
+    // Sukses maupun gagal dispatch, API sudah menulis baris log - refetch agar indikator muncul.
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: listKey });
     },
   });

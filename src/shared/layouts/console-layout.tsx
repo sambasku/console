@@ -59,6 +59,7 @@ const NOTIFICATION_ROUTES = {
 /** Leaf routes di bawah grup System. */
 const SYSTEM_ROUTES = {
   '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
+  '/system/abuse': { icon: <AlertOutlined />, label: 'Abuse' },
 } as const;
 
 type KamusRoute = keyof typeof KAMUS_ROUTES;
@@ -67,7 +68,6 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/dashboard'
   | '/users'
-  | '/abuse'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
@@ -162,7 +162,6 @@ export function ConsoleLayout() {
     ];
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
-      items.push({ key: '/abuse', icon: <AlertOutlined />, label: 'Abuse' });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,

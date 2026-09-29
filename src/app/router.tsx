@@ -254,8 +254,17 @@ const usersRoute = createRoute({
 
 const abuseRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
-  path: '/abuse',
+  path: '/system/abuse',
   component: AbusePage,
+});
+
+/** Bookmark lama `/abuse` sebelum menu dipindah ke System. */
+const abuseLegacyRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/abuse',
+  beforeLoad: () => {
+    throw redirect({ to: '/system/abuse' });
+  },
 });
 
 const verifierApplicationsRoute = createRoute({
@@ -362,6 +371,7 @@ const routeTree = rootRoute.addChildren([
     bugReportsRoute,
     usersRoute,
     abuseRoute,
+    abuseLegacyRoute,
     verifierApplicationsRoute,
     verifierApplicationDetailRoute,
     notificationCampaignsRoute,
