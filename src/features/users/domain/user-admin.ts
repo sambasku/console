@@ -7,6 +7,8 @@ export interface AdminUserListItem {
   role: AdminUserRole;
   isActive: boolean;
   canContribute: boolean;
+  /** Mute sementara dari policy abuse (ISO); null = tidak dibatasi. */
+  contributeMutedUntil: string | null;
   createdAt: string;
   updatedAt: string | null;
 }

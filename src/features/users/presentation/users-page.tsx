@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
+import { AlertOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import {
   Alert,
   App as AntdApp,
@@ -28,6 +28,8 @@ import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { useUserAdminList, type UseUserAdminListArgs } from '../application/use-user-admin-list';
 import { useSetCanContribute, useSetUserActive, useUpdateUserRole } from '../application/use-update-user-role';
 import { CreateUserDrawer } from './create-user-drawer';
+import { UserAbuseDrawer } from '@/features/abuse/presentation/user-abuse-drawer';
+import { isMutedNow } from '@/features/abuse/domain/abuse';
 import {
   CHANGEABLE_ROLES,
   ROLE_LABELS,
@@ -66,6 +68,8 @@ export function UsersPage() {
   };
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
     useUserAdminList(listArgs);
+  const [abuseUserId, setAbuseUserId] = useState<string | null>(null);
+  const abuseUser = abuseUserId ? items.find((u) => u.id === abuseUserId) : undefined;
 
   const ensurePending = (row: AdminUserListItem) => {
     setPendingRoles((prev) => {
@@ -127,23 +131,28 @@ export function UsersPage() {
       columnHelper.display({
         id: 'contribute',
         header: 'Kontribusi',
-        size: 120,
+        size: 230,
         cell: (info) => {
           const row = info.row.original;
           const pending = setContribute.isPending && setContribute.variables?.id === row.id;
           return (
-            <Switch
-              checked={row.canContribute}
-              size="small"
-              loading={pending}
-              onChange={(next) =>
-                setContribute.mutate({
-                  id: row.id,
-                  canContribute: next,
-                  username: row.username,
-                })
-              }
-            />
+            <Flex gap={8} align="center" wrap>
+              <Switch
+                checked={row.canContribute}
+                size="small"
+                loading={pending}
+                onChange={(next) =>
+                  setContribute.mutate({
+                    id: row.id,
+                    canContribute: next,
+                    username: row.username,
+                  })
+                }
+              />
+              {row.canContribute && isMutedNow(row.contributeMutedUntil) ? (
+                <Tag color="orange">Dibatasi s/d {formatDateTime(row.contributeMutedUntil)}</Tag>
+              ) : null}
+            </Flex>
           );
         },
       }),
@@ -186,6 +195,16 @@ export function UsersPage() {
         size: 180,
         meta: { responsive: ['md'] },
         cell: (info) => formatDateTime(info.getValue()),
+      }),
+      columnHelper.display({
+        id: 'abuse',
+        header: 'Abuse',
+        size: 110,
+        cell: (info) => (
+          <Button type="link" size="small" icon={<AlertOutlined />} onClick={() => setAbuseUserId(info.row.original.id)}>
+            Riwayat
+          </Button>
+        ),
       }),
       columnHelper.display({
         id: 'actions',
@@ -350,6 +369,19 @@ export function UsersPage() {
       )}
 
       <CreateUserDrawer open={createOpen} onClose={() => setCreateOpen(false)} />
+      <UserAbuseDrawer
+        user={
+          abuseUser
+            ? {
+                id: abuseUser.id,
+                username: abuseUser.username,
+                canContribute: abuseUser.canContribute,
+                mutedUntil: abuseUser.contributeMutedUntil,
+              }
+            : null
+        }
+        onClose={() => setAbuseUserId(null)}
+      />
 
       <Flex justify="center" align="center" gap={16} style={{ marginTop: 16 }}>
         {hasMore ? (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import {
+  AlertOutlined,
   AuditOutlined,
   BookOutlined,
   CommentOutlined,
@@ -66,6 +67,7 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/dashboard'
   | '/users'
+  | '/abuse'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
@@ -91,6 +93,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'audit-logs': 'Audit Log',
   'bug-reports': 'Laporan Masalah',
   users: 'Pengguna',
+  abuse: 'Abuse',
   'verifier-applications': 'Pengajuan verifikator',
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
@@ -159,6 +162,7 @@ export function ConsoleLayout() {
     ];
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
+      items.push({ key: '/abuse', icon: <AlertOutlined />, label: 'Abuse' });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,

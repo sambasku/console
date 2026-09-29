@@ -27,6 +27,7 @@ import { WordReportDetailPage } from '@/features/word-reports/presentation/word-
 import { DiscussionsPage } from '@/features/discussions/presentation/discussions-page';
 import { DiscussionDetailPage } from '@/features/discussions/presentation/discussion-detail-page';
 import { UsersPage } from '@/features/users/presentation/users-page';
+import { AbusePage } from '@/features/abuse/presentation/abuse-page';
 import { VerifierApplicationsPage } from '@/features/verifier-applications/presentation/verifier-applications-page';
 import { VerifierApplicationDetailPage } from '@/features/verifier-applications/presentation/verifier-application-detail-page';
 import { NotificationCampaignsPage } from '@/features/notification-campaigns/presentation/notification-campaigns-page';
@@ -251,6 +252,12 @@ const usersRoute = createRoute({
   component: UsersPage,
 });
 
+const abuseRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/abuse',
+  component: AbusePage,
+});
+
 const verifierApplicationsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/verifier-applications',
@@ -354,6 +361,7 @@ const routeTree = rootRoute.addChildren([
     auditLogsRoute,
     bugReportsRoute,
     usersRoute,
+    abuseRoute,
     verifierApplicationsRoute,
     verifierApplicationDetailRoute,
     notificationCampaignsRoute,
