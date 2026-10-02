@@ -7,8 +7,8 @@ import { revokeUnauthorizedConsoleSession } from './revoke-unauthorized-console-
 let restorePromise: Promise<boolean> | null = null;
 
 async function ensureConsoleRoleAllowed(): Promise<boolean> {
-  const role = sessionStore.getSnapshot().user?.role;
-  if (isConsoleAllowedRole(role)) return true;
+  const user = sessionStore.getSnapshot().user;
+  if (isConsoleAllowedRole(user)) return true;
   await revokeUnauthorizedConsoleSession();
   return false;
 }

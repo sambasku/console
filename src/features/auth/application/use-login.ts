@@ -24,7 +24,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: async (credentials: LoginCredentials): Promise<AuthSessionResult> => {
       const result = await loginRequest(credentials);
-      if (!isConsoleAllowedRole(result.user.role)) {
+      if (!isConsoleAllowedRole(result.user)) {
         await revokeUnauthorizedConsoleSession();
         throw new ApiError(403, 'FORBIDDEN', CONSOLE_ACCESS_DENIED_MESSAGE);
       }
