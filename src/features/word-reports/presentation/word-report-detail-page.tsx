@@ -101,7 +101,7 @@ export function WordReportDetailPage() {
     <>
       <PageHeader
         title={report.lemma || 'Laporan entri'}
-        subtitle="Keputusan ini tidak mengubah isi entri. Perbaikan isi lewat Ubah Kata."
+        subtitle="Keputusanmu di sini tidak mengubah isi entri. Perbaikan isi lewat Ubah Kata."
         extra={
           <Space wrap>
             <Button icon={<ReloadOutlined />} onClick={() => query.refetch()} loading={query.isFetching}>
@@ -150,7 +150,7 @@ export function WordReportDetailPage() {
       {open ? (
         <Space direction="vertical" style={{ width: '100%' }} size={12}>
           <Paragraph type="secondary" style={{ margin: 0 }}>
-            Tolak jika laporan tidak beralasan. Sudah diperbaiki jika kamu mengubah entri lewat halaman kata.
+            Tolak jika laporan tidak beralasan. Pilih Sudah diperbaiki kalau kamu sudah mengubah entri lewat halaman kata.
             Tarik entri jika lemma ini tidak layak tayang.
           </Paragraph>
           <Input.TextArea
@@ -187,7 +187,7 @@ export function WordReportDetailPage() {
         okButtonProps={{ danger: true }}
       >
         <Paragraph>
-          <Text strong>{report.lemma}</Text> hilang dari pencarian dan halaman publik. Jejaknya tetap di konsol dan bisa dipulihkan.
+          <Text strong>{report.lemma}</Text> hilang dari pencarian dan halaman publik. Jejaknya tetap ada di konsol dan bisa dipulihkan.
         </Paragraph>
         <Select
           style={{ width: '100%', marginBottom: 12 }}

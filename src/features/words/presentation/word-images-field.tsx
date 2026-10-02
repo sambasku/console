@@ -314,7 +314,7 @@ export function WordImagesField({ value, onChange }: WordImagesFieldProps) {
           type="warning"
           showIcon
           message="Penyimpanan gambar belum dikonfigurasi"
-          description="Isi PUBLIC_IMAGE_GITHUB_* di environment API untuk mengaktifkan upload file. Media Explorer (URL stock) tetap bisa dipakai. Kata tetap bisa disimpan tanpa gambar."
+          description="Isi PUBLIC_IMAGE_GITHUB_* di environment API untuk mengaktifkan upload file. Media Explorer (URL stock) tetap bisa dipakai, dan kata tetap bisa disimpan tanpa gambar."
         />
       ) : null}
 

@@ -210,7 +210,7 @@ export function CommentsPage() {
     <>
       <PageHeader
         title="Moderasi Komentar"
-        subtitle="Komentar tayang langsung saat dikirim. Admin dapat men-takedown yang melanggar."
+        subtitle="Komentar tayang langsung saat dikirim. Admin bisa men-takedown yang melanggar."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

@@ -413,7 +413,7 @@ export function AbusePage() {
     <>
       <PageHeader
         title="Abuse"
-        subtitle="Sinyal abuse konten pengguna dan tamu, mute otomatis, dan pencabutan mute - hanya admin & root."
+        subtitle="Sinyal abuse dari konten pengguna dan tamu, mute otomatis, dan pencabutan mute - khusus admin & root."
       />
       <Tabs
         items={[

@@ -128,7 +128,7 @@ export function ImportAttributionFields({
     >
       <Typography.Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12, fontSize: 12 }}>
         Sitasi sumber data (situs, buku, artikel). Atribusi kata default ke Pengimpor Data CSV,
-        kecuali Anda memilih user di bawah.
+        kecuali kamu memilih user di bawah.
       </Typography.Paragraph>
       <Flex vertical gap={8}>
         <Select

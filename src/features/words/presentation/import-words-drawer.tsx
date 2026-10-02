@@ -92,7 +92,7 @@ const WORD_GAP_MS = 2000;
 const PHASE_HOLD_MS = 900;
 const MANUAL_STARTER_ROWS = 12;
 const DRAFT_PUBLISH_HINT =
-  'Draf muncul di tab Tidak tayang. Nyalakan sakelar Tayang di sana untuk menayangkan.';
+  'Draf muncul di tab Tidak tayang. Nyalakan sakelar Tayang di sana saat siap menayangkan.';
 
 class ImportCancelledError extends Error {
   constructor() {
@@ -659,7 +659,7 @@ export function ImportWordsDrawer({
 
   const save = () => {
     if (payload.length === 0) {
-      message.warning('Tidak ada kata yang bisa disimpan. Isi kata + terjemahan atau penjelasan arti.');
+      message.warning('Belum ada kata yang bisa disimpan. Isi kata plus terjemahan atau penjelasan arti dulu ya.');
       return;
     }
     if (busy) return;
@@ -764,7 +764,7 @@ export function ImportWordsDrawer({
             ? 'Menunggu kata yang sedang diproses selesai, lalu impor dihentikan.'
             : progress?.attempt && progress.attempt > 1
               ? `Server sibuk atau kapasitas penuh. Percobaan ${progress.attempt} dari ${progress.maxAttempts ?? MAX_ATTEMPTS} untuk kata ini.`
-              : `Satu kata per permintaan, jeda ${WORD_GAP_MS / 1000}s antar kata. Anda bisa membatalkan kapan saja.`;
+              : `Satu kata per permintaan, jeda ${WORD_GAP_MS / 1000}s antar kata. Bisa dibatalkan kapan saja.`;
 
   const stepStatus =
     progress?.phase === 'failed' || progress?.phase === 'cancelled'

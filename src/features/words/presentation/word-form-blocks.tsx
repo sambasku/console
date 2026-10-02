@@ -573,7 +573,7 @@ export function MeaningFields({
                               label="Terjemahan Indonesia"
                               extra={
                                 tf.name === 0
-                                  ? 'Tekan icon buku untuk mencari definisi di KBBI'
+                                  ? 'Tekan ikon buku untuk mencari penjelasan arti di KBBI'
                                   : undefined
                               }
                               rules={[{ required: true, message: 'Terjemahan wajib diisi' }]}
@@ -773,8 +773,8 @@ export function MeaningFields({
         }
         description={
           enablePendingExampleAudio
-            ? 'Rekam per contoh di bawah. Setelah kata disimpan, API mengunggah audio berurutan (create → ambil ID contoh → upload).'
-            : 'Isi teks contoh di sini, lalu simpan. Rekam audio ada di halaman Detail / Edit (bagian Audio contoh kalimat).'
+            ? 'Rekam per contoh di bawah. Setelah kata disimpan, API mengunggah audionya berurutan (create → ambil ID contoh → upload).'
+            : 'Isi teks contoh di sini, lalu simpan. Rekam audionya ada di halaman Detail / Edit (bagian Audio contoh kalimat).'
         }
       />
       <Form.List name={[...name, 'examples']}>
@@ -1097,7 +1097,7 @@ export function InlineWordEditor({
               validator: (_, value) =>
                 Array.isArray(value) && value.length > 0
                   ? Promise.resolve()
-                  : Promise.reject(new Error('Minimal harus ada 1 makna')),
+                  : Promise.reject(new Error('Sisakan minimal 1 makna')),
             },
           ]}
         >
@@ -1861,7 +1861,7 @@ export function WordExampleAudiosSection({
         type="info"
         showIcon
         message="Belum ada contoh kalimat"
-        description="Tambah contoh di form Edit Kata (bagian Makna → Contoh Kalimat), simpan, lalu kembali ke sini untuk merekam audio per contoh."
+        description="Tambah contoh di form Edit Kata (bagian Makna → Contoh Kalimat), simpan, lalu balik ke sini untuk merekam audio tiap contoh."
       />
     );
   }

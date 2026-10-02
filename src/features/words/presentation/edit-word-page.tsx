@@ -232,8 +232,8 @@ export function EditWordPage() {
         <Alert
           type="error"
           showIcon
-          message="403 - Akses ditolak"
-          description="Kontributor tidak dapat mengubah entri existing. Perubahan atas entri yang sudah ada lewat jalur kontribusi (antrean review)."
+        message="403 - Akses ditolak"
+        description="Kamu login sebagai kontributor, jadi entri existing belum bisa diubah di sini. Perubahan atas entri yang sudah ada lewat jalur kontribusi (antrean review)."
           action={
             <Button onClick={() => navigate({ to: '/words' })} style={{ whiteSpace: 'nowrap' }}>
               Kembali ke Daftar
@@ -337,12 +337,12 @@ export function EditWordPage() {
           <Card title="2. Makna / Arti">
             <Form.List
               name="meanings"
-              rules={[
-                {
-                  validator: (_, value) =>
-                    Array.isArray(value) && value.length > 0
-                      ? Promise.resolve()
-                      : Promise.reject(new Error('Minimal harus ada 1 makna')),
+    rules={[
+      {
+        validator: (_, value) =>
+          Array.isArray(value) && value.length > 0
+            ? Promise.resolve()
+            : Promise.reject(new Error('Sisakan minimal 1 makna')),
                 },
               ]}
             >
@@ -553,7 +553,7 @@ export function EditWordPage() {
           {currentStatus === 'published' ? (
             <Popconfirm
               title="Hapus kata dari tayang?"
-              description="Menyimpan sebagai draft akan menurunkan status kata ini dan menghilangkannya dari kamus publik."
+              description="Kata jadi draft dan hilang dari kamus publik. Datanya tidak hilang."
               okText="Hapus dari Tayang"
               cancelText="Batal"
               okButtonProps={{ danger: true }}
@@ -571,7 +571,7 @@ export function EditWordPage() {
           {currentStatus === 'rejected' ? (
             <Popconfirm
               title="Aktifkan kata ini?"
-              description="Kata yang ditolak akan dihidupkan kembali dan tayang di kamus publik."
+              description="Kata yang ditolak akan hidup lagi dan tayang di kamus publik."
               okText="Aktifkan"
               cancelText="Batal"
               onConfirm={() => submit('published')}

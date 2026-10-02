@@ -141,7 +141,7 @@ export function AuditLogsPage() {
     <>
       <PageHeader
         title="Audit Log"
-        subtitle="Jejak mutasi data (create / update / delete / approve / reject / …) - hanya admin & root."
+        subtitle="Jejak mutasi data (create / update / delete / approve / reject / …) - khusus admin & root."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

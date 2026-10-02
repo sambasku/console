@@ -118,7 +118,7 @@ function WordSuggestionDetail({ id }: { id: string }) {
   const onApprove = () => {
     modal.confirm({
       title: 'Setujui usulan?',
-      content: 'Perubahan akan langsung diterapkan ke kata tayang.',
+      content: 'Perubahan langsung dipakai ke kata tayang.',
       onOk: async () => {
         const decisions =
           addedImages.length > 0
@@ -265,8 +265,8 @@ function WordSuggestionDetail({ id }: { id: string }) {
             )}
             {pending && diff.images.added.some((i) => i.provider === 'imagekit') ? (
               <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-                Tayangkan menyimpan foto ke arsip publik. Jangan tayangkan menghapus foto ini.
-                Sensor opsional sebelum tayang.
+                Menyetujui berarti foto tersimpan ke arsip publik. Menolak berarti foto dihapus.
+                Sensor sifatnya opsional sebelum tayang.
               </Typography.Text>
             ) : null}
             {diff.images.removed.length > 0 ? (
@@ -353,7 +353,7 @@ function WordSuggestionDetail({ id }: { id: string }) {
             onApply={(blob) => {
               setCensoredByKey((prev) => ({ ...prev, [censorTarget.key]: blob }));
               setCensorTarget(null);
-              message.success('Sensor disimpan. Akan dikirim saat Setujui.');
+              message.success('Sensor disimpan. Dikirim saat kamu menekan Setujui.');
             }}
           />
         </Modal>

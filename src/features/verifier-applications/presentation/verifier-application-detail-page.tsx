@@ -80,7 +80,7 @@ export function VerifierApplicationDetailPage() {
   };
 
   if (!canManage) {
-    return <Alert type="warning" showIcon message="Hanya admin dan root yang dapat meninjau pengajuan verifikator." />;
+    return <Alert type="warning" showIcon message="Hanya admin dan root yang bisa meninjau pengajuan verifikator." />;
   }
 
   if (detailQuery.isPending) {
@@ -191,7 +191,7 @@ export function VerifierApplicationDetailPage() {
         onOk={submitDecision}
       >
         {decision === 'approve' ? (
-          <Text>Pemohon akan menjadi verifikator. Sesi lama mereka harus login ulang.</Text>
+          <Text>Pemohon akan jadi verifikator. Sesi lama mereka harus login ulang.</Text>
         ) : (
           <Form layout="vertical">
             <Form.Item

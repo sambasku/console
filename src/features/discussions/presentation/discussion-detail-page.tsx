@@ -145,10 +145,10 @@ export function DiscussionDetailPage() {
       content: (
         <Space direction="vertical" size={8}>
           <Text>
-            Anda menyetujui {n} foto ({m} tersensor · {k} ber-flag kekerasan).
+            Kamu menyetujui {n} foto ({m} tersensor · {k} ber-flag kekerasan).
           </Text>
           <Text type="secondary">
-            Pastikan foto bukan NSFW, aman ditayangkan publik, data sensitif sudah
+            Pastikan fotonya bukan NSFW dan aman tayang untuk publik, data sensitif sudah
             disensor bila perlu, dan flag kekerasan sudah ditempel bila perlu.
           </Text>
         </Space>
@@ -405,8 +405,8 @@ export function DiscussionDetailPage() {
             <Alert
               type="warning"
               showIcon
-              message="Sensor dulu jika ada data sensitif sebelum setujui."
-              description="Cat daerah yang perlu disamarkan, lalu Terapkan sensor. Gambar tanpa sensor akan di-rehost apa adanya."
+              message="Sensor dulu foto yang ada data sensitifnya sebelum menyetujui."
+              description="Cat daerah yang perlu disamarkan, lalu tekan Terapkan sensor. Gambar tanpa sensor di-rehost apa adanya."
             />
             <Card size="small" title="Editor sensor">
               <Space direction="vertical" size={12} style={{ width: '100%' }}>

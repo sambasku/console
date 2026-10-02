@@ -1,0 +1,3 @@
+# Konsol admin bukan halaman publik - blokir semua crawler.
+User-agent: *
+Disallow: /

@@ -47,7 +47,7 @@ export function LoginPage() {
         Masuk ke Konsol
       </Typography.Title>
       <Typography.Paragraph type="secondary" style={{ textAlign: 'center' }}>
-        Gunakan akun admin, root, atau verifikator Anda.
+        Gunakan akun admin, root, atau verifikator kamu.
       </Typography.Paragraph>
 
       {loginError ? (

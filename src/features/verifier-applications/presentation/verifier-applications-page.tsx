@@ -97,14 +97,14 @@ export function VerifierApplicationsPage() {
   });
 
   if (!canManage) {
-    return <Alert type="warning" showIcon message="Hanya admin dan root yang dapat meninjau pengajuan verifikator." />;
+    return <Alert type="warning" showIcon message="Hanya admin dan root yang bisa meninjau pengajuan verifikator." />;
   }
 
   return (
     <>
       <PageHeader
         title="Pengajuan verifikator"
-        subtitle="Antrean kontributor yang mengajukan jadi verifikator."
+        subtitle="Kontributor yang mengajukan diri jadi verifikator."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

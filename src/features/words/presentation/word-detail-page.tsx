@@ -120,8 +120,8 @@ export function WordDetailPage() {
         <Alert
           type="error"
           showIcon
-          message="403 - Akses ditolak"
-          description="Kontributor tidak dapat membuka detail entri existing. Perubahan atas entri yang sudah ada lewat jalur kontribusi (antrean review)."
+        message="403 - Akses ditolak"
+        description="Kamu login sebagai kontributor, jadi detail entri existing belum bisa dibuka. Perubahan atas entri yang sudah ada lewat jalur kontribusi (antrean review)."
           action={
             <Button onClick={() => navigate({ to: '/words' })} style={{ whiteSpace: 'nowrap' }}>
               Kembali ke Daftar

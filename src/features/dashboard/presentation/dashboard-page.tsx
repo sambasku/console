@@ -80,7 +80,7 @@ export function DashboardPage() {
           type="error"
           showIcon
           message="Statistik gagal dimuat"
-          description="Periksa koneksi lalu coba lagi."
+          description="Cek koneksi internet kamu, lalu coba lagi."
           action={
             <Button size="small" onClick={() => refetch()}>
               Coba lagi

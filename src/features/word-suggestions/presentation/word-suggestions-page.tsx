@@ -133,7 +133,7 @@ export function WordSuggestionsPage() {
     <>
       <PageHeader
         title="Usul Perubahan"
-        subtitle="Usulan perbaikan kata tayang dari komunitas (approve / reject)."
+        subtitle="Usulan perbaikan kata tayang dari komunitas. Tinjau, lalu setujui atau tolak."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => void refetch()} loading={isFetching}>
             Muat ulang

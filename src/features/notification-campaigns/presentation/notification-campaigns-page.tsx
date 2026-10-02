@@ -63,7 +63,7 @@ export function NotificationCampaignsPage() {
   if (!canManage) {
     return (
       <Typography.Text type="secondary">
-        Hanya admin/root yang dapat mengelola campaign.
+        Hanya admin/root yang bisa mengelola campaign.
       </Typography.Text>
     );
   }
