@@ -82,7 +82,7 @@ const loginRoute = createRoute({
   beforeLoad: async () => {
     // Sesi staff aktif → konsol. Role non-staff (cookie sisa) → revoke dulu.
     if (!sessionStore.isAuthenticated()) return;
-    if (isConsoleAllowedRole(sessionStore.getSnapshot().user?.role)) {
+    if (isConsoleAllowedRole(sessionStore.getSnapshot().user)) {
       throw redirect({ to: '/dashboard' });
     }
     await revokeUnauthorizedConsoleSession();
@@ -96,7 +96,7 @@ const consoleLayoutRoute = createRoute({
   component: ConsoleLayout,
   beforeLoad: async () => {
     if (!sessionStore.isAuthenticated()) throw redirect({ to: '/login' });
-    if (!isConsoleAllowedRole(sessionStore.getSnapshot().user?.role)) {
+    if (!isConsoleAllowedRole(sessionStore.getSnapshot().user)) {
       await revokeUnauthorizedConsoleSession();
       throw redirect({ to: '/login' });
     }
