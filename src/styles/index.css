@@ -103,6 +103,32 @@ body {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+/* Scrollbar tipis, thumb baru terlihat saat hover. Browser yang dukung
+   scrollbar-color (Chrome 121+, Firefox, Safari 18.2+) mengabaikan
+   ::-webkit-scrollbar; blok webkit untuk Safari lama. */
+.console-layout__sider-menu:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.console-layout__sider-menu:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .console-layout__sider-brand {
@@ -868,6 +894,94 @@ body {
 
   .dashboard__chart-tooltip {
     align-items: flex-start;
+  }
+}
+
+/* ---- Trafik Web (GA4 + Search Console) - menumpang gaya .dashboard ---- */
+
+.traffic__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.traffic__toolbar-note {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.traffic__tabs .ant-tabs-nav {
+  margin-bottom: 0;
+}
+
+.traffic__stack,
+.traffic__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.traffic__stack {
+  gap: 24px;
+}
+
+.traffic__kpi {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.traffic__grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.traffic__source-meta {
+  font-size: 12px;
+}
+
+.traffic__state {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.traffic__state-icon {
+  font-size: 40px;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.traffic__setup-steps {
+  padding-left: 20px;
+  margin-bottom: 12px;
+}
+
+.traffic__setup-steps li {
+  margin-bottom: 6px;
+}
+
+.traffic__share-row {
+  grid-template-columns: minmax(6.5rem, max-content) 1fr auto minmax(6rem, max-content);
+}
+
+.traffic__share-count {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.traffic__table .ant-table {
+  background: transparent;
+}
+
+.traffic__num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .traffic__grid-2 {
+    grid-template-columns: 1fr;
   }
 }
 

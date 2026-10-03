@@ -1,6 +1,6 @@
 import type { SessionUser } from '@/shared/auth/session';
 
-/** Role user pada sistem (docs/api/auth, role matrix Section 22 API doc). */
+/** Role user pada sistem . */
 export const ROLES = ['root', 'admin', 'reviewer', 'editor', 'contributor'] as const;
 export type UserRole = (typeof ROLES)[number];
 

@@ -51,7 +51,7 @@ const { Text } = Typography;
 
 /**
  * Halaman Edit Kata - FULL REPLACE PUT /api/v1/admin/words/:id
- * (docs/admin/02-edit-kata.md + docs/api/05-api-edit-kata.md).
+ * .
  * Memakai ulang seluruh blok form create-word (word-form-blocks.tsx) dan
  * prefill dari GET /admin/words/:id (semua status bisa dibuka).
  *

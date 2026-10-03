@@ -1,4 +1,4 @@
-/** Bentuk wire `GET /admin/abuse/*` (docs/api/38-api-admin-abuse.md). */
+/** Bentuk wire `GET /admin/abuse/*` . */
 
 export type AnonSubjectKind = 'ip' | 'device';
 

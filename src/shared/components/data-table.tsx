@@ -53,7 +53,7 @@ function renderDefaultCell(value: unknown): React.ReactNode {
  *   tombol selalu terjangkau tanpa menggulir ke ujung kanan.
  *
  * Konvensi: `rowKey` (dan `getRowId` di tabel) = `String(record.id)` - ULID
- * item (docs/api Section 19).
+ * item (pagination).
  */
 export function DataTable<TData>({
   table,

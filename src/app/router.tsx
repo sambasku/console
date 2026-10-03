@@ -7,6 +7,8 @@ import { BaseLayout } from '@/shared/layouts/base-layout';
 import { ConsoleLayout } from '@/shared/layouts/console-layout';
 import { LoginPage } from '@/features/auth/presentation/login-page';
 import { DashboardPage } from '@/features/dashboard/presentation/dashboard-page';
+import { WebAnalyticsPage } from '@/features/web-analytics/presentation/web-analytics-page';
+import { parseTrafficSearch } from '@/features/web-analytics/domain/date-range';
 import { WordsPage } from '@/features/words/presentation/words-page';
 import { CreateWordPage } from '@/features/words/presentation/create-word-page';
 import { EditWordPage } from '@/features/words/presentation/edit-word-page';
@@ -45,7 +47,7 @@ import { NotFoundPage } from '@/shared/layouts/not-found-page';
  *
  * - Root route: `beforeLoad` menjalankan session restore (hard reload) &
  *   seluruh navigasi lewat sini duluan.
- * - Dua layout (docs/admin/admin-base-stack.md Section 7):
+ * - Dua layout :
  *   - `base-layout`   - publik / pra-auth (login). Guard: kalau sudah login,
  *     tidak boleh mampir ke sini (redirect /dashboard).
  *   - `console-layout` - area terproteksi. Guard: kalau belum login,
@@ -107,6 +109,13 @@ const dashboardRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/dashboard',
   component: DashboardPage,
+});
+
+const dashboardTrafficRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/dashboard/traffic',
+  validateSearch: parseTrafficSearch,
+  component: WebAnalyticsPage,
 });
 
 const wordsRoute = createRoute({
@@ -349,6 +358,7 @@ const routeTree = rootRoute.addChildren([
   consoleLayoutAliasRoute,
   consoleLayoutRoute.addChildren([
     dashboardRoute,
+    dashboardTrafficRoute,
     wordsRoute,
     importHistoryRoute,
     importHistoryDetailRoute,

@@ -1,7 +1,7 @@
 /**
  * Session store (in-memory) - access token + user sesi login.
  *
- * Prinsip (docs/api/00-api-auth.md): access_token HANYA disimpan di memory,
+ * Prinsip : access_token HANYA disimpan di memory,
  * TIDAK di localStorage/sessionStorage (XSS = kehilangan token). refresh_token
  * hidup di httpOnly cookie yang dikelola browser - otomatis dikirim ke
  * POST /api/v1/auth/refresh saat access token kadaluarsa.

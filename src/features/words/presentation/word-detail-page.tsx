@@ -57,7 +57,7 @@ function StatusTag({ status }: { status: WordStatus }) {
 /**
  * Halaman Detail Kata (read-only) - /words/:id. Ringkasan penuh satu entri
  * untuk SEMUA status (draft/pending_review/published/rejected) via
- * GET /api/v1/admin/words/:id (docs/admin/03 → halaman yang MENGAWALI edit:
+ * GET /api/v1/admin/words/:id → → halaman yang MENGAWALI edit:
  * baca status dulu, baru pilih "Ubah").
  *
  * Kontributor tidak bisa membuka detail admin (endpoint role verifikator) -
@@ -802,7 +802,7 @@ function WordDetailContent({
         )}
       </div>
 
-      {/* 8. Komentar - semua status + moderasi inline (docs/admin/06) */}
+      {/* 8. Komentar - semua status + moderasi inline */}
       <div>
         <Text strong style={{ display: 'block', marginBottom: 8 }}>
           Komentar

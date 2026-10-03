@@ -1,6 +1,6 @@
 /**
  * Item antrean / detail komentar - GET /api/v1/admin/comments
- * (docs/api/09-api-comment.md). Post-moderation statuses.
+ * . Post-moderation statuses.
  */
 
 export const COMMENT_STATUSES = ['published', 'taken_down', 'deleted_by_author'] as const;

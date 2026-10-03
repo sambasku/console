@@ -16,10 +16,6 @@ admin untuk mengelola kata, antrean kontribusi, moderasi, dan pengguna.
 | HTTP | Axios (`/api` di-proxy ke API staging saat `pnpm dev`) |
 | Deploy | Cloudflare Pages |
 
-Acuan tetap: `docs/admin/admin-base-stack.md` di repo
-[sambasku-docs](https://github.com/iamutaki/sambasku-docs).
-Kontrak API: envelope, cursor pagination, role matrix di `docs/api/*`.
-
 ## Fitur utama
 
 | Area | Rute |

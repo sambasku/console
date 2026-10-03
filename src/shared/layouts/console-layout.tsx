@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import {
   AlertOutlined,
   AuditOutlined,
+  BarChartOutlined,
   BookOutlined,
   CommentOutlined,
   DashboardOutlined,
@@ -11,6 +12,7 @@ import {
   FlagOutlined,
   InboxOutlined,
   LikeOutlined,
+  LineChartOutlined,
   LogoutOutlined,
   MessageOutlined,
   NotificationOutlined,
@@ -37,6 +39,12 @@ import { App as AntdApp } from 'antd';
 
 const { Sider, Header, Content } = Layout;
 
+/** Leaf routes di bawah grup Analitik. */
+const ANALYTICS_ROUTES = {
+  '/dashboard': { icon: <DashboardOutlined />, label: 'Ringkasan' },
+  '/dashboard/traffic': { icon: <LineChartOutlined />, label: 'Trafik Web' },
+} as const;
+
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
 const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
@@ -62,19 +70,20 @@ const SYSTEM_ROUTES = {
   '/system/abuse': { icon: <AlertOutlined />, label: 'Abuse' },
 } as const;
 
+type AnalyticsRoute = keyof typeof ANALYTICS_ROUTES;
 type KamusRoute = keyof typeof KAMUS_ROUTES;
 type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
-  | '/dashboard'
   | '/users'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
   | '/legal'
   | '/oauth';
-type MenuRoute = KamusRoute | NotificationRoute | SystemRoute | TopRoute;
+type MenuRoute = AnalyticsRoute | KamusRoute | NotificationRoute | SystemRoute | TopRoute;
 
+const ANALYTICS_GROUP_KEY = 'analitik';
 const KAMUS_GROUP_KEY = 'kamus';
 const NOTIFICATION_GROUP_KEY = 'notifikasi';
 const SYSTEM_GROUP_KEY = 'system';
@@ -110,6 +119,7 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
+  if (top === '/dashboard') return ANALYTICS_GROUP_KEY;
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
   if (pathname.startsWith('/system')) return SYSTEM_GROUP_KEY;
@@ -151,8 +161,19 @@ export function ConsoleLayout() {
       )
       .map(([key, { icon, label }]) => ({ key, icon, label }));
 
+    const analyticsChildren = (
+      Object.entries(ANALYTICS_ROUTES) as [AnalyticsRoute, (typeof ANALYTICS_ROUTES)[AnalyticsRoute]][]
+    )
+      .filter(([key]) => key !== '/dashboard/traffic' || canManageUsers)
+      .map(([key, { icon, label }]) => ({ key, icon, label }));
+
     const items: MenuProps['items'] = [
-      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Analitik' },
+      {
+        key: ANALYTICS_GROUP_KEY,
+        icon: <BarChartOutlined />,
+        label: 'Analitik',
+        children: analyticsChildren,
+      },
       {
         key: KAMUS_GROUP_KEY,
         icon: <BookOutlined />,
@@ -214,6 +235,10 @@ export function ConsoleLayout() {
     const subLabel =
       segments[0] === 'system'
         ? undefined
+        : segments[0] === 'dashboard'
+        ? segments[1] === 'traffic'
+          ? 'Trafik Web'
+          : 'Ringkasan'
         : segments[0] === 'words'
         ? segments[1] === 'new'
           ? 'Tambah Kata'
@@ -248,7 +273,7 @@ export function ConsoleLayout() {
   }, [isLoggedIn, navigate]);
 
   const currentMenuKey =
-    pathname.startsWith('/system/')
+    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/')
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'

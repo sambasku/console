@@ -1,5 +1,5 @@
 /**
- * Bentuk response standar API (docs/api/api-base-stack.md Section 13).
+ * Bentuk response standar API (standar API).
  * Semua endpoint wajib membungkus response dalam envelope berikut.
  */
 
@@ -34,7 +34,7 @@ export interface CursorMeta {
 }
 
 /**
- * Envelope list ber-pagination (docs/api/api-base-stack.md Section 13):
+ * Envelope list ber-pagination (standar API):
  * `meta` SEBLAHAN `data` di level envelope, bukan bersarang di dalamnya -
  * i.e. `{ success, data: [...], meta: {...} }`.
  */
