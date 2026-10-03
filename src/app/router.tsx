@@ -9,6 +9,7 @@ import { LoginPage } from '@/features/auth/presentation/login-page';
 import { DashboardPage } from '@/features/dashboard/presentation/dashboard-page';
 import { WebAnalyticsPage } from '@/features/web-analytics/presentation/web-analytics-page';
 import { parseTrafficSearch } from '@/features/web-analytics/domain/date-range';
+import { PlayAnalyticsPage, parsePlaySearch } from '@/features/play-analytics/presentation/play-analytics-page';
 import { WordsPage } from '@/features/words/presentation/words-page';
 import { CreateWordPage } from '@/features/words/presentation/create-word-page';
 import { EditWordPage } from '@/features/words/presentation/edit-word-page';
@@ -116,6 +117,13 @@ const dashboardTrafficRoute = createRoute({
   path: '/dashboard/traffic',
   validateSearch: parseTrafficSearch,
   component: WebAnalyticsPage,
+});
+
+const dashboardPlayRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/dashboard/play',
+  validateSearch: parsePlaySearch,
+  component: PlayAnalyticsPage,
 });
 
 const wordsRoute = createRoute({
@@ -359,6 +367,7 @@ const routeTree = rootRoute.addChildren([
   consoleLayoutRoute.addChildren([
     dashboardRoute,
     dashboardTrafficRoute,
+    dashboardPlayRoute,
     wordsRoute,
     importHistoryRoute,
     importHistoryDetailRoute,

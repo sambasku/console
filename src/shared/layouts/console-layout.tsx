@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import {
   AlertOutlined,
+  AndroidOutlined,
   AuditOutlined,
   BarChartOutlined,
   BookOutlined,
@@ -43,6 +44,7 @@ const { Sider, Header, Content } = Layout;
 const ANALYTICS_ROUTES = {
   '/dashboard': { icon: <DashboardOutlined />, label: 'Ringkasan' },
   '/dashboard/traffic': { icon: <LineChartOutlined />, label: 'Trafik Web' },
+  '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -164,7 +166,7 @@ export function ConsoleLayout() {
     const analyticsChildren = (
       Object.entries(ANALYTICS_ROUTES) as [AnalyticsRoute, (typeof ANALYTICS_ROUTES)[AnalyticsRoute]][]
     )
-      .filter(([key]) => key !== '/dashboard/traffic' || canManageUsers)
+      .filter(([key]) => key !== '/dashboard/traffic' && key !== '/dashboard/play' ? true : canManageUsers)
       .map(([key, { icon, label }]) => ({ key, icon, label }));
 
     const items: MenuProps['items'] = [
@@ -238,6 +240,8 @@ export function ConsoleLayout() {
         : segments[0] === 'dashboard'
         ? segments[1] === 'traffic'
           ? 'Trafik Web'
+          : segments[1] === 'play'
+          ? 'Play Store'
           : 'Ringkasan'
         : segments[0] === 'words'
         ? segments[1] === 'new'

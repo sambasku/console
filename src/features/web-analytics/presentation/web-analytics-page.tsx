@@ -5,6 +5,7 @@ import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { Button, DatePicker, Result, Segmented, Tabs } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { PageHeader } from '@/shared/components/page-header';
+import { StagingBlocked } from '@/shared/components/staging-blocked';
 import { useAuth } from '@/shared/auth/use-auth';
 import { RANGE_PRESET_LABELS, toRangeQuery, type TrafficSearch } from '../domain/date-range';
 import { RANGE_PRESETS, SECTION_LABELS, WEB_ANALYTICS_SECTIONS, type RangePreset } from '../domain/web-analytics';
@@ -41,6 +42,8 @@ export function WebAnalyticsPage() {
       />
     );
   }
+
+  if (import.meta.env.MODE === 'staging') return <StagingBlocked title="Trafik Web" />;
 
   const setSearch = (next: TrafficSearch) => void navigate({ to: '/dashboard/traffic', search: next });
   const query = toRangeQuery(search);
