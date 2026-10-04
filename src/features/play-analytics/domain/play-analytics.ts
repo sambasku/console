@@ -80,7 +80,7 @@ export interface PlayRatings {
   buckets: PlayRatingBucket[];
 }
 
-export interface PlayReport {
+export interface PlayReport<T = PlayOverview | PlayGrowth | PlayRatings> {
   section: PlaySection;
   range: {
     start: string;
@@ -89,5 +89,5 @@ export interface PlayReport {
     previous_end: string;
     days: number;
   };
-  play: PlayProviderResult<PlayOverview | PlayGrowth | PlayRatings>;
+  play: PlayProviderResult<T>;
 }

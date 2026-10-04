@@ -2,8 +2,8 @@ import { useState, type ReactNode } from 'react';
 import { ApiOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Alert, Button, Empty, Modal, Skeleton, Typography } from 'antd';
 import { formatRangeLabel } from '@/features/web-analytics/domain/date-range';
-import type { DateRangeWire } from '../domain/play-analytics';
-import type { PlayView } from '../application/play-provider-state';
+import type { DateRangeWire } from '../../domain/play-analytics';
+import type { PlayView } from '../../application/play-provider-state';
 
 export interface PlaySectionProps<T> {
   view: PlayView<T>;
