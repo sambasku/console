@@ -12,7 +12,7 @@ describe('sessionStore', () => {
   });
 
   it('signIn menyimpan token + user dan menandai autentikasi', () => {
-    const user: SessionUser = { id: '01HXYZABC', username: 'admin', role: 'admin' };
+    const user: SessionUser = { id: '01HXYZABC', username: 'admin', roles: ['admin'], role: 'admin' };
     sessionStore.signIn('access-token', 900, user);
 
     const state = sessionStore.getSnapshot();
@@ -23,7 +23,7 @@ describe('sessionStore', () => {
   });
 
   it('updateAccessToken mengganti token tanpa menyentuh user', () => {
-    const user: SessionUser = { id: '01HXYZABC', username: 'admin', role: 'admin' };
+    const user: SessionUser = { id: '01HXYZABC', username: 'admin', roles: ['admin'], role: 'admin' };
     sessionStore.signIn('old-token', 900, user);
     sessionStore.updateAccessToken('new-token', 1800);
 
@@ -38,7 +38,7 @@ describe('sessionStore', () => {
   });
 
   it('clear mengosongkan sesi', () => {
-    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'admin', role: 'admin' });
+    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'admin', roles: ['admin'], role: 'admin' });
     sessionStore.clear();
     expect(sessionStore.isAuthenticated()).toBe(false);
     expect(sessionStore.getSnapshot()).toEqual(EMPTY_SESSION);
@@ -48,6 +48,7 @@ describe('sessionStore', () => {
     const user: SessionUser = {
       id: '01HXYZABC',
       username: 'siti',
+      roles: ['reviewer'],
       role: 'reviewer',
       display_name: 'Siti',
     };
@@ -56,17 +57,18 @@ describe('sessionStore', () => {
   });
 
   it('restore menormalisasi display_name hilang menjadi null', () => {
-    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'siti', role: 'reviewer' });
+    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'siti', roles: ['reviewer'], role: 'reviewer' });
     expect(restoreSessionUser()).toEqual({
       id: '01HXYZABC',
       username: 'siti',
+      roles: ['reviewer'],
       role: 'reviewer',
       display_name: null,
     });
   });
 
   it('clear menghapus cache identitas', () => {
-    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'siti', role: 'reviewer' });
+    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'siti', roles: ['reviewer'], role: 'reviewer' });
     sessionStore.clear();
     expect(restoreSessionUser()).toBeNull();
   });
@@ -74,7 +76,7 @@ describe('sessionStore', () => {
   it('subscribe memberi notifikasi saat state berubah, dan unsubscribe berhenti', () => {
     const seen: number[] = [];
     const unsubscribe = sessionStore.subscribe(() => seen.push(seen.length + 1));
-    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'admin', role: 'admin' });
+    sessionStore.signIn('token', 900, { id: '01HXYZABC', username: 'admin', roles: ['admin'], role: 'admin' });
     expect(seen.length).toBe(1);
     unsubscribe();
     sessionStore.clear();
@@ -88,6 +90,7 @@ describe('userFromJwtClaims', () => {
     expect(user).toEqual({
       id: '01HXYZABC',
       username: '01HXYZABC',
+      roles: ['editor'],
       role: 'editor',
       display_name: null,
     });
@@ -96,7 +99,7 @@ describe('userFromJwtClaims', () => {
   it('menggunakan username dari cache identitas bila klaim tidak membawanya', () => {
     const user = userFromJwtClaims(
       { sub: '01HXYZABC', role: 'editor' },
-      { id: '01HXYZABC', username: 'budi', role: 'editor', display_name: 'Budi' },
+      { id: '01HXYZABC', username: 'budi', roles: ['editor'], role: 'editor', display_name: 'Budi' },
     );
     expect(user?.username).toBe('budi');
     expect(user?.display_name).toBe('Budi');

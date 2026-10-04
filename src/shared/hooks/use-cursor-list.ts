@@ -17,7 +17,7 @@ export interface CursorListOptions<T> {
 }
 
 /**
- * Hook baku untuk semua halaman list ber-pagination cursor (docs/api Section
+ * Hook baku untuk semua halaman list ber-pagination cursor (
  * 13: `?limit=&cursor=` + `meta.has_more`). Memakai `useInfiniteQuery`:
  * - halaman tersimpan berurutan (page 1, 2, 3, ...)
  * - `getNextPageParam` membaca `meta.next_cursor`

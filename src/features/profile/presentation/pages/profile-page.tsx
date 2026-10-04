@@ -19,7 +19,7 @@ export function ProfilePage() {
     <>
       <PageHeader
         title="Profil"
-        subtitle="Informasi akun dan pengaturan keamanan sesi Anda."
+        subtitle="Informasi akun dan pengaturan keamanan sesimu."
       />
 
       <Row gutter={[16, 16]}>
@@ -51,7 +51,7 @@ export function ProfilePage() {
         <Col xs={24} md={16}>
           <Card title="Ubah Password">
             <Typography.Paragraph type="secondary" style={{ marginBottom: 24 }}>
-              Setelah password diganti, semua sesi (termasuk yang ini) diakhiri dan Anda
+              Setelah password diganti, semua sesi (termasuk yang ini) ditutup dan kamu
               diminta login ulang dengan password baru.
             </Typography.Paragraph>
             <ChangePasswordForm />

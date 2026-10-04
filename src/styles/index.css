@@ -103,6 +103,32 @@ body {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+/* Scrollbar tipis, thumb baru terlihat saat hover. Browser yang dukung
+   scrollbar-color (Chrome 121+, Firefox, Safari 18.2+) mengabaikan
+   ::-webkit-scrollbar; blok webkit untuk Safari lama. */
+.console-layout__sider-menu:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.console-layout__sider-menu::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.console-layout__sider-menu:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .console-layout__sider-brand {
@@ -129,7 +155,7 @@ body {
 }
 
 .console-layout__content {
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -140,7 +166,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 24px;
+  padding: 20px;
 }
 
 /* Alert banner AntD: jangan tarik margin negatif ke kartu di bawahnya. */
@@ -184,7 +210,7 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .dashboard .page-header {
@@ -194,7 +220,7 @@ body {
 .dashboard__kpi {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
   margin: 0;
 }
 
@@ -210,11 +236,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 2px;
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
   background: #fff;
@@ -251,11 +277,11 @@ body {
 }
 
 .dashboard__kpi-value {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: rgba(0, 0, 0, 0.88);
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .dashboard__kpi-meta {
@@ -274,7 +300,7 @@ body {
   align-items: center;
   gap: 8px 10px;
   margin: 0;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
   background: #fafafa;
@@ -358,7 +384,7 @@ body {
 
 .dashboard__chart {
   margin: 0;
-  padding: 12px 14px 8px;
+  padding: 10px 12px 6px;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
   background: #fff;
@@ -367,7 +393,7 @@ body {
 .dashboard__charts {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .dashboard__charts--skeleton {
@@ -377,16 +403,16 @@ body {
 .dashboard__breakdowns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .dashboard__lists-section {
   margin-top: 4px;
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid #f0f0f0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .dashboard__lists-heading {
@@ -413,7 +439,7 @@ body {
 .dashboard__lists {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   align-items: start;
 }
 
@@ -789,6 +815,23 @@ body {
   background: #fafafa;
 }
 
+/* Baris meta padat: Perlu Tindakan + Hari ini berdampingan, turun ke bawah di layar sempit. */
+.dashboard__meta-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.dashboard__meta-row .dashboard__attention,
+.dashboard__meta-row .dashboard__today {
+  margin: 0;
+}
+
+.dashboard__meta-row .dashboard__today {
+  align-items: center;
+}
+
 .dashboard__today-title {
   font-size: 12px;
   font-weight: 500;
@@ -852,6 +895,10 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .dashboard__meta-row {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard__breakdowns {
     grid-template-columns: 1fr;
   }
@@ -868,6 +915,94 @@ body {
 
   .dashboard__chart-tooltip {
     align-items: flex-start;
+  }
+}
+
+/* ---- Trafik Web (GA4 + Search Console) - menumpang gaya .dashboard ---- */
+
+.traffic__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.traffic__toolbar-note {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.traffic__tabs .ant-tabs-nav {
+  margin-bottom: 0;
+}
+
+.traffic__stack,
+.traffic__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.traffic__stack {
+  gap: 24px;
+}
+
+.traffic__kpi {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.traffic__grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.traffic__source-meta {
+  font-size: 12px;
+}
+
+.traffic__state {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.traffic__state-icon {
+  font-size: 40px;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.traffic__setup-steps {
+  padding-left: 20px;
+  margin-bottom: 12px;
+}
+
+.traffic__setup-steps li {
+  margin-bottom: 6px;
+}
+
+.traffic__share-row {
+  grid-template-columns: minmax(6.5rem, max-content) 1fr auto minmax(6rem, max-content);
+}
+
+.traffic__share-count {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.traffic__table .ant-table {
+  background: transparent;
+}
+
+.traffic__num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .traffic__grid-2 {
+    grid-template-columns: 1fr;
   }
 }
 

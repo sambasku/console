@@ -1,4 +1,4 @@
-/** Domain usul perubahan kata (docs/api/17-api-suggest-edit-word.md). */
+/** Domain usul perubahan kata . */
 
 export type SuggestionStatus = 'pending' | 'approved' | 'rejected' | 'corrected';
 

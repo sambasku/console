@@ -457,7 +457,7 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
             onApply={(blob) => {
               setCensoredByImageId((prev) => ({ ...prev, [censorTarget.id]: blob }));
               setCensorTarget(null);
-              message.success('Sensor disimpan. Akan dikirim saat Setujui.');
+              message.success('Sensor disimpan. Dikirim saat kamu menekan Setujui.');
             }}
           />
         ) : null}

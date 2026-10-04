@@ -124,7 +124,7 @@ export function CommentBlocklistPage() {
   });
 
   if (!canManage) {
-    return <Alert type="warning" showIcon message="Hanya admin/root yang dapat mengelola blocklist" />;
+    return <Alert type="warning" showIcon message="Hanya admin/root yang bisa mengelola blocklist" />;
   }
 
   return (

@@ -23,7 +23,7 @@ export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
 
 /**
  * Item antrean review - contract GET /api/v1/admin/contributions
- * (docs/api/03-api-kontribusi-verifikasi.md).
+ * .
  */
 export interface ContributionListItem {
   id: string;
@@ -59,14 +59,14 @@ export interface ListContributionsParams {
 // ---------------------------------------------------------------------------
 // Detail kontribusi - GET /api/v1/admin/contributions/:id
 // Response `data` = { contribution, review, entity } dengan `entity`
-// POLYMORPHIC per entity_type (docs/api/03-api-kontribusi-verifikasi.md):
+// POLYMORPHIC per entity_type :
 //  - 'word'          → detail kata semua status (anak pending ikut terlihat)
 //  - 'pronunciation' → row + referensi parent (field editable di data.*)
  //  - 'word_image'    → row + referensi parent
 //  - 'word_audio'    → row + referensi parent
 //  - 'example'       → row + referensi parent
 //
-// CATATAN drifting kontrak: docs/json menuliskan bentuk datar snake_case,
+// CATATAN drifting kontrak: snapshot JSON menuliskan bentuk datar snake_case,
 // sementara serializer backend saat ini mengeluarkan WordDetail camelCase
 // (word) dan ChildEntityWithParent { id, wordId, wordLemma, data, status,
 // isVerified, isCorrected } (anak). View model TIDAK mengunci salah satu -

@@ -289,7 +289,7 @@ export function WordsPage() {
             {user?.role !== 'contributor' ? (
               <Popconfirm
                 title={`Hapus kata "${info.row.original.lemma}"?`}
-                description="Kata akan hilang dari kamus publik & daftar admin. Soft-delete: data tetap disimpan untuk audit/recovery."
+                description="Kata hilang dari kamus publik & daftar admin. Soft-delete: datanya tetap tersimpan untuk audit/recovery."
                 okText="Hapus"
                 okButtonProps={{ danger: true }}
                 cancelText="Batal"
@@ -338,7 +338,7 @@ export function WordsPage() {
     <>
       <PageHeader
         title="Kata"
-        subtitle="Kamus kosakata - list, cari, dan kelola entri. Tab Tidak tayang untuk draft / ditarik."
+        subtitle="Kamus kosakata - list, cari, dan kelola entri. Tab Tidak tayang untuk draf / yang ditarik."
         extra={
           <Flex gap={8}>
             {canImport ? (

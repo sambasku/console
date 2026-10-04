@@ -31,7 +31,7 @@ function formatParts(
  * Format tanggal-waktu UI Indonesia.
  * Contoh: `17 Nov 2026 21:00`
  *
- * Pola baku admin (lihat docs/admin/admin-base-stack.md).
+ * Pola baku admin .
  */
 export function formatDateTime(
   value: string | number | Date | null | undefined,

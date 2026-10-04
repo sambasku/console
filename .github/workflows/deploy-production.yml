@@ -79,3 +79,18 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=sambasku-admin --branch=main
+
+      # Assertion security headers (issue #19 H-01): deploy dianggap gagal
+      # kalau header wajib tidak terpasang. Propagasi edge Pages bisa
+      # beberapa detik, jadi curl di-retry.
+      - name: Verifikasi security headers
+        run: |
+          headers=$(curl -sI --retry 5 --retry-all-errors --retry-delay 3 https://console.sambasku.com/)
+          echo "$headers"
+          echo "$headers" | grep -qi 'content-security-policy:' || { echo 'CSP tidak ada'; exit 1; }
+          for host in api.sambasku.com deno.sambasku.com render.sambasku.com; do
+            echo "$headers" | grep -i 'content-security-policy:' | grep -q "$host" || { echo "CSP tidak memuat $host"; exit 1; }
+          done
+          echo "$headers" | grep -qi 'x-frame-options: deny' || { echo 'X-Frame-Options DENY tidak ada'; exit 1; }
+          echo "$headers" | grep -qi 'strict-transport-security:' || { echo 'HSTS tidak ada'; exit 1; }
+          echo "$headers" | grep -qi 'x-robots-tag: noindex' || { echo 'X-Robots-Tag tidak ada'; exit 1; }

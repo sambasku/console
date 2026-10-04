@@ -286,7 +286,7 @@ function LemmaCard({
                   <Typography.Text type="secondary">
                     {extra.dirty
                       ? 'Makna ini diganti. Contoh dan label sumber tidak ikut.'
-                      : 'Makna ini akan disalin.'}
+                      : 'Makna ini disalin.'}
                   </Typography.Text>
                 </>
               ) : null}
@@ -347,7 +347,7 @@ function LemmaCard({
           </Popconfirm>
           <Popconfirm
             title="Tandai koma sebagai literal?"
-            description="Entri ini tidak akan muncul lagi di antrean Pemisahan."
+            description="Entri ini tidak muncul lagi di antrean Pemisahan."
             okText="Tandai"
             cancelText="Batal"
             onConfirm={onLiteral}
@@ -465,7 +465,7 @@ function TranslationCard({
           </Popconfirm>
           <Popconfirm
             title="Tandai koma sebagai literal?"
-            description="Terjemahan ini tidak akan muncul lagi di antrean Pemisahan."
+            description="Terjemahan ini tidak muncul lagi di antrean Pemisahan."
             okText="Tandai"
             cancelText="Batal"
             onConfirm={onLiteral}
@@ -509,7 +509,7 @@ export function WordCommaSplitsPanel({ canApply }: { canApply: boolean }) {
   if (lemmas.length === 0 && translations.length === 0) {
     return (
       <Empty
-        description="Tidak ada lemma atau terjemahan berkoma yang perlu dipisah"
+        description="Tidak ada lemma atau terjemahan berkoma yang perlu dipisah. Mantap!"
         image={Empty.PRESENTED_IMAGE_SIMPLE}
       />
     );

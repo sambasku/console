@@ -152,7 +152,7 @@ export function ContributionsPage() {
         title={mineOnly ? 'Riwayat Verifikasi Saya' : 'Antrean Review'}
         subtitle={
           mineOnly
-            ? 'Keputusan yang Anda berikan - buka ulang untuk memperbaiki kesalahan, atau cabut verifikasi kata.'
+            ? 'Keputusan yang kamu berikan - buka ulang untuk memperbaiki kesalahan, atau cabut verifikasi kata.'
             : 'Tinjau di tempat yang sama - setujui/tolak/koreksi lalu lanjut otomatis ke usulan berikutnya.'
         }
         extra={

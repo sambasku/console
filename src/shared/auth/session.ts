@@ -1,7 +1,7 @@
 /**
  * Session store (in-memory) - access token + user sesi login.
  *
- * Prinsip (docs/api/00-api-auth.md): access_token HANYA disimpan di memory,
+ * Prinsip : access_token HANYA disimpan di memory,
  * TIDAK di localStorage/sessionStorage (XSS = kehilangan token). refresh_token
  * hidup di httpOnly cookie yang dikelola browser - otomatis dikirim ke
  * POST /api/v1/auth/refresh saat access token kadaluarsa.
@@ -17,6 +17,9 @@ export interface SessionUser {
   username: string;
   /** Nama tampilan; opsional (login lama / JWT restore tanpa klaim). */
   display_name?: string | null;
+  /** Semua role user (multi role). */
+  roles: string[];
+  /** @deprecated Derived tertinggi dari roles (wire compat). Baca `roles`. */
   role: string;
 }
 
@@ -45,12 +48,18 @@ export function restoreSessionUser(): SessionUser | null {
     const raw = sessionStorage.getItem(USER_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SessionUser;
-    if (typeof parsed?.id !== 'string' || typeof parsed?.username !== 'string' || typeof parsed?.role !== 'string') {
+    if (
+      typeof parsed?.id !== 'string' ||
+      typeof parsed?.username !== 'string' ||
+      typeof parsed?.role !== 'string' ||
+      !Array.isArray(parsed.roles)
+    ) {
       return null;
     }
     return {
       id: parsed.id,
       username: parsed.username,
+      roles: parsed.roles,
       role: parsed.role,
       display_name: typeof parsed.display_name === 'string' ? parsed.display_name : null,
     };
@@ -68,20 +77,29 @@ function cacheUser(user: SessionUser): void {
 }
 
 /**
- * Bangun SessionUser dari klaim JWT (sub = user_id, role) dengan fallback ke
+ * Bangun SessionUser dari klaim JWT (sub = user_id, role/roles) dengan fallback ke
  * user yang di-cache di sessionStorage (username). Null kalau `sub` tidak ada
  * (token invalid bentuk).
+ * 
+ * Legacy token hanya punya `role` string, normalisasi ke `roles: [role]`.
  */
 export function userFromJwtClaims(
-  claims: { sub?: string; role?: string; username?: string },
+  claims: { sub?: string; role?: string; roles?: string[]; username?: string },
   cached?: SessionUser | null,
 ): SessionUser | null {
   if (!claims.sub) return null;
+  const roles = Array.isArray(claims.roles) && claims.roles.length > 0
+    ? claims.roles
+    : claims.role
+      ? [claims.role]
+      : cached?.roles ?? ['contributor'];
+  const primary = roles[0]; // fallback pertama
   return {
     id: claims.sub,
     username: cached?.username ?? claims.username ?? claims.sub,
     display_name: cached?.display_name ?? null,
-    role: claims.role ?? cached?.role ?? 'contributor',
+    roles,
+    role: primary,
   };
 }
 

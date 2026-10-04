@@ -1,6 +1,6 @@
 /**
  * Item jejak audit - contract GET /api/v1/admin/audit-logs
- * (docs/api/02-api-audit-logs.md). `old_data`/`new_data` sudah dijamin bersih
+ * . `old_data`/`new_data` sudah dijamin bersih
  * di sisi tulis (tanpa password/token - Section 21 api-base-stack).
  */
 export interface AuditLogListItem {

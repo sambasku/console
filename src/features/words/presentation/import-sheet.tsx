@@ -351,7 +351,7 @@ export function ImportSheet({
           {
             key: 'verify',
             label: 'Tayang',
-            tip: 'Tayangkan: kata langsung published. Tanpa centang, tersimpan sebagai draf.',
+            tip: 'Tayangkan: kata langsung tayang. Tanpa centang, tersimpan sebagai draf.',
           },
           {
             key: 'verified',
@@ -474,7 +474,7 @@ export function ImportSheet({
             const rowHint = failed
               ? row.word.importError || 'Gagal disimpan - coba Simpan lagi'
               : unused
-                ? 'Tidak ikut disimpan: terjemahan dan penjelasan arti kosong'
+                ? 'Tidak ikut disimpan: terjemahan dan penjelasan artinya kosong'
                 : row.word.message;
             const gutterBg = failed
               ? FAIL_GUTTER

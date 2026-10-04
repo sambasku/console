@@ -289,7 +289,7 @@ export function SearchMissesPage() {
                     <Button type="link" icon={<PlusOutlined />} onClick={() => onCreateWord(row)} />
                   </Tooltip>
                   {canEdit ? (
-                    <Tooltip title="Selesaikan ke kata existing (varian / sinonim / terjemahan)">
+                    <Tooltip title="Sambungkan ke kata existing (varian / sinonim / terjemahan)">
                       <Button
                         type="link"
                         icon={<LinkOutlined />}
@@ -302,7 +302,7 @@ export function SearchMissesPage() {
               {canDismiss ? (
                 <Popconfirm
                   title="Hapus dari antrian?"
-                  description="Aksi tidak bisa dibatalkan. Item ini akan hilang dari daftar."
+                  description="Aksi ini tidak bisa dibatalkan. Item hilang dari daftar."
                   okText="Dismiss"
                   okButtonProps={{ danger: true }}
                   cancelText="Batal"
@@ -352,7 +352,7 @@ export function SearchMissesPage() {
     <>
       <PageHeader
         title="Pencarian"
-        subtitle="Antrean kata yang dicari user tapi belum ada di kamus. Buat kata baru, atau selesaikan ke kata existing (varian / sinonim / terjemahan)."
+        subtitle="Antrean kata yang dicari user tapi belum ada di kamus. Buat kata baru, atau sambungkan ke kata existing (varian / sinonim / terjemahan)."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang
@@ -415,7 +415,7 @@ export function SearchMissesPage() {
           <Space wrap>
             <Popconfirm
               title={`Dismiss ${selectedCount} pencarian?`}
-              description="Soft-delete: hilang dari antrian & beranda; jejak tetap untuk audit."
+              description="Soft-delete: hilang dari antrian & beranda; jejaknya tetap untuk audit."
               okText="Dismiss"
               okButtonProps={{ danger: true }}
               cancelText="Batal"

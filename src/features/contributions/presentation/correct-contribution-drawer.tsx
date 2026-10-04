@@ -254,7 +254,7 @@ function CorrectWordForm({ form }: { form: FormInstance<CorrectFormValues> }) {
                 validator: (_, value) =>
                   Array.isArray(value) && value.length > 0
                     ? Promise.resolve()
-                    : Promise.reject(new Error('Minimal harus ada 1 makna')),
+                    : Promise.reject(new Error('Sisakan minimal 1 makna')),
               },
             ]}
           >

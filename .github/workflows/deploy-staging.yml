@@ -88,3 +88,14 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=sambasku-admin-staging --branch=staging
+
+      # Assertion security headers (issue #19 H-01). Staging tidak pakai
+      # fallback API host, jadi cukup header inti.
+      - name: Verifikasi security headers
+        run: |
+          headers=$(curl -sI --retry 5 --retry-all-errors --retry-delay 3 https://console-sambasku-staging.iamutaki.com/)
+          echo "$headers"
+          echo "$headers" | grep -qi 'content-security-policy:' || { echo 'CSP tidak ada'; exit 1; }
+          echo "$headers" | grep -qi 'x-frame-options: deny' || { echo 'X-Frame-Options DENY tidak ada'; exit 1; }
+          echo "$headers" | grep -qi 'strict-transport-security:' || { echo 'HSTS tidak ada'; exit 1; }
+          echo "$headers" | grep -qi 'x-robots-tag: noindex' || { echo 'X-Robots-Tag tidak ada'; exit 1; }

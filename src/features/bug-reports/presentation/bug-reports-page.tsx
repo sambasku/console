@@ -172,14 +172,14 @@ export function BugReportsPage() {
   });
 
   if (!canManage) {
-    return <Alert type="warning" showIcon message="Hanya admin dan root yang dapat melihat laporan masalah." />;
+    return <Alert type="warning" showIcon message="Hanya admin dan root yang bisa melihat laporan masalah." />;
   }
 
   return (
     <>
       <PageHeader
         title="Laporan Masalah"
-        subtitle="Antrean laporan dari aplikasi. Tamu dan akun login."
+        subtitle="Laporan masalah dari aplikasi, baik dari tamu maupun akun login."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

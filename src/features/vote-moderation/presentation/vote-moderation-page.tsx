@@ -81,7 +81,7 @@ function DeleteVoteAction({ vote }: { vote: AdminVoteListItem }) {
   return (
     <Popconfirm
       title="Hapus vote ini?"
-      description={`Vote voter "${vote.voterUsername}" pada target ini akan dihapus permanen (irreversible).`}
+      description={`Vote voter "${vote.voterUsername}" pada target ini dihapus permanen (irreversible).`}
       okText="Hapus"
       okButtonProps={{ danger: true }}
       cancelText="Batal"
@@ -111,7 +111,7 @@ function ResetTargetAction({ target }: { target: AdminTopTargetItem }) {
   return (
     <Popconfirm
       title="Reset SEMUA vote untuk target ini?"
-      description={`Semua ${target.upvotes + target.downvotes} vote (upvote + downvote) akan dihapus permanen, skor net balik ke 0. Tidak bisa dibatalkan.`}
+      description={`Semua ${target.upvotes + target.downvotes} vote (upvote + downvote) dihapus permanen, skor net balik ke 0. Tidak bisa dibatalkan.`}
       okText="Reset Semua"
       okButtonProps={{ danger: true }}
       cancelText="Batal"
@@ -441,7 +441,7 @@ export function VoteModerationPage() {
     <>
       <PageHeader
         title="Vote"
-        subtitle="Audit vote granular (hapus vote spam individual) dan reset massal per target untuk penanganan brigading."
+        subtitle="Audit vote per item (hapus vote spam satu-satu) dan reset massal per target untuk atasi brigading."
       />
       <Tabs
         activeKey={activeTab}

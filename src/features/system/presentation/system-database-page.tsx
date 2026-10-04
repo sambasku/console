@@ -188,7 +188,7 @@ export function SystemDatabasePage() {
 
   if (!canManage) {
     return (
-      <Alert type="warning" showIcon message="Hanya admin/root yang dapat mengelola backup DB." />
+      <Alert type="warning" showIcon message="Hanya admin/root yang bisa mengelola backup DB." />
     );
   }
 

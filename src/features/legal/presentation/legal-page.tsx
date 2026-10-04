@@ -73,7 +73,7 @@ export function LegalPage() {
 
   if (!canManage) {
     return (
-      <Alert type="warning" showIcon message="Hanya admin/root yang dapat mengelola dokumen legal." />
+      <Alert type="warning" showIcon message="Hanya admin/root yang bisa mengelola dokumen legal." />
     );
   }
 

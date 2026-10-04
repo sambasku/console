@@ -103,7 +103,7 @@ export function OauthPage() {
 
   if (!canManage) {
     return (
-      <Alert type="warning" showIcon message="Hanya admin/root yang dapat mengelola OAuth." />
+      <Alert type="warning" showIcon message="Hanya admin/root yang bisa mengelola OAuth." />
     );
   }
 
@@ -209,8 +209,8 @@ export function OauthPage() {
         }
       >
         <Typography.Paragraph type="secondary" style={{ marginTop: 0 }}>
-          First-party (<Typography.Text code>sambasku-*</Typography.Text>) tidak boleh di-revoke.
-          Prefix <Typography.Text code>sambasku-</Typography.Text> dicadangkan.
+          First-party (<Typography.Text code>sambasku-*</Typography.Text>) tidak bisa di-revoke.
+          Prefix <Typography.Text code>sambasku-</Typography.Text> sudah dicadangkan.
         </Typography.Paragraph>
         <Table<ApiClient>
           rowKey="id"

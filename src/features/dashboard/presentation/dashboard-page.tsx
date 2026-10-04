@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Alert, Button, Skeleton } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
+import { StagingBlocked } from '@/shared/components/staging-blocked';
 import { useAuth } from '@/shared/auth/use-auth';
 import { ROLE_LABELS, type UserRole } from '@/features/auth/domain/user';
 import { useDashboardStats } from '../application/use-dashboard-stats';
@@ -24,7 +25,13 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { data: stats, isPending, isError, isFetching, refetch } = useDashboardStats();
+  const isStaging = import.meta.env.MODE === 'staging';
+
+  // enabled: false di staging - hook tetap terpasang (aturan hooks), tapi
+  // tidak ada request API yang terpicu; halaman diganti blocker di bawah.
+  const { data: stats, isPending, isError, isFetching, refetch } = useDashboardStats({ enabled: !isStaging });
+
+  if (isStaging) return <StagingBlocked title="Ringkasan" />;
 
   const role = user?.role as UserRole | undefined;
   const roleLabel = role ? (ROLE_LABELS[role] ?? role) : null;
@@ -80,7 +87,7 @@ export function DashboardPage() {
           type="error"
           showIcon
           message="Statistik gagal dimuat"
-          description="Periksa koneksi lalu coba lagi."
+          description="Cek koneksi internet kamu, lalu coba lagi."
           action={
             <Button size="small" onClick={() => refetch()}>
               Coba lagi
@@ -108,16 +115,17 @@ export function DashboardPage() {
       ) : null}
 
       {stats ? (
-        <AttentionQueue
-          stats={stats}
-          onNavigateContributions={goContributions}
-          onNavigateWords={goWords}
-          onNavigateProblems={goProblems}
-          onNavigateVerifierApplications={goVerifier}
-        />
+        <div className="dashboard__meta-row">
+          <AttentionQueue
+            stats={stats}
+            onNavigateContributions={goContributions}
+            onNavigateWords={goWords}
+            onNavigateProblems={goProblems}
+            onNavigateVerifierApplications={goVerifier}
+          />
+          <TodayVsYesterday points={stats.activity.dailyLast30Days} />
+        </div>
       ) : null}
-
-      {stats ? <TodayVsYesterday points={stats.activity.dailyLast30Days} /> : null}
 
       {isPending && !stats ? (
         <div className="dashboard__charts dashboard__charts--skeleton">

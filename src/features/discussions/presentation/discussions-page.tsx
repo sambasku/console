@@ -147,7 +147,7 @@ export function DiscussionsPage() {
       <Alert
         type="warning"
         showIcon
-        message="Hanya admin, root, reviewer, dan editor yang dapat memoderasi ruang diskusi."
+        message="Hanya admin, root, reviewer, dan editor yang bisa memoderasi ruang diskusi."
       />
     );
   }
@@ -156,7 +156,7 @@ export function DiscussionsPage() {
     <>
       <PageHeader
         title="Ruang Diskusi"
-        subtitle="Antrean thread Ruang Diskusi dari aplikasi."
+        subtitle="Thread Ruang Diskusi dari aplikasi yang menunggu keputusanmu."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Muat ulang

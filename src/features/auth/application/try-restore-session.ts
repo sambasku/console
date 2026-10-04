@@ -7,8 +7,8 @@ import { revokeUnauthorizedConsoleSession } from './revoke-unauthorized-console-
 let restorePromise: Promise<boolean> | null = null;
 
 async function ensureConsoleRoleAllowed(): Promise<boolean> {
-  const role = sessionStore.getSnapshot().user?.role;
-  if (isConsoleAllowedRole(role)) return true;
+  const user = sessionStore.getSnapshot().user;
+  if (isConsoleAllowedRole(user)) return true;
   await revokeUnauthorizedConsoleSession();
   return false;
 }
@@ -16,7 +16,7 @@ async function ensureConsoleRoleAllowed(): Promise<boolean> {
 /**
  * Session restore saat boot / hard reload.
  *
- * Access token di memory hilang ketika halaman di-refresh (docs/auth: token
+ * Access token di memory hilang ketika halaman di-refresh (sesi: token
  * TIDAK di-persist). Proses: panggil POST /auth/refresh (httpOnly cookie
  * otomatis terkirim) → token baru → build user dari klaim JWT + cache
  * sessionStorage → signIn ulang. Kalau cookie tidak ada/invalid (401) → sesi

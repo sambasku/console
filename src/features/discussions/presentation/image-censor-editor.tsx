@@ -90,7 +90,7 @@ async function loadSourceCanvas(
       };
       img.onerror = () => {
         signal.removeEventListener('abort', onAbort);
-        reject(new Error('Gagal memuat gambar. Periksa CORS / URL staging.'));
+        reject(new Error('Gambar gagal dimuat. Cek CORS / URL staging.'));
       };
       img.src = url;
     });
@@ -320,7 +320,7 @@ export function ImageCensorEditor({
           setError(
             err instanceof Error
               ? err.message
-              : 'Gagal memuat gambar. Periksa CORS / URL staging.',
+              : 'Gambar gagal dimuat. Cek CORS / URL staging.',
           );
           setLoading(false);
         }

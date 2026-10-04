@@ -109,7 +109,7 @@ export function NotificationTemplatesPage() {
   );
 
   if (!canManage) {
-    return <Typography.Text type="secondary">Hanya admin/root yang dapat mengelola template.</Typography.Text>;
+    return <Typography.Text type="secondary">Hanya admin/root yang bisa mengelola template.</Typography.Text>;
   }
 
   const submit = async () => {

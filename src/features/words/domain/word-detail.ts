@@ -6,8 +6,8 @@ import type { UsageLabel, WordStatus, WordType } from './word';
  * 1. GET /api/v1/admin/words/:id  → WordDetail (prefill form edit, semua status)
  * 2. PUT /api/v1/admin/words/:id  → UpdateWordRequest/UpdateWordResult
  *
- * Kontrak: docs/api/05-api-edit-kata.md. Bentuk detail SAMA dengan
- * GET /api/v1/words/:id (docs/api/01-api-tambah-kata.md) plus created_at /
+ * Kontrak: Bentuk detail SAMA dengan
+ * GET /api/v1/words/:id  plus created_at /
  * updated_at dan status yang SELALU terisi (termasuk draft/pending_review/
  * rejected) - anak juga ikut semua status.
  *
@@ -121,9 +121,9 @@ export interface WordDetail {
 
 /**
  * Body PUT /api/v1/admin/words/:id - FULL REPLACE. Bentuk sama dengan create
- * (docs/api/01-api-tambah-kata.md) dengan SATU pengecualian: related_words
+ *  dengan SATU pengecualian: related_words
  * HANYA Form A ({ relation_type, word_id }) - kreasi kata inline (Form B,
- * docs/api/04-api-sinonim-inline.md) ditolak backend pada endpoint edit.
+ * ditolak backend pada endpoint edit.
  */
 export type UpdateWordRequest = Omit<CreateWordRequest, 'related_words'> & {
   related_words: { relation_type: RelationType; word_id: string }[];

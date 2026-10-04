@@ -300,7 +300,7 @@ export function UsersPage() {
     <>
       <PageHeader
         title={<Space size={8}><UserOutlined /> <span>Pengguna</span></Space>}
-        subtitle="Kelola akun dan peran pengguna. Hanya admin dan root yang dapat membuka halaman ini. Peran Verifikator memeriksa antrean. Admin, Editor, dan Root juga boleh memeriksa, dengan wewenang tambahan, dan jabatan mereka tetap Admin, Editor, atau Root."
+        subtitle="Kelola akun dan peran pengguna. Halaman ini khusus admin dan root. Verifikator memeriksa antrean, sedangkan Admin, Editor, dan Root juga bisa memeriksa dengan wewenang tambahan - jabatan mereka tetap."
         extra={
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
             Tambah pengguna

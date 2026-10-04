@@ -2,7 +2,7 @@ import type { UsageLabel, WordStatus, WordType } from './word';
 
 /**
  * Model fitur "Tambah Kata Baru" - kontrak POST /api/v1/admin/words
- * (docs/api/01-api-tambah-kata.md + create-word.validator.ts) dan data
+ * (create-word.validator.ts) dan data
  * referensi dropdown (languages/dialects/word-classes/categories).
  * Nilai enum mengikuti konvensi snake_case JSON API, BUKAN label UI.
  */

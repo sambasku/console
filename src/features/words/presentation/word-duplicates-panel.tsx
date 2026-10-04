@@ -74,7 +74,7 @@ function GroupCard({
         canMerge ? (
           <Popconfirm
             title={`Gabungkan ke entri yang dipilih?`}
-            description="Makna dan media dipindahkan. Entri lain dihapus dari kamus (soft-delete)."
+            description="Makna dan media pindah ke entri yang dipertahankan. Entri lain dihapus dari kamus (soft-delete)."
             okText="Gabungkan"
             cancelText="Batal"
             onConfirm={onMerge}
@@ -178,7 +178,7 @@ export function WordDuplicatesPanel({ canMerge }: { canMerge: boolean }) {
   if (groups.length === 0) {
     return (
       <Empty
-        description="Tidak ada lemma duplikat aktif"
+        description="Tidak ada lemma duplikat aktif. Bersih!"
         image={Empty.PRESENTED_IMAGE_SIMPLE}
       />
     );
