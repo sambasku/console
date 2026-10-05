@@ -10,6 +10,7 @@ import { DashboardPage } from '@/features/dashboard/presentation/dashboard-page'
 import { WebAnalyticsPage } from '@/features/web-analytics/presentation/web-analytics-page';
 import { parseTrafficSearch } from '@/features/web-analytics/domain/date-range';
 import { PlayAnalyticsPage, parsePlaySearch } from '@/features/play-analytics/presentation/play-analytics-page';
+import { NotificationsPage, parseNotificationsSearch } from '@/features/fcm-analytics/presentation/notifications-page';
 import { WordsPage } from '@/features/words/presentation/words-page';
 import { CreateWordPage } from '@/features/words/presentation/create-word-page';
 import { EditWordPage } from '@/features/words/presentation/edit-word-page';
@@ -40,6 +41,7 @@ import { ProfilePage } from '@/features/profile/presentation/pages/profile-page'
 import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
 import { SystemDatabasePage } from '@/features/system/presentation/system-database-page';
+import { SystemSupabasePage } from '@/features/system/presentation/system-supabase-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -124,6 +126,13 @@ const dashboardPlayRoute = createRoute({
   path: '/dashboard/play',
   validateSearch: parsePlaySearch,
   component: PlayAnalyticsPage,
+});
+
+const dashboardMobileRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/dashboard/mobile',
+  validateSearch: parseNotificationsSearch,
+  component: NotificationsPage,
 });
 
 const wordsRoute = createRoute({
@@ -338,6 +347,12 @@ const systemDatabaseRoute = createRoute({
   component: SystemDatabasePage,
 });
 
+const systemSupabaseRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/system/supabase',
+  component: SystemSupabasePage,
+});
+
 /**
  * Alias path `/console-layout/...` → path nyata (tanpa prefix layout id).
  *
@@ -368,6 +383,7 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     dashboardTrafficRoute,
     dashboardPlayRoute,
+    dashboardMobileRoute,
     wordsRoute,
     importHistoryRoute,
     importHistoryDetailRoute,
@@ -400,6 +416,7 @@ const routeTree = rootRoute.addChildren([
     legalRoute,
     oauthRoute,
     systemDatabaseRoute,
+    systemSupabaseRoute,
   ]),
 ]);
 

@@ -16,6 +16,7 @@ import {
   LineChartOutlined,
   LogoutOutlined,
   MessageOutlined,
+  MobileOutlined,
   NotificationOutlined,
   SafetyCertificateOutlined,
   SearchOutlined,
@@ -27,6 +28,7 @@ import {
   FileProtectOutlined,
   ApiOutlined,
   CloudServerOutlined,
+  CloudUploadOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
 import { Avatar, Breadcrumb, Button, Dropdown, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
@@ -44,6 +46,7 @@ const { Sider, Header, Content } = Layout;
 const ANALYTICS_ROUTES = {
   '/dashboard': { icon: <DashboardOutlined />, label: 'Ringkasan' },
   '/dashboard/traffic': { icon: <LineChartOutlined />, label: 'Trafik Web' },
+  '/dashboard/mobile': { icon: <MobileOutlined />, label: 'Trafik Mobile' },
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
 } as const;
 
@@ -69,6 +72,7 @@ const NOTIFICATION_ROUTES = {
 /** Leaf routes di bawah grup System. */
 const SYSTEM_ROUTES = {
   '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
+  '/system/supabase': { icon: <CloudUploadOutlined />, label: 'Supabase' },
   '/system/abuse': { icon: <AlertOutlined />, label: 'Abuse' },
 } as const;
 
@@ -113,6 +117,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   oauth: 'OAuth',
   system: 'System',
   database: 'Database',
+  supabase: 'Supabase',
 };
 
 function topPath(pathname: string): string {
@@ -166,7 +171,12 @@ export function ConsoleLayout() {
     const analyticsChildren = (
       Object.entries(ANALYTICS_ROUTES) as [AnalyticsRoute, (typeof ANALYTICS_ROUTES)[AnalyticsRoute]][]
     )
-      .filter(([key]) => key !== '/dashboard/traffic' && key !== '/dashboard/play' ? true : canManageUsers)
+      .filter(
+        ([key]) =>
+          (key !== '/dashboard/traffic' && key !== '/dashboard/play' && key !== '/dashboard/mobile'
+            ? true
+            : canManageUsers),
+      )
       .map(([key, { icon, label }]) => ({ key, icon, label }));
 
     const items: MenuProps['items'] = [

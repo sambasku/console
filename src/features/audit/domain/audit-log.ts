@@ -26,6 +26,8 @@ export interface ListAuditLogsParams {
   action?: string;
   entityType?: string;
   entityId?: string;
+  /** Riwayat per kata: entity_id atau word_id di old/new_data (audit anak) */
+  wordId?: string;
   /** ISO datetime awal (inklusif) */
   from?: string;
   /** ISO datetime akhir (inklusif) */
