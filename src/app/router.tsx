@@ -42,6 +42,7 @@ import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
 import { SystemDatabasePage } from '@/features/system/presentation/system-database-page';
 import { SystemSupabasePage } from '@/features/system/presentation/system-supabase-page';
+import { SystemWhatsAppPage } from '@/features/wa/presentation/system-whatsapp-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -353,6 +354,12 @@ const systemSupabaseRoute = createRoute({
   component: SystemSupabasePage,
 });
 
+const systemWhatsAppRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/system/whatsapp',
+  component: SystemWhatsAppPage,
+});
+
 /**
  * Alias path `/console-layout/...` → path nyata (tanpa prefix layout id).
  *
@@ -417,6 +424,7 @@ const routeTree = rootRoute.addChildren([
     oauthRoute,
     systemDatabaseRoute,
     systemSupabaseRoute,
+    systemWhatsAppRoute,
   ]),
 ]);
 

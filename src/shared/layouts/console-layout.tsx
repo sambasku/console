@@ -30,6 +30,7 @@ import {
   CloudServerOutlined,
   CloudUploadOutlined,
   DatabaseOutlined,
+  WhatsAppOutlined,
 } from '@ant-design/icons';
 import { Avatar, Breadcrumb, Button, Dropdown, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -74,6 +75,7 @@ const SYSTEM_ROUTES = {
   '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
   '/system/supabase': { icon: <CloudUploadOutlined />, label: 'Supabase' },
   '/system/abuse': { icon: <AlertOutlined />, label: 'Abuse' },
+  '/system/whatsapp': { icon: <WhatsAppOutlined />, label: 'WhatsApp' },
 } as const;
 
 type AnalyticsRoute = keyof typeof ANALYTICS_ROUTES;
@@ -118,6 +120,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   system: 'System',
   database: 'Database',
   supabase: 'Supabase',
+  whatsapp: 'WhatsApp',
 };
 
 function topPath(pathname: string): string {
