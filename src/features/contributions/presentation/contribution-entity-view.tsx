@@ -1,7 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { Button, Flex, Image, Radio, Space, Tag, Typography } from 'antd';
 import { pickDefaultLanguageIds } from '@/features/words/application/create-word-utils';
-import { useDialectOptions, useLanguageOptions } from '@/features/words/application/use-reference-data';
+import { useDialectOptions, useLanguageOptions, useWordClassOptions } from '@/features/words/application/use-reference-data';
 import {
   EXAMPLE_SOURCE_LABELS,
   RELATION_TYPE_LABELS,
@@ -13,6 +13,7 @@ import { SafeAudioPlayer } from '@/shared/components/safe-audio-player';
 import type {
   ContributionDetailView,
   ExampleChildData,
+  MeaningChildData,
   PronunciationChildData,
   WordEntityView,
   WordAudioChildData,
@@ -132,6 +133,39 @@ function useDialectLabel(languageId: string | null | undefined): DialectLabel {
 }
 
 /**
+ * Nama bahasa dari data referensi (untuk label terjemahan makna).
+ * Pola sama dengan useDialectLabel - respons review hanya membawa ID.
+ */
+function useLanguageLabel(): (languageId: string | null | undefined) => string {
+  const languageQuery = useLanguageOptions();
+  return useMemo(() => {
+    const byId = new Map((languageQuery.data ?? []).map((l) => [l.id, l.name]));
+    const settled = Boolean(languageQuery.data) || languageQuery.isError;
+    return (languageId) => {
+      if (!languageId) return 'Bahasa tidak diketahui';
+      const name = byId.get(languageId);
+      if (name) return name;
+      return settled ? 'Bahasa tidak dikenal' : '…';
+    };
+  }, [languageQuery.data, languageQuery.isError]);
+}
+
+/** Nama kelas kata dari data referensi. */
+function useWordClassLabel(): (wordClassId: string | null | undefined) => string | null {
+  const wordClassQuery = useWordClassOptions();
+  return useMemo(() => {
+    const byId = new Map((wordClassQuery.data ?? []).map((c) => [c.id, c.alias || c.name]));
+    const settled = Boolean(wordClassQuery.data) || wordClassQuery.isError;
+    return (wordClassId) => {
+      if (!wordClassId) return null;
+      const name = byId.get(wordClassId);
+      if (name) return name;
+      return settled ? null : '…';
+    };
+  }, [wordClassQuery.data, wordClassQuery.isError]);
+}
+
+/**
  * Tampilan READ-ONLY isi kontribusi - dipakai di dalam drawer review.
  * Word → seluruh detail kata (semua status); anak → row entity + parent.
  */
@@ -199,6 +233,8 @@ export function ContributionEntityView({
         dialectLabel={dialectLabel}
       />
     );
+  } else if (detail.entityType === 'meaning') {
+    content = <MeaningDetail fields={child.fields as MeaningChildData} />;
   } else {
     content = <ExampleDetail fields={child.fields as ExampleChildData} />;
   }
@@ -562,6 +598,48 @@ function WordImageDetail({
             </Button>
           ) : null}
         </Space>
+      ) : null}
+    </Flex>
+  );
+}
+
+function MeaningDetail({ fields }: { fields: MeaningChildData }) {
+  const languageLabel = useLanguageLabel();
+  const wordClassLabel = useWordClassLabel();
+  const className = wordClassLabel(fields.word_class_id);
+
+  return (
+    <Flex vertical gap={8} style={{ height: '100%', minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <PairGrid
+          leftTitle="Makna"
+          rightTitle="Terjemahan"
+          left={<div style={{ fontSize: 16, lineHeight: 1.5 }}>{fields.definition || '-'}</div>}
+          right={
+            fields.translations.length === 0 ? (
+              <Text type="secondary">-</Text>
+            ) : (
+              <Flex vertical gap={8}>
+                {fields.translations.map((t, index) => (
+                  <div key={index}>
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+                      {languageLabel(t.language_id)}
+                      {t.translation_type && t.translation_type !== 'direct'
+                        ? ` (${TRANSLATION_TYPE_LABELS[t.translation_type as keyof typeof TRANSLATION_TYPE_LABELS] ?? t.translation_type})`
+                        : ''}
+                    </Text>
+                    <div style={{ fontSize: 16, lineHeight: 1.5 }}>{t.translation_text || '-'}</div>
+                  </div>
+                ))}
+              </Flex>
+            )
+          }
+        />
+      </div>
+      {className ? (
+        <Text type="secondary" style={{ flex: 'none', fontSize: 12 }}>
+          Kelas kata: {className}
+        </Text>
       ) : null}
     </Flex>
   );

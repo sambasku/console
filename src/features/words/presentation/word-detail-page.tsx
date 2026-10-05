@@ -14,6 +14,8 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
+import { useAuditLogList } from '@/features/audit/application/use-audit-log-list';
+import { AuditTimeline } from '@/features/audit/presentation/audit-timeline';
 import { useAuth } from '@/shared/auth/use-auth';
 import {
   TAKEDOWN_REASON_CODES,
@@ -357,6 +359,31 @@ export function WordDetailPage() {
   );
 }
 
+/** Tab Riwayat: jejak audit kata ini (level word + anak: makna, contoh, dll). */
+function WordAuditHistory({ wordId }: { wordId: string }) {
+  const { items, isLoading, hasMore, loadMore, isFetchingNextPage } = useAuditLogList({
+    filters: { wordId },
+  });
+
+  if (isLoading) return <PageLoading />;
+  if (!items.length) return <Text type="secondary">Belum ada riwayat untuk kata ini.</Text>;
+
+  return (
+    <>
+      <AuditTimeline items={items} />
+      <Flex justify="center" style={{ marginTop: 16 }}>
+        {hasMore ? (
+          <Button onClick={() => loadMore()} loading={isFetchingNextPage}>
+            Muat lagi
+          </Button>
+        ) : (
+          <Text type="secondary">{items.length} entri</Text>
+        )}
+      </Flex>
+    </>
+  );
+}
+
 function WordDetailContent({
   detail,
   languageName,
@@ -451,6 +478,112 @@ function WordDetailContent({
       : []),
   ];
 
+  // Bagian sekunder dilebur ke grid Descriptions biar compact (satu tabel,
+  // bukan 6 block vertikal ber-header). Kosong = '-'.
+  const extras = [
+    {
+      key: 'vote',
+      label: 'Vote',
+      children: <WordVoteCount wordId={detail.id} />,
+    },
+    {
+      key: 'categories',
+      label: 'Kategori',
+      children: (detail.categories ?? []).length ? (
+        <Space size={4} wrap>
+          {(detail.categories ?? []).map((c) => (
+            <Tag key={c.id}>{c.name}</Tag>
+          ))}
+        </Space>
+      ) : (
+        '-'
+      ),
+    },
+    {
+      key: 'usage_labels',
+      label: 'Register',
+      children: (detail.usage_labels ?? []).length ? (
+        <Space size={4} wrap>
+          {(detail.usage_labels ?? []).map((code) => (
+            <Tag
+              key={code}
+              color={
+                code === 'kasar' || code === 'tabu' || code === 'seksual' || code === 'diskriminatif'
+                  ? 'volcano'
+                  : 'default'
+              }
+            >
+              {USAGE_LABEL_LABELS[code as UsageLabel] ?? code}
+            </Tag>
+          ))}
+        </Space>
+      ) : (
+        '-'
+      ),
+    },
+    {
+      key: 'relations',
+      label: 'Relasi',
+      children: (detail.related_words ?? []).length ? (
+        <Space size={4} wrap>
+          {(detail.related_words ?? []).map((rel, i) => (
+            <span key={i}>
+              {rel.lemma}{' '}
+              <Text type="secondary">
+                ({RELATION_TYPE_LABELS[rel.relation_type as keyof typeof RELATION_TYPE_LABELS] ?? rel.relation_type})
+              </Text>
+            </span>
+          ))}
+        </Space>
+      ) : (
+        '-'
+      ),
+    },
+    {
+      key: 'variants',
+      label: 'Variasi',
+      children: (detail.variants ?? []).length ? (
+        <Space size={4} wrap>
+          {(detail.variants ?? []).map((v) => (
+            <span key={v.id}>
+              {v.variant_type === 'alternative' ? (
+                <Tag color="blue">{v.form}</Tag>
+              ) : (
+                v.form
+              )}{' '}
+              <Text type="secondary">
+                ({VARIANT_TYPE_LABELS[v.variant_type as keyof typeof VARIANT_TYPE_LABELS] ?? v.variant_type}
+                {v.affix_type ? `, ${AFFIX_TYPE_LABELS[v.affix_type as keyof typeof AFFIX_TYPE_LABELS] ?? v.affix_type}` : ''}
+                {v.affix_value ? ` "${v.affix_value}"` : ''}
+                {v.dialect_id ? `, ${dialectName(v.dialect_id)}` : ''}
+                {v.notes ? ` - ${v.notes}` : ''})
+              </Text>
+            </span>
+          ))}
+        </Space>
+      ) : (
+        '-'
+      ),
+    },
+    {
+      key: 'pronunciations',
+      label: 'Pengucapan',
+      children: (detail.pronunciations ?? []).length ? (
+        <Space size={4} wrap>
+          {(detail.pronunciations ?? []).map((p) => (
+            <span key={p.id}>
+              <Text code>{p.value}</Text>
+              {p.notation ? <Text type="secondary"> /{p.notation}/</Text> : null}
+              <Text type="secondary"> ({dialectName(p.dialect_id)})</Text>
+            </span>
+          ))}
+        </Space>
+      ) : (
+        '-'
+      ),
+    },
+  ];
+
   return (
     <>
       <Modal
@@ -508,15 +641,7 @@ function WordDetailContent({
             label: 'Ringkasan',
             children: (
               <Space direction="vertical" size={20} style={{ width: '100%' }}>
-                <Descriptions size="small" column={{ xs: 1, md: 2 }} bordered items={basics} />
-
-                {/* Vote kata (read-only - counts publik, tanpa tombol vote) */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    Vote
-                  </Text>
-                  <WordVoteCount wordId={detail.id} />
-                </div>
+                <Descriptions size="small" column={{ xs: 1, md: 2 }} bordered items={[...basics, ...extras]} />
 
                 {detail.notes ? (
                   <div>
@@ -526,68 +651,6 @@ function WordDetailContent({
                     <Paragraph>{detail.notes}</Paragraph>
                   </div>
                 ) : null}
-
-                {/* Kategori */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    Kategori / Glosarium
-                  </Text>
-                  {(detail.categories ?? []).length ? (
-                    <Space size={4} wrap>
-                      {(detail.categories ?? []).map((c) => (
-                        <Tag key={c.id}>{c.name}</Tag>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Text type="secondary">Tidak ada</Text>
-                  )}
-                </div>
-
-                {/* Register & peringatan */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    Register & peringatan
-                  </Text>
-                  {(detail.usage_labels ?? []).length ? (
-                    <Space size={4} wrap>
-                      {(detail.usage_labels ?? []).map((code) => (
-                        <Tag
-                          key={code}
-                          color={
-                            code === 'kasar' || code === 'tabu' || code === 'seksual' || code === 'diskriminatif'
-                              ? 'volcano'
-                              : 'default'
-                          }
-                        >
-                          {USAGE_LABEL_LABELS[code as UsageLabel] ?? code}
-                        </Tag>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Text type="secondary">Tidak ada</Text>
-                  )}
-                </div>
-
-                {/* Relasi */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    Relasi Kata
-                  </Text>
-                  {(detail.related_words ?? []).length ? (
-                    <Space direction="vertical" size={4}>
-                      {(detail.related_words ?? []).map((rel, i) => (
-                        <div key={i}>
-                          <Text>{rel.lemma}</Text>{' '}
-                          <Text type="secondary">
-                            ({RELATION_TYPE_LABELS[rel.relation_type as keyof typeof RELATION_TYPE_LABELS] ?? rel.relation_type})
-                          </Text>
-                        </div>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Text type="secondary">Tidak ada</Text>
-                  )}
-                </div>
 
                 {(detail.appears_in ?? []).length ? (
                   <div>
@@ -606,59 +669,6 @@ function WordDetailContent({
                     </Space>
                   </div>
                 ) : null}
-
-                {/* Variasi penulisan & bentuk turunan */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    {(detail.variants ?? []).every((v) => v.variant_type === 'alternative')
-                      ? 'Variasi Penulisan'
-                      : 'Variasi & Bentuk Turunan'}
-                  </Text>
-                  {(detail.variants ?? []).length ? (
-                    <Space direction="vertical" size={4}>
-                      {(detail.variants ?? []).map((v) => (
-                        <div key={v.id}>
-                          {v.variant_type === 'alternative' ? (
-                            <Tag color="blue">{v.form}</Tag>
-                          ) : (
-                            <Text>{v.form}</Text>
-                          )}{' '}
-                          <Text type="secondary">
-                            ({VARIANT_TYPE_LABELS[v.variant_type as keyof typeof VARIANT_TYPE_LABELS] ?? v.variant_type}
-                            {v.affix_type ? `, ${AFFIX_TYPE_LABELS[v.affix_type as keyof typeof AFFIX_TYPE_LABELS] ?? v.affix_type}` : ''}
-                            {v.affix_value ? ` "${v.affix_value}"` : ''}
-                            {v.dialect_id ? `, ${dialectName(v.dialect_id)}` : ''}
-                            {v.notes ? ` - ${v.notes}` : ''})
-                          </Text>
-                        </div>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Text type="secondary">Tidak ada</Text>
-                  )}
-                </div>
-
-                {/* Pengucapan (notasi saja - audio di tab Audio) */}
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    Pengucapan
-                  </Text>
-                  {(detail.pronunciations ?? []).length ? (
-                    <Space direction="vertical" size={4}>
-                      {(detail.pronunciations ?? []).map((p) => (
-                        <div key={p.id}>
-                          <Text code>{p.value}</Text>
-                          <Space size={6} wrap style={{ marginLeft: 8 }}>
-                            {p.notation ? <Text type="secondary">/{p.notation}/</Text> : null}
-                            <Text type="secondary">({dialectName(p.dialect_id)})</Text>
-                          </Space>
-                        </div>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Text type="secondary">Tidak ada notasi</Text>
-                  )}
-                </div>
               </Space>
             ),
           },
@@ -819,6 +829,11 @@ function WordDetailContent({
             key: 'komentar',
             label: 'Komentar',
             children: <WordComments wordId={detail.id} />,
+          },
+          {
+            key: 'riwayat',
+            label: 'Riwayat',
+            children: <WordAuditHistory wordId={detail.id} />,
           },
         ]}
       />

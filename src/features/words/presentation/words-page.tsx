@@ -81,6 +81,7 @@ export function WordsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [wordType, setWordType] = useState<WordType | undefined>();
   const [isVerified, setIsVerified] = useState<boolean | undefined>();
+  const [hasImage, setHasImage] = useState<boolean | undefined>();
   const [activeTab, setActiveTab] = useState<WordsTab>('published');
   const [deletingId, setDeletingId] = useState<string | undefined>();
   const [publishingId, setPublishingId] = useState<string | undefined>();
@@ -96,7 +97,7 @@ export function WordsPage() {
   const commaSplitsQuery = useCommaSplits(true);
   const commaSplitCount = commaSplitsQuery.data?.total;
 
-  const listArgs: UseWordListArgs = { q, wordType, isVerified, published, enabled: !isSpecialTab };
+  const listArgs: UseWordListArgs = { q, wordType, isVerified, published, hasImage, enabled: !isSpecialTab };
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
     useWordList(listArgs);
 
@@ -427,6 +428,17 @@ export function WordsPage() {
           ]}
           value={isVerified}
           onChange={setIsVerified}
+        />
+        <Select
+          allowClear
+          placeholder="Gambar"
+          style={{ width: 160 }}
+          options={[
+            { value: true, label: 'Punya gambar' },
+            { value: false, label: 'Tanpa gambar' },
+          ]}
+          value={hasImage}
+          onChange={setHasImage}
         />
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
           Muat ulang

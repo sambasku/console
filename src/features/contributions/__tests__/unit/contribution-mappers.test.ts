@@ -352,6 +352,39 @@ describe('normalizeContributionDetail - anak (word_image & example)', () => {
     });
   });
 
+  it('meaning: definisi + terjemahan dari data (tidak jatuh ke fallback example)', () => {
+    const payload: ContributionDetailPayload = {
+      contribution: listItem({ entity_type: 'meaning', entity_id: 'm1' }),
+      review: null,
+      entity: {
+        id: 'm1',
+        wordId: 'w1',
+        wordLemma: 'idong',
+        data: {
+          word_class_id: WC_ID,
+          definition: 'Bagian kepala untuk melihat',
+          translations: [
+            { language_id: IDN_ID, translation_text: 'mata', translation_type: 'direct' },
+            { language_id: IDN_ID, translation_text: 'pancingan', translation_type: 'idiomatic' },
+          ],
+        },
+        status: 'pending_review',
+        isVerified: false,
+        isCorrected: false,
+      },
+    };
+    const child = childOf(normalizeContributionDetail(payload))!;
+    expect(child.fields).toEqual({
+      word_class_id: WC_ID,
+      definition: 'Bagian kepala untuk melihat',
+      translations: [
+        { language_id: IDN_ID, translation_text: 'mata', translation_type: 'direct' },
+        { language_id: IDN_ID, translation_text: 'pancingan', translation_type: 'idiomatic' },
+      ],
+    });
+    expect(child.fields).not.toHaveProperty('source_sentence');
+  });
+
   it('review tersedia saat sudah diputuskan', () => {
     const payload: ContributionDetailPayload = {
       contribution: listItem({ status: 'rejected' }),

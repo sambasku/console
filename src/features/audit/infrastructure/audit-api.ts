@@ -19,6 +19,7 @@ export async function listAuditLogsRequest(
       action: params.action || undefined,
       entity_type: params.entityType || undefined,
       entity_id: params.entityId || undefined,
+      word_id: params.wordId || undefined,
       from: params.from || undefined,
       to: params.to || undefined,
       limit: params.limit ?? 20,

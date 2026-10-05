@@ -34,7 +34,9 @@ export function publicAudioUrlCandidates(url: string | null | undefined): string
   const original = (url ?? '').trim();
   const resolved = resolvePublicAudioUrl(original);
   const out: string[] = [];
-  for (const candidate of [resolved, original]) {
+  // ponytail: original dulu (terbukti ada di repo lama), rewrite CDN baru
+  // sebagai fallback. Balik kalau repo lama akhirnya dihapus.
+  for (const candidate of [original, resolved]) {
     if (candidate && !out.includes(candidate)) out.push(candidate);
   }
   return out;

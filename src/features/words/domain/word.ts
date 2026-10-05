@@ -81,6 +81,8 @@ export interface ListWordsParams {
   isVerified?: boolean;
   /** true=tayang, false=tidak tayang, omit=semua (GET /admin/words) */
   published?: boolean;
+  /** true=bergambar, false=tanpa gambar, omit=semua */
+  hasImage?: boolean;
   limit?: number;
   cursor?: string;
 }

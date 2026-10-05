@@ -3,6 +3,7 @@ import type {
   ContributionDetailPayload,
   ContributionDetailView,
   ExampleChildData,
+  MeaningChildData,
   PronunciationChildData,
   WordEntityView,
   WordAudioChildData,
@@ -32,7 +33,12 @@ interface ChildEntityLike {
   status: string;
   isVerified: boolean;
   isCorrected: boolean;
-  fields: PronunciationChildData | WordImageChildData | WordAudioChildData | ExampleChildData;
+  fields:
+    | PronunciationChildData
+    | WordImageChildData
+    | WordAudioChildData
+    | ExampleChildData
+    | MeaningChildData;
 }
 
 export function normalizeContributionDetail(payload: ContributionDetailPayload): ContributionDetailView {
@@ -268,6 +274,7 @@ const CHILD_FIELD_KEYS = {
     'file_size',
   ],
   example: ['source_sentence', 'target_sentence', 'source_type', 'notes'],
+  meaning: ['word_class_id', 'definition', 'translations'],
 } as const;
 
 function normalizeChildEntity(entityType: string, raw: unknown): ChildEntityLike {
@@ -342,7 +349,36 @@ function normalizeChildEntity(entityType: string, raw: unknown): ChildEntityLike
     return { ...base, fields };
   }
 
-  // example + fallback tipe tidak dikenal (mis. meaning) - jangan throw.
+  if (entityType === 'example') {
+    const fields: ExampleChildData = {
+      source_sentence: String(pickDefined(matrix, ['source_sentence', 'sourceSentence']) ?? ''),
+      target_sentence: asString(pickDefined(matrix, ['target_sentence', 'targetSentence'])),
+      source_type: asString(pickDefined(matrix, ['source_type', 'sourceType'])),
+      notes: asString(pickDefined(matrix, ['notes'])),
+    };
+    return { ...base, fields };
+  }
+
+  if (entityType === 'meaning') {
+    const rawTranslations = pickDefined(matrix, ['translations']);
+    const fields: MeaningChildData = {
+      word_class_id: asString(pickDefined(matrix, ['word_class_id', 'wordClassId'])),
+      definition: String(pickDefined(matrix, ['definition']) ?? ''),
+      translations: Array.isArray(rawTranslations)
+        ? rawTranslations.map((t) => {
+            const tr = toRecord(t);
+            return {
+              language_id: String(pickDefined(tr, ['language_id', 'languageId']) ?? ''),
+              translation_text: String(pickDefined(tr, ['translation_text', 'translationText']) ?? ''),
+              translation_type: String(pickDefined(tr, ['translation_type', 'translationType']) ?? 'direct'),
+            };
+          })
+        : [],
+    };
+    return { ...base, fields };
+  }
+
+  // Fallback tipe tidak dikenal - jangan throw.
   const fields: ExampleChildData = {
     source_sentence: String(
       pickDefined(matrix, ['source_sentence', 'sourceSentence', 'definition']) ?? '',
@@ -365,6 +401,8 @@ function fieldKeysFor(entityType: string): readonly string[] {
       return CHILD_FIELD_KEYS.word_audio;
     case 'example':
       return CHILD_FIELD_KEYS.example;
+    case 'meaning':
+      return CHILD_FIELD_KEYS.meaning;
     default:
       return [];
   }
