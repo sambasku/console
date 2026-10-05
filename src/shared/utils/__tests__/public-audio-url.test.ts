@@ -30,14 +30,19 @@ describe('resolvePublicAudioUrl', () => {
 });
 
 describe('publicAudioUrlCandidates', () => {
-  it('urutkan rewrite dulu, lalu asli bila beda', () => {
+  it('urutkan asli dulu, lalu rewrite bila beda', () => {
     expect(
       publicAudioUrlCandidates(
         'https://cdn.jsdelivr.net/gh/iamutaki/sambasku-pronunciation@main/a.wav',
       ),
     ).toEqual([
-      'https://cdn.jsdelivr.net/gh/sambasku/audios@main/a.wav',
       'https://cdn.jsdelivr.net/gh/iamutaki/sambasku-pronunciation@main/a.wav',
+      'https://cdn.jsdelivr.net/gh/sambasku/audios@main/a.wav',
     ]);
+  });
+
+  it('URL sudah benar: satu kandidat saja', () => {
+    const url = 'https://cdn.jsdelivr.net/gh/sambasku/audios@main/a.wav';
+    expect(publicAudioUrlCandidates(url)).toEqual([url]);
   });
 });
