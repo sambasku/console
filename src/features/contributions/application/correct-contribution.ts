@@ -11,6 +11,7 @@ import type { EntityType, WordEntityView } from '../domain/contribution';
 import type {
   CorrectContributionRequest,
   CorrectExampleRequest,
+  CorrectMeaningRequest,
   CorrectPronunciationRequest,
   CorrectWordAudioRequest,
   CorrectWordImageRequest,
@@ -121,12 +122,23 @@ export interface CorrectExampleFormValues {
   notes?: string | null;
 }
 
+export interface CorrectMeaningFormValues {
+  word_class_id?: string | null;
+  definition?: string;
+  translations: {
+    language_id?: string;
+    translation_text?: string;
+    translation_type: TranslationType;
+  }[];
+}
+
 export type CorrectFormValues =
   | CreateWordFormValues
   | CorrectPronunciationFormValues
   | CorrectWordImageFormValues
   | CorrectWordAudioFormValues
-  | CorrectExampleFormValues;
+  | CorrectExampleFormValues
+  | CorrectMeaningFormValues;
 
 // ---- Builder body ----
 
@@ -202,6 +214,25 @@ export function buildCorrectExampleBody(
   };
 }
 
+export function buildCorrectMeaningBody(
+  values: CorrectMeaningFormValues,
+  extra: CorrectDecisionExtra,
+): CorrectMeaningRequest {
+  return {
+    entity_type: 'meaning',
+    word_class_id: values.word_class_id ?? null,
+    definition: (values.definition ?? '').trim(),
+    translations: (values.translations ?? [])
+      .filter((t) => t.language_id && t.translation_text?.trim())
+      .map((t) => ({
+        language_id: t.language_id as string,
+        translation_text: (t.translation_text ?? '').trim(),
+        translation_type: t.translation_type ?? 'direct',
+      })),
+    ...extraFields(extra),
+  };
+}
+
 /** Dispatcher - satu pintu untuk build body sesuai entity_type kontribusi. */
 export function buildCorrectContribution(
   entityType: EntityType,
@@ -219,6 +250,8 @@ export function buildCorrectContribution(
       return buildCorrectWordAudioBody(values as CorrectWordAudioFormValues, extra);
     case 'example':
       return buildCorrectExampleBody(values as CorrectExampleFormValues, extra);
+    case 'meaning':
+      return buildCorrectMeaningBody(values as CorrectMeaningFormValues, extra);
   }
 }
 

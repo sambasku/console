@@ -61,9 +61,21 @@ export interface CorrectExampleRequest extends CorrectContributionShared {
   notes?: string;
 }
 
+export interface CorrectMeaningRequest extends CorrectContributionShared {
+  entity_type: 'meaning';
+  word_class_id?: string | null;
+  definition: string;
+  translations: {
+    language_id: string;
+    translation_text: string;
+    translation_type: 'direct' | 'descriptive' | 'idiomatic';
+  }[];
+}
+
 export type CorrectContributionRequest =
   | CorrectWordRequest
   | CorrectPronunciationRequest
   | CorrectWordImageRequest
   | CorrectWordAudioRequest
-  | CorrectExampleRequest;
+  | CorrectExampleRequest
+  | CorrectMeaningRequest;

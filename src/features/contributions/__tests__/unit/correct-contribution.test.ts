@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildCorrectMeaningBody,
   buildCorrectWordBody,
   wordEntityToFormValues,
 } from '@/features/contributions/application/correct-contribution';
@@ -109,5 +110,43 @@ describe('buildCorrectWordBody', () => {
       ],
     });
     expect(body).not.toHaveProperty('word');
+  });
+});
+
+describe('buildCorrectMeaningBody', () => {
+  it('mengirim definisi + terjemahan; baris kosong dibuang', () => {
+    const body = buildCorrectMeaningBody(
+      {
+        word_class_id: WC,
+        definition: 'bagian kepala untuk melihat',
+        translations: [
+          { language_id: IDN, translation_text: 'mata', translation_type: 'direct' },
+          { language_id: undefined, translation_text: '  ', translation_type: 'direct' },
+        ],
+      },
+      { publish: true },
+    );
+    expect(body).toEqual({
+      entity_type: 'meaning',
+      word_class_id: WC,
+      definition: 'bagian kepala untuk melihat',
+      translations: [
+        { language_id: IDN, translation_text: 'mata', translation_type: 'direct' },
+      ],
+      publish: true,
+    });
+  });
+
+  it('word_class_id null dikirim eksplisit (hapus kelas kata)', () => {
+    const body = buildCorrectMeaningBody(
+      {
+        word_class_id: null,
+        definition: 'x',
+        translations: [{ language_id: IDN, translation_text: 'y', translation_type: 'idiomatic' }],
+      },
+      { publish: false },
+    );
+    expect(body.word_class_id).toBeNull();
+    expect(body.publish).toBe(false);
   });
 });

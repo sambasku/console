@@ -3,7 +3,7 @@ import type { UsageLabel, WordType } from '@/features/words/domain/word';
 export const CONTRIBUTION_STATUSES = ['pending', 'approved', 'rejected', 'corrected'] as const;
 export type ContributionStatus = (typeof CONTRIBUTION_STATUSES)[number];
 
-export const ENTITY_TYPES = ['word', 'pronunciation', 'word_image', 'word_audio', 'example'] as const;
+export const ENTITY_TYPES = ['word', 'pronunciation', 'word_image', 'word_audio', 'example', 'meaning'] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export const CONTRIBUTION_STATUS_LABELS: Record<ContributionStatus, string> = {
@@ -19,6 +19,7 @@ export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   word_image: 'Gambar',
   word_audio: 'Audio Pelafalan',
   example: 'Contoh Kalimat',
+  meaning: 'Makna',
 };
 
 /**
@@ -205,6 +206,12 @@ export interface ExampleChildData {
   notes: string | null;
 }
 
+export interface MeaningChildData {
+  word_class_id: string | null;
+  definition: string;
+  translations: { language_id: string; translation_text: string; translation_type: string }[];
+}
+
 export interface ChildEntityView<D> {
   id: string;
   wordId: string;
@@ -234,7 +241,7 @@ export type ContributionDetailView =
       priorReviews: ContributionReview[];
       entityType: Exclude<EntityType, 'word'>;
       child: ChildEntityView<
-        PronunciationChildData | WordImageChildData | WordAudioChildData | ExampleChildData
+        PronunciationChildData | WordImageChildData | WordAudioChildData | ExampleChildData | MeaningChildData
       >;
       /** payload entity mentah - dipakai prefill form koreksi (tetap tersimpan) */
       rawEntity: unknown;

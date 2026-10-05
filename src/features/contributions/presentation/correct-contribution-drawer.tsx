@@ -149,6 +149,8 @@ export function CorrectContributionDrawer({
           <CorrectWordImageForm form={form} />
         ) : entityType === 'word_audio' ? (
           <CorrectWordAudioForm form={form} />
+        ) : entityType === 'meaning' ? (
+          <CorrectMeaningForm form={form} />
         ) : (
           <CorrectExampleForm form={form} />
         )}
@@ -554,6 +556,120 @@ function CorrectExampleForm({ form }: { form: FormInstance<CorrectFormValues> })
       <Form.Item name="notes" label="Catatan">
         <Input.TextArea rows={2} placeholder="Opsional" />
       </Form.Item>
+    </Form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Form koreksi MAKNA (entity_type 'meaning')
+// ---------------------------------------------------------------------------
+
+const translationTypeOptions = [
+  { value: 'direct', label: 'Langsung (direct)' },
+  { value: 'descriptive', label: 'Deskriptif' },
+  { value: 'idiomatic', label: 'Idiomatic' },
+];
+
+function CorrectMeaningForm({ form }: { form: FormInstance<CorrectFormValues> }) {
+  const wordClassQuery = useWordClassOptions();
+  const languagesQuery = useLanguageOptions();
+  const defaultLanguageIds = useMemo(
+    () => pickDefaultLanguageIds(languagesQuery.data ?? []),
+    [languagesQuery.data],
+  );
+
+  const wordClassOptions = useMemo(
+    () => buildWordClassOptions(wordClassQuery.data ?? []),
+    [wordClassQuery.data],
+  );
+
+  return (
+    <Form form={form} layout="vertical" requiredMark>
+      <Form.Item
+        name="definition"
+        label="Definisi"
+        rules={[{ required: true, message: 'Definisi wajib diisi' }, { whitespace: true, message: 'Definisi tidak boleh hanya spasi' }]}
+      >
+        <Input.TextArea rows={3} placeholder="Arti kata ini dalam bahasa Indonesia." />
+      </Form.Item>
+      <Form.Item name="word_class_id" label="Kelas Kata">
+        <Select
+          options={wordClassOptions}
+          loading={wordClassQuery.isLoading}
+          placeholder="Pilih kelas kata (opsional)"
+          allowClear
+        />
+      </Form.Item>
+
+      <Form.Item
+        label="Terjemahan"
+        required
+        style={{ marginBottom: 4 }}
+      >
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          Minimal 1 terjemahan. Baris tanpa bahasa atau teks akan dibuang saat simpan.
+        </Text>
+      </Form.Item>
+      <Form.List name="translations">
+        {(fields, { add, remove }) => (
+          <Space direction="vertical" size={8} style={{ width: '100%' }}>
+            {fields.map((field) => (
+              <Row key={field.key} gutter={8} align="top" wrap>
+                <Col xs={24} md={8}>
+                  <Form.Item name={[field.name, 'language_id']} label="Bahasa" rules={[{ required: true, message: 'Wajib' }]}>
+                    <Select
+                      options={(languagesQuery.data ?? []).map((l) => ({ value: l.id, label: l.name }))}
+                      loading={languagesQuery.isLoading}
+                      placeholder="Pilih bahasa"
+                      showSearch
+                      optionFilterProp="label"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={9}>
+                  <Form.Item
+                    name={[field.name, 'translation_text']}
+                    label="Terjemahan"
+                    rules={[{ required: true, message: 'Wajib' }, { whitespace: true, message: 'Wajib' }]}
+                  >
+                    <Input placeholder="mis. mata" />
+                  </Form.Item>
+                </Col>
+                <Col xs={16} md={5}>
+                  <Form.Item name={[field.name, 'translation_type']} label="Jenis" initialValue="direct">
+                    <Select options={translationTypeOptions} />
+                  </Form.Item>
+                </Col>
+                <Col xs={8} md={2}>
+                  <Form.Item label=" ">
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      disabled={fields.length <= 1}
+                      onClick={() => remove(field.name)}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            ))}
+            <Button
+              type="dashed"
+              block
+              icon={<PlusOutlined />}
+              onClick={() =>
+                add(
+                  defaultLanguageIds.targetId
+                    ? { language_id: defaultLanguageIds.targetId, translation_type: 'direct' }
+                    : { translation_type: 'direct' },
+                )
+              }
+            >
+              Tambah Terjemahan
+            </Button>
+          </Space>
+        )}
+      </Form.List>
     </Form>
   );
 }
