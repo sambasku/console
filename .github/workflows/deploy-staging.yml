@@ -99,3 +99,18 @@ jobs:
           echo "$headers" | grep -qi 'x-frame-options: deny' || { echo 'X-Frame-Options DENY tidak ada'; exit 1; }
           echo "$headers" | grep -qi 'strict-transport-security:' || { echo 'HSTS tidak ada'; exit 1; }
           echo "$headers" | grep -qi 'x-robots-tag: noindex' || { echo 'X-Robots-Tag tidak ada'; exit 1; }
+
+  notify:
+    needs: [deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kirim hasil CI ke Telegram
+        uses: appleboy/telegram-action@v1.1.0
+        with:
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          message: |
+            ${{ contains(needs.*.result, 'failure') && '❌ Gagal' || (contains(needs.*.result, 'cancelled') && '⚠️ Dibatalkan' || '✅ Sukses') }} CI sambasku/console — Deploy Admin (Staging)
+            Branch: ${{ github.ref_name }} · Commit: ${{ github.sha }}
+            https://github.com/sambasku/console/actions/runs/${{ github.run_id }}
