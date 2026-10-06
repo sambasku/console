@@ -1,0 +1,38 @@
+# Gunakan Komponen Ant Design (antd) di console/*
+
+Semua pengembangan UI di folder `console/` **wajib** menggunakan komponen dari **Ant Design (antd)**.
+
+## Aturan
+
+- Jangan gunakan komponen HTML native (`<button>`, `<input>`, `<select>`, `<table>`, dll.) untuk UI.
+- Jangan gunakan library UI lain (MUI, Chakra, shadcn/ui, dsb.) kecuali ada alasan teknis yang sangat kuat dan sudah disepakati.
+- Gunakan komponen antd: `Button`, `Input`, `Select`, `Table`, `Form`, `Modal`, `Drawer`, `Card`, `Tag`, `Avatar`, `Dropdown`, `Menu`, `Breadcrumb`, `Pagination`, `DatePicker`, `TimePicker`, `Upload`, `Spin`, `Alert`, `Message`, `Notification`, `Tabs`, `Steps`, `Tree`, `Transfer`, `Cascader`, `Rate`, `Slider`, `Switch`, `Checkbox`, `Radio`, dll.
+
+## Contoh
+
+```tsx
+// ❌ SALAH - native HTML
+<button className="btn-primary">Simpan</button>
+<input type="text" className="form-control" />
+
+// ✅ BENAR - antd
+import { Button, Input } from 'antd';
+<Button type="primary">Simpan</Button>
+<Input placeholder="Masukkan teks" />
+```
+
+## Kenapa
+
+- Konsistensi visual dan perilaku di seluruh console.
+- Antd sudah terinstall sebagai dependency utama console.
+- Theme/design system console berbasis Ant Design.
+- Aksesibilitas dan RTL sudah ditangani antd.
+
+## Cek cepat sebelum commit
+
+```bash
+# Harus kosong di console/src (kecuali test / storybook)
+grep -rn "<button>\|<input>\|<select>\|<table>" console/src --include="*.tsx" | grep -v "antd\|Button\|Input\|Select\|Table" | grep -v test | grep -v storybook
+```
+
+Hasil harus **kosong**.

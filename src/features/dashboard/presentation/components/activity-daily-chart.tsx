@@ -7,13 +7,14 @@ export interface ActivityDailyChartProps {
   points: ActivityDailyPoint[];
 }
 
-type SeriesKey = 'contributions' | 'votes' | 'comments' | 'newUsers';
+type SeriesKey = 'contributions' | 'votes' | 'comments' | 'newUsers' | 'searches';
 
 const SERIES: Array<{ key: SeriesKey; label: string }> = [
   { key: 'contributions', label: 'Kontribusi' },
   { key: 'votes', label: 'Vote' },
   { key: 'comments', label: 'Komentar' },
   { key: 'newUsers', label: 'User baru' },
+  { key: 'searches', label: 'Pencarian' },
 ];
 
 function formatDayLabel(ymd: string): string {
@@ -46,8 +47,20 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
   const { token } = theme.useToken();
 
   const colors = useMemo(
-    () => [token.colorPrimary, token.colorSuccess, token.colorWarning, token.colorInfo],
-    [token.colorPrimary, token.colorSuccess, token.colorWarning, token.colorInfo],
+    () => [
+      token.colorPrimary,
+      token.colorSuccess,
+      token.colorWarning,
+      token.colorInfo,
+      token.colorError,
+    ],
+    [
+      token.colorPrimary,
+      token.colorSuccess,
+      token.colorWarning,
+      token.colorInfo,
+      token.colorError,
+    ],
   );
 
   const totals = useMemo(
@@ -56,6 +69,7 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
       votes: points.reduce((s, p) => s + p.votes, 0),
       comments: points.reduce((s, p) => s + p.comments, 0),
       newUsers: points.reduce((s, p) => s + p.newUsers, 0),
+      searches: points.reduce((s, p) => s + p.searches, 0),
     }),
     [points],
   );
@@ -128,7 +142,7 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
             Aktivitas 30 hari
           </Typography.Title>
           <Typography.Text type="secondary" className="dashboard__chart-subtitle">
-            Kontribusi · Vote · Komentar · User baru (WIB)
+            Kontribusi · Vote · Komentar · User baru · Pencarian (WIB)
           </Typography.Text>
           <ul className="dashboard__chart-legend" aria-label="Legenda series">
             {SERIES.map((s, i) => (

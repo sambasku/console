@@ -31,6 +31,7 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
           votes: 0,
           comments: 2,
           new_users: 1,
+          searches: 3,
         },
         {
           date: '2026-09-27',
@@ -38,6 +39,7 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
           votes: 5,
           comments: 0,
           new_users: 0,
+          searches: 4,
         },
       ],
     },
@@ -59,7 +61,7 @@ function wireFixture(overrides?: Partial<DashboardStatsWire>): DashboardStatsWir
 }
 
 describe('normalizeDashboardStats', () => {
-  it('memetakan wire + pad tetap 30 hari WIB (4 series)', () => {
+  it('memetakan wire + pad tetap 30 hari WIB (5 series)', () => {
     const now = new Date('2026-09-26T20:00:00.000Z'); // = 2026-09-27 WIB
     const stats = normalizeDashboardStats(wireFixture(), now);
     expect(stats.contributions.total).toBe(2);
@@ -72,12 +74,14 @@ describe('normalizeDashboardStats', () => {
       votes: 5,
       comments: 0,
       newUsers: 0,
+      searches: 4,
     });
     expect(stats.activity.dailyLast30Days.find((p) => p.date === '2026-09-20')).toMatchObject({
       contributions: 1,
       votes: 0,
       comments: 2,
       newUsers: 1,
+      searches: 3,
     });
     expect(stats.problems).toEqual({
       open: 3,
@@ -118,17 +122,22 @@ describe('normalizeDashboardStats', () => {
     expect(stats.activity.dailyLast30Days).toHaveLength(30);
     expect(
       stats.activity.dailyLast30Days.every(
-        (p) => p.contributions === 0 && p.votes === 0 && p.comments === 0 && p.newUsers === 0,
+        (p) =>
+          p.contributions === 0 &&
+          p.votes === 0 &&
+          p.comments === 0 &&
+          p.newUsers === 0 &&
+          p.searches === 0,
       ),
     ).toBe(true);
   });
 });
 
 describe('ensureDailyActivityLast30Days', () => {
-  it('panjang selalu 30, merge 4 series, gap = 0', () => {
+  it('panjang selalu 30, merge 5 series, gap = 0', () => {
     const now = new Date('2026-09-26T20:00:00.000Z');
     const points = ensureDailyActivityLast30Days(
-      [{ date: '2026-09-20', contributions: 4, votes: 1, comments: 0, new_users: 2 }],
+      [{ date: '2026-09-20', contributions: 4, votes: 1, comments: 0, new_users: 2, searches: 7 }],
       now,
     );
     expect(points).toHaveLength(30);
@@ -139,12 +148,14 @@ describe('ensureDailyActivityLast30Days', () => {
       votes: 1,
       comments: 0,
       newUsers: 2,
+      searches: 7,
     });
     expect(points.find((p) => p.date === '2026-09-21')).toMatchObject({
       contributions: 0,
       votes: 0,
       comments: 0,
       newUsers: 0,
+      searches: 0,
     });
   });
 });

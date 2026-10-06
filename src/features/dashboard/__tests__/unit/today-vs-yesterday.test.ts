@@ -8,6 +8,7 @@ function point(overrides: Partial<ActivityDailyPoint> & { date: string }): Activ
     votes: 0,
     comments: 0,
     newUsers: 0,
+    searches: 0,
     ...overrides,
   };
 }

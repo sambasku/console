@@ -13,6 +13,8 @@ export interface ActivityDailyPoint {
   votes: number;
   comments: number;
   newUsers: number;
+  /** pencarian (hit + miss) hari itu */
+  searches: number;
 }
 
 export interface ProblemSourceCounts {

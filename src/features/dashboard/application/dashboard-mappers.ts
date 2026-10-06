@@ -26,6 +26,7 @@ export function ensureDailyActivityLast30Days(
         votes: number;
         comments: number;
         new_users: number;
+        searches?: number;
       }>
     | undefined
     | null,
@@ -40,6 +41,7 @@ export function ensureDailyActivityLast30Days(
         votes: p.votes,
         comments: p.comments,
         newUsers: p.new_users,
+        searches: p.searches ?? 0,
       },
     ]),
   );
@@ -53,6 +55,7 @@ export function ensureDailyActivityLast30Days(
       votes: hit?.votes ?? 0,
       comments: hit?.comments ?? 0,
       newUsers: hit?.newUsers ?? 0,
+      searches: hit?.searches ?? 0,
     });
   }
   return points;

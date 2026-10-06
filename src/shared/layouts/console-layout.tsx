@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import {
-  AlertOutlined,
   AndroidOutlined,
   AuditOutlined,
   BarChartOutlined,
@@ -21,6 +20,7 @@ import {
   SafetyCertificateOutlined,
   SearchOutlined,
   SendOutlined,
+  SettingOutlined,
   StopOutlined,
   TranslationOutlined,
   UserOutlined,
@@ -74,7 +74,7 @@ const NOTIFICATION_ROUTES = {
 const SYSTEM_ROUTES = {
   '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
   '/system/supabase': { icon: <CloudUploadOutlined />, label: 'Supabase' },
-  '/system/abuse': { icon: <AlertOutlined />, label: 'Abuse' },
+  '/system/config': { icon: <SettingOutlined />, label: 'Konfigurasi' },
   '/system/whatsapp': { icon: <WhatsAppOutlined />, label: 'WhatsApp' },
 } as const;
 
@@ -120,6 +120,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   system: 'System',
   database: 'Database',
   supabase: 'Supabase',
+  config: 'Konfigurasi',
   whatsapp: 'WhatsApp',
 };
 
