@@ -20,6 +20,9 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // TanStack Table's `useReactTable` returns functions the rule can't verify as memoizable
+      // (known false positive, used in ~12 list pages). Off repo-wide until upstream fixes it.
+      'react-hooks/incompatible-library': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },

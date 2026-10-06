@@ -104,7 +104,7 @@ function SystemConfigPage() {
   const handleSave = async (key: string, type: string) => {
     try {
       const values = await form.validateFields();
-      await patchSettings.mutateAsync([{ key, value: String(values[key]), type: type as any }]);
+      await patchSettings.mutateAsync([{ key, value: String(values[key]), type }]);
       message.success('Setting diperbarui');
       setEditingKey(null);
       void settingsQuery.refetch();
