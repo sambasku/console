@@ -55,7 +55,7 @@ export async function getLegalSettingsRequest(signal?: AbortSignal): Promise<App
 }
 
 export async function patchLegalSettingsRequest(
-  settings: { key: string; value: string }[],
+  settings: { key: string; value: string; type?: string; description?: string }[],
 ): Promise<AppSettingItem[]> {
   const res = await client.patch<ApiOkEnvelope<{ settings: AppSettingItem[] }>>('/admin/legal/settings', {
     settings,

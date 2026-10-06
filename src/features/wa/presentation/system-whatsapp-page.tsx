@@ -11,6 +11,7 @@ import {
   Modal,
   Progress,
   Segmented,
+  Select,
   Space,
   Switch,
   Table,
@@ -75,20 +76,21 @@ function TestTab() {
           <Input placeholder="6281234567890" inputMode="numeric" />
         </Form.Item>
         <Form.Item name="template_id" label="Template" rules={[{ required: true, message: 'Pilih template' }]}>
-          <select
-            style={{ width: '100%', height: 32 }}
-            onChange={(e) => form.setFieldValue('template_id', e.target.value)}
+          <Select
+            placeholder="Pilih template"
+            style={{ width: '100%' }}
+            onChange={(value) => form.setFieldValue('template_id', value)}
             value={form.getFieldValue('template_id') ?? ''}
           >
-            <option value="" disabled>
+            <Select.Option value="" disabled>
               Pilih template
-            </option>
+            </Select.Option>
             {(templates.data ?? []).map((t) => (
-              <option key={t.id} value={t.id}>
+              <Select.Option key={t.id} value={t.id}>
                 {eventLabel(t.event_key)}
-              </option>
+              </Select.Option>
             ))}
-          </select>
+          </Select>
         </Form.Item>
         <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={testSend.isPending}>
           Kirim

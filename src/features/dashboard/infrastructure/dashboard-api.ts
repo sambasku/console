@@ -29,6 +29,8 @@ export interface DashboardStatsWire {
       votes: number;
       comments: number;
       new_users: number;
+      /** opsional - API lama tanpa field ini di-default 0 di mapper */
+      searches?: number;
     }>;
   };
   problems?: {

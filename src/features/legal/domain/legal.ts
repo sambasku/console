@@ -15,9 +15,13 @@ export interface LegalDocument {
   updated_at: string | null;
 }
 
+export type AppSettingType = 'string' | 'boolean' | 'number' | 'url';
+
 export interface AppSettingItem {
   key: string;
   value: string | null;
+  type: AppSettingType;
+  description: string | null;
   updated_at: string | null;
   updated_by: string | null;
 }
