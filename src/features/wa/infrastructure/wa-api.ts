@@ -1,6 +1,6 @@
 import { client } from '@/shared/api/client';
 import type { ApiOkEnvelope } from '@/shared/api/types';
-import type { WaLog, WaTemplate, WaTestSendResult, WaUsage } from '../domain/wa';
+import type { WaLog, WaTemplate, WaTemplateParam, WaTestSendResult, WaUsage } from '../domain/wa';
 
 export async function listWaTemplatesRequest(signal?: AbortSignal): Promise<WaTemplate[]> {
   const res = await client.get<ApiOkEnvelope<{ templates: WaTemplate[] }>>('/admin/wa/templates', {
@@ -22,6 +22,18 @@ export async function updateWaTemplateRequest(
     `/admin/wa/templates/${id}`,
     body,
   );
+  return res.data.data.template;
+}
+
+export async function createWaTemplateRequest(body: {
+  event_key: string;
+  meta_template_name: string;
+  meta_template_language?: string;
+  body: string;
+  params?: WaTemplateParam[];
+  enabled?: boolean;
+}): Promise<WaTemplate> {
+  const res = await client.post<ApiOkEnvelope<{ template: WaTemplate }>>('/admin/wa/templates', body);
   return res.data.data.template;
 }
 

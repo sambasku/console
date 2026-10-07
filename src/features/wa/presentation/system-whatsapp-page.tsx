@@ -18,7 +18,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ReloadOutlined, SendOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, SendOutlined } from '@ant-design/icons';
 import { PageHeader } from '@/shared/components/page-header';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { normalizeError } from '@/shared/api/error';
@@ -106,8 +106,51 @@ function TestTab() {
 function TemplateTab() {
   const { message } = AntdApp.useApp();
   const templates = useWaTemplates(true);
-  const { updateTemplate } = useWaMutations();
+  const { createTemplate, updateTemplate } = useWaMutations();
   const [editing, setEditing] = useState<WaTemplate | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createForm] = Form.useForm<{
+    event_key: string;
+    meta_template_name: string;
+    meta_template_language: string;
+    body: string;
+    params_raw: string;
+    enabled: boolean;
+  }>();
+
+  const onCreate = async () => {
+    const values = await createForm.validateFields();
+    // params: JSON array [{name, description}] - simple + validatable
+    let params: { name: string; description: string }[] = [];
+    const raw = (values.params_raw ?? '').trim();
+    if (raw) {
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.some((p) => typeof p !== 'object' || p === null || !('name' in p))) {
+          throw new Error('bukan array of {name, description}');
+        }
+        params = parsed as { name: string; description: string }[];
+      } catch {
+        message.error('Format parameter tidak valid - gunakan JSON array, contoh: [{"name":"nama","description":"Nama"}]');
+        return;
+      }
+    }
+    try {
+      await createTemplate.mutateAsync({
+        event_key: values.event_key,
+        meta_template_name: values.meta_template_name,
+        meta_template_language: values.meta_template_language || 'id',
+        body: values.body,
+        params,
+        enabled: values.enabled ?? false,
+      });
+      message.success('Template dibuat');
+      setCreating(false);
+      createForm.resetFields();
+    } catch (err) {
+      message.error(normalizeError(err).message);
+    }
+  };
   const [form] = Form.useForm<{
     body: string;
     meta_template_name: string;
@@ -181,9 +224,14 @@ function TemplateTab() {
     <Card
       title="Template pesan WA"
       extra={
-        <Button icon={<ReloadOutlined />} onClick={() => templates.refetch()} loading={templates.isFetching}>
-          Muat ulang
-        </Button>
+        <Space>
+          <Button icon={<PlusOutlined />} type="primary" onClick={() => setCreating(true)}>
+            Buat template
+          </Button>
+          <Button icon={<ReloadOutlined />} onClick={() => templates.refetch()} loading={templates.isFetching}>
+            Muat ulang
+          </Button>
+        </Space>
       }
     >
       <Table rowKey="id" loading={templates.isLoading} dataSource={templates.data ?? []} columns={columns} pagination={false} />
@@ -220,6 +268,50 @@ function TemplateTab() {
             </Form>
           </>
         )}
+      </Modal>
+      <Modal
+        title="Buat template baru"
+        open={creating}
+        onOk={() => void onCreate()}
+        onCancel={() => setCreating(false)}
+        confirmLoading={createTemplate.isPending}
+        width={640}
+        okText="Buat"
+      >
+        <Form form={createForm} layout="vertical" initialValues={{ meta_template_language: 'id', enabled: false }}>
+          <Form.Item
+            name="event_key"
+            label="Event key"
+            rules={[
+              { required: true, message: 'Wajib diisi' },
+              { pattern: /^[a-z0-9_]+$/, message: 'Huruf kecil, angka, underscore saja' },
+            ]}
+            extra="Identifier unik, mis. campaign_promo_maret"
+          >
+            <Input placeholder="event_baru" />
+          </Form.Item>
+          <Form.Item name="body" label="Isi pesan" rules={[{ required: true }]} extra="Placeholder pakai {{nama_param}}">
+            <Input.TextArea rows={6} />
+          </Form.Item>
+          <Form.Item
+            name="params_raw"
+            label="Parameter (JSON, opsional)"
+            extra={'Contoh: [{"name":"nama","description":"Nama penerima"}]'}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <Flex gap={12}>
+            <Form.Item name="meta_template_name" label="Nama template Meta" rules={[{ required: true }]} style={{ flex: 1 }}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="meta_template_language" label="Bahasa" rules={[{ required: true }]} style={{ width: 140 }}>
+              <Input />
+            </Form.Item>
+          </Flex>
+          <Form.Item name="enabled" label="Aktif" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+        </Form>
       </Modal>
     </Card>
   );
