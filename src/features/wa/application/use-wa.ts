@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  createWaTemplateRequest,
   getWaUsageRequest,
   listWaLogsRequest,
   listWaTemplatesRequest,
@@ -41,6 +42,10 @@ export function useWaMutations() {
   };
 
   return {
+    createTemplate: useMutation({
+      mutationFn: createWaTemplateRequest,
+      onSuccess: invalidate,
+    }),
     updateTemplate: useMutation({
       mutationFn: ({
         id,
