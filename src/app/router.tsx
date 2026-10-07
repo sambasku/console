@@ -37,6 +37,7 @@ import { VerifierApplicationDetailPage } from '@/features/verifier-applications/
 import { NotificationCampaignsPage } from '@/features/notification-campaigns/presentation/notification-campaigns-page';
 import { NotificationCampaignDetailPage } from '@/features/notification-campaigns/presentation/notification-campaign-detail-page';
 import { NotificationTemplatesPage } from '@/features/notification-campaigns/presentation/notification-templates-page';
+import { AnnouncementsPage } from '@/features/announcements/presentation/announcements-page';
 import { ProfilePage } from '@/features/profile/presentation/pages/profile-page';
 import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
@@ -325,6 +326,12 @@ const notificationTemplatesRoute = createRoute({
   component: NotificationTemplatesPage,
 });
 
+const announcementsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/announcements',
+  component: AnnouncementsPage,
+});
+
 const profileRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/profile',
@@ -426,6 +433,7 @@ const routeTree = rootRoute.addChildren([
     notificationCampaignsRoute,
     notificationCampaignDetailRoute,
     notificationTemplatesRoute,
+    announcementsRoute,
     profileRoute,
     legalRoute,
     oauthRoute,
