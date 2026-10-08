@@ -21,6 +21,7 @@ import {
   SearchOutlined,
   SendOutlined,
   SettingOutlined,
+  SoundOutlined,
   StopOutlined,
   TranslationOutlined,
   UserOutlined,
@@ -68,6 +69,7 @@ const KAMUS_ROUTES = {
 const NOTIFICATION_ROUTES = {
   '/notification-templates': { icon: <FileTextOutlined />, label: 'Template' },
   '/notification-campaigns': { icon: <SendOutlined />, label: 'Campaign' },
+  '/announcements': { icon: <SoundOutlined />, label: 'Pengumuman' },
 } as const;
 
 /** Leaf routes di bawah grup System. */
@@ -114,6 +116,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'verifier-applications': 'Pengajuan verifikator',
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
+  announcements: 'Pengumuman',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',
