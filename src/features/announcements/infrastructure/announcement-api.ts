@@ -10,6 +10,7 @@ interface AnnouncementWire {
   action_label: string | null;
   created_by: string;
   expires_at: number | null;
+  pinned_at: number | null;
   created_at: number;
   updated_at: number | null;
 }
@@ -24,6 +25,7 @@ function mapAnnouncement(w: AnnouncementWire): Announcement {
     actionLabel: w.action_label,
     createdBy: w.created_by,
     expiresAt: w.expires_at,
+    pinnedAt: w.pinned_at ?? null,
     createdAt: w.created_at,
     updatedAt: w.updated_at,
   };
@@ -52,6 +54,7 @@ export type AnnouncementInput = {
   action_url?: string | null;
   action_label?: string | null;
   expires_at?: number | null;
+  pinned_at?: number | null;
 };
 
 export async function createAnnouncementRequest(body: AnnouncementInput): Promise<Announcement> {

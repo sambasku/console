@@ -12,6 +12,8 @@ export interface Announcement {
   createdBy: string;
   /** Epoch detik. Null = tanpa masa berlaku. */
   expiresAt: number | null;
+  /** Epoch detik. Null = tidak dipin. Pin = tampil di carousel mobile. */
+  pinnedAt: number | null;
   /** Epoch detik. */
   createdAt: number;
   updatedAt: number | null;

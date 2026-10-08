@@ -8,6 +8,7 @@ import {
   Form,
   Input,
   Select,
+  Switch,
   Typography,
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -25,6 +26,7 @@ interface FormValues {
   action_url?: string;
   action_label?: string;
   expires_at?: Dayjs | null;
+  pinned?: boolean;
 }
 /** Drawer buat/edit pengumuman (#102). Edit = semua field terisi prefilled. */
 export function AnnouncementDrawer({
@@ -38,7 +40,7 @@ export function AnnouncementDrawer({
   onClose: () => void;
   onSaved: () => void;
   editing: Announcement | null;
-  submit: (values: { title: string; body: string; body_type?: AnnouncementBodyType; action_url?: string | null; action_label?: string | null; expires_at?: number | null }) => Promise<unknown>;
+  submit: (values: { title: string; body: string; body_type?: AnnouncementBodyType; action_url?: string | null; action_label?: string | null; expires_at?: number | null; pinned_at?: number | null }) => Promise<unknown>;
 }) {
   const { message } = AntdApp.useApp();
   const [form] = Form.useForm<FormValues>();
@@ -56,8 +58,9 @@ export function AnnouncementDrawer({
             action_url: editing.actionUrl ?? undefined,
             action_label: editing.actionLabel ?? undefined,
             expires_at: editing.expiresAt ? dayjs.unix(editing.expiresAt) : undefined,
+            pinned: editing.pinnedAt != null,
           }
-        : { title: '', body: '', body_type: 'plain', action_url: undefined, action_label: undefined, expires_at: undefined },
+        : { title: '', body: '', body_type: 'plain', action_url: undefined, action_label: undefined, expires_at: undefined, pinned: false },
     );
   }, [open, editing, form]);
 
@@ -71,6 +74,8 @@ export function AnnouncementDrawer({
         action_url: values.action_url?.trim() || null,
         action_label: values.action_url?.trim() && values.action_label?.trim() ? values.action_label.trim() : null,
         expires_at: values.expires_at ? values.expires_at.unix() : null,
+        // Pin = pinned_at epoch sekarang; unpin = null (kontrak PATCH API).
+        pinned_at: values.pinned ? (editing?.pinnedAt ?? dayjs().unix()) : null,
       });
       message.success(editing ? 'Pengumuman diperbarui' : 'Pengumuman tayang di feed');
       onSaved();
@@ -165,6 +170,14 @@ export function AnnouncementDrawer({
         </Form.Item>
         <Form.Item name="expires_at" label="Berlaku sampai (opsional)" extra="Kosong = tayang tanpa batas.">
           <DatePicker showTime style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item
+          name="pinned"
+          label="Pin ke beranda aplikasi"
+          valuePropName="checked"
+          extra="Pengumuman dipin tampil di halaman prioritas aplikasi. Lepas pin = hilang dari sana, tetap tayang di feed."
+        >
+          <Switch checkedChildren="Dipin" unCheckedChildren="Tidak" />
         </Form.Item>
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>Batal</Button>
