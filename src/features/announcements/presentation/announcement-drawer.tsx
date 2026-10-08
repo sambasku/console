@@ -113,14 +113,17 @@ export function AnnouncementDrawer({
             {
               validator: async (_, value: string | undefined) => {
                 if (!value) return;
-                let host = '';
-                try {
-                  const url = new URL(value);
-                  if (url.protocol !== 'https:') throw new Error();
-                  host = url.host.toLowerCase();
-                } catch {
+                const url = (() => {
+                  try {
+                    return new URL(value);
+                  } catch {
+                    return null;
+                  }
+                })();
+                if (!url || url.protocol !== 'https:') {
                   throw new Error('URL https valid diperlukan');
                 }
+                const host = url.host.toLowerCase();
                 if (!(ACTION_URL_ALLOWED_HOSTS as readonly string[]).includes(host)) {
                   throw new Error('Host tidak diizinkan');
                 }
