@@ -7,15 +7,21 @@ import {
   Flex,
   Form,
   Input,
+  Select,
   Typography,
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
-import { ACTION_URL_ALLOWED_HOSTS, type Announcement } from '../domain/announcement';
+import {
+  ACTION_URL_ALLOWED_HOSTS,
+  type Announcement,
+  type AnnouncementBodyType,
+} from '../domain/announcement';
 
 interface FormValues {
   title: string;
   body: string;
+  body_type?: AnnouncementBodyType;
   action_url?: string;
   action_label?: string;
   expires_at?: Dayjs | null;
@@ -32,7 +38,7 @@ export function AnnouncementDrawer({
   onClose: () => void;
   onSaved: () => void;
   editing: Announcement | null;
-  submit: (values: { title: string; body: string; action_url?: string | null; action_label?: string | null; expires_at?: number | null }) => Promise<unknown>;
+  submit: (values: { title: string; body: string; body_type?: AnnouncementBodyType; action_url?: string | null; action_label?: string | null; expires_at?: number | null }) => Promise<unknown>;
 }) {
   const { message } = AntdApp.useApp();
   const [form] = Form.useForm<FormValues>();
@@ -46,11 +52,12 @@ export function AnnouncementDrawer({
         ? {
             title: editing.title,
             body: editing.body,
+            body_type: editing.bodyType,
             action_url: editing.actionUrl ?? undefined,
             action_label: editing.actionLabel ?? undefined,
             expires_at: editing.expiresAt ? dayjs.unix(editing.expiresAt) : undefined,
           }
-        : { title: '', body: '', action_url: undefined, action_label: undefined, expires_at: undefined },
+        : { title: '', body: '', body_type: 'plain', action_url: undefined, action_label: undefined, expires_at: undefined },
     );
   }, [open, editing, form]);
 
@@ -60,6 +67,7 @@ export function AnnouncementDrawer({
       await submit({
         title: values.title.trim(),
         body: values.body.trim(),
+        body_type: values.body_type ?? 'plain',
         action_url: values.action_url?.trim() || null,
         action_label: values.action_url?.trim() && values.action_label?.trim() ? values.action_label.trim() : null,
         expires_at: values.expires_at ? values.expires_at.unix() : null,
@@ -94,6 +102,21 @@ export function AnnouncementDrawer({
           ]}
         >
           <Input placeholder="Mis. Kabar rilis v0.3" />
+        </Form.Item>
+        <Form.Item
+          name="body_type"
+          label="Format isi"
+          initialValue="plain"
+          extra="Plain: teks biasa. MD: markdown. HTML: dirender native aplikasi. Webview: isi dimuat via WebView (URL/HTML)."
+        >
+          <Select
+            options={[
+              { value: 'plain', label: 'Plain (teks)' },
+              { value: 'md', label: 'MD (markdown)' },
+              { value: 'html', label: 'HTML (render native)' },
+              { value: 'webview', label: 'Webview (muat isi)' },
+            ]}
+          />
         </Form.Item>
         <Form.Item
           name="body"

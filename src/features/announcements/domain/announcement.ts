@@ -1,8 +1,12 @@
+/** Format isi pengumuman (#124): html = render native client, md = markdown, webview = client load body, plain = teks. */
+export type AnnouncementBodyType = 'plain' | 'html' | 'md' | 'webview';
+
 /** Pengumuman admin (#102) - tayang di feed publik aplikasi. */
 export interface Announcement {
   id: string;
   title: string;
   body: string;
+  bodyType: AnnouncementBodyType;
   actionUrl: string | null;
   actionLabel: string | null;
   createdBy: string;
