@@ -63,6 +63,7 @@ const KAMUS_ROUTES = {
   '/comment-blocklist': { icon: <StopOutlined />, label: 'Blocklist' },
   '/search-misses': { icon: <SearchOutlined />, label: 'Pencarian' },
   '/vote-moderation': { icon: <LikeOutlined />, label: 'Vote' },
+  '/categories': { icon: <BookOutlined />, label: 'Kategori' },
 } as const;
 
 /** Leaf routes di bawah grup Notifikasi. */
@@ -117,6 +118,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
+  categories: 'Kategori',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',

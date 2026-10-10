@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, PushpinOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   App as AntdApp,
   Button,
@@ -121,6 +121,19 @@ export function AnnouncementsPage() {
               ),
           },
           {
+            title: 'Pin',
+            key: 'pinned',
+            width: 100,
+            render: (_: unknown, row) =>
+              row.pinnedAt != null ? (
+                <Tag color="gold" icon={<PushpinOutlined />}>
+                  Dipin
+                </Tag>
+              ) : (
+                <Typography.Text type="secondary">-</Typography.Text>
+              ),
+          },
+          {
             title: 'Dibuat',
             key: 'created',
             width: 170,
@@ -129,9 +142,27 @@ export function AnnouncementsPage() {
           {
             title: '',
             key: 'ops',
-            width: 140,
+            width: 220,
             render: (_: unknown, row) => (
               <Space>
+                <Button
+                  size="small"
+                  icon={<PushpinOutlined />}
+                  title={row.pinnedAt != null ? 'Lepas pin' : 'Pin ke beranda aplikasi'}
+                  onClick={async () => {
+                    try {
+                      await updateMutation.mutateAsync({
+                        id: row.id,
+                        pinned_at: row.pinnedAt != null ? null : Math.floor(Date.now() / 1000),
+                      });
+                      message.success(row.pinnedAt != null ? 'Pin dilepas' : 'Pengumuman dipin');
+                    } catch (err) {
+                      message.error(normalizeError(err).message);
+                    }
+                  }}
+                >
+                  {row.pinnedAt != null ? 'Lepas' : 'Pin'}
+                </Button>
                 <Button
                   size="small"
                   onClick={() => {

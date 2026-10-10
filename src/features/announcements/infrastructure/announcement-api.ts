@@ -1,14 +1,16 @@
 import { client } from '@/shared/api/client';
-import type { Announcement } from '../domain/announcement';
+import type { Announcement, AnnouncementBodyType } from '../domain/announcement';
 
 interface AnnouncementWire {
   id: string;
   title: string;
   body: string;
+  body_type: AnnouncementBodyType;
   action_url: string | null;
   action_label: string | null;
   created_by: string;
   expires_at: number | null;
+  pinned_at: number | null;
   created_at: number;
   updated_at: number | null;
 }
@@ -18,10 +20,12 @@ function mapAnnouncement(w: AnnouncementWire): Announcement {
     id: w.id,
     title: w.title,
     body: w.body,
+    bodyType: w.body_type ?? 'plain',
     actionUrl: w.action_url,
     actionLabel: w.action_label,
     createdBy: w.created_by,
     expiresAt: w.expires_at,
+    pinnedAt: w.pinned_at ?? null,
     createdAt: w.created_at,
     updatedAt: w.updated_at,
   };
@@ -46,9 +50,11 @@ export async function listAnnouncementsRequest(
 export type AnnouncementInput = {
   title: string;
   body: string;
+  body_type?: AnnouncementBodyType;
   action_url?: string | null;
   action_label?: string | null;
   expires_at?: number | null;
+  pinned_at?: number | null;
 };
 
 export async function createAnnouncementRequest(body: AnnouncementInput): Promise<Announcement> {

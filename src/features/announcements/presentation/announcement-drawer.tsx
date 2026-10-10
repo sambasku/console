@@ -7,18 +7,26 @@ import {
   Flex,
   Form,
   Input,
+  Select,
+  Switch,
   Typography,
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
-import { ACTION_URL_ALLOWED_HOSTS, type Announcement } from '../domain/announcement';
+import {
+  ACTION_URL_ALLOWED_HOSTS,
+  type Announcement,
+  type AnnouncementBodyType,
+} from '../domain/announcement';
 
 interface FormValues {
   title: string;
   body: string;
+  body_type?: AnnouncementBodyType;
   action_url?: string;
   action_label?: string;
   expires_at?: Dayjs | null;
+  pinned?: boolean;
 }
 /** Drawer buat/edit pengumuman (#102). Edit = semua field terisi prefilled. */
 export function AnnouncementDrawer({
@@ -32,7 +40,7 @@ export function AnnouncementDrawer({
   onClose: () => void;
   onSaved: () => void;
   editing: Announcement | null;
-  submit: (values: { title: string; body: string; action_url?: string | null; action_label?: string | null; expires_at?: number | null }) => Promise<unknown>;
+  submit: (values: { title: string; body: string; body_type?: AnnouncementBodyType; action_url?: string | null; action_label?: string | null; expires_at?: number | null; pinned_at?: number | null }) => Promise<unknown>;
 }) {
   const { message } = AntdApp.useApp();
   const [form] = Form.useForm<FormValues>();
@@ -46,11 +54,13 @@ export function AnnouncementDrawer({
         ? {
             title: editing.title,
             body: editing.body,
+            body_type: editing.bodyType,
             action_url: editing.actionUrl ?? undefined,
             action_label: editing.actionLabel ?? undefined,
             expires_at: editing.expiresAt ? dayjs.unix(editing.expiresAt) : undefined,
+            pinned: editing.pinnedAt != null,
           }
-        : { title: '', body: '', action_url: undefined, action_label: undefined, expires_at: undefined },
+        : { title: '', body: '', body_type: 'plain', action_url: undefined, action_label: undefined, expires_at: undefined, pinned: false },
     );
   }, [open, editing, form]);
 
@@ -60,9 +70,12 @@ export function AnnouncementDrawer({
       await submit({
         title: values.title.trim(),
         body: values.body.trim(),
+        body_type: values.body_type ?? 'plain',
         action_url: values.action_url?.trim() || null,
         action_label: values.action_url?.trim() && values.action_label?.trim() ? values.action_label.trim() : null,
         expires_at: values.expires_at ? values.expires_at.unix() : null,
+        // Pin = pinned_at epoch sekarang; unpin = null (kontrak PATCH API).
+        pinned_at: values.pinned ? (editing?.pinnedAt ?? dayjs().unix()) : null,
       });
       message.success(editing ? 'Pengumuman diperbarui' : 'Pengumuman tayang di feed');
       onSaved();
@@ -94,6 +107,21 @@ export function AnnouncementDrawer({
           ]}
         >
           <Input placeholder="Mis. Kabar rilis v0.3" />
+        </Form.Item>
+        <Form.Item
+          name="body_type"
+          label="Format isi"
+          initialValue="plain"
+          extra="Plain: teks biasa. MD: markdown. HTML: dirender native aplikasi. Webview: isi dimuat via WebView (URL/HTML)."
+        >
+          <Select
+            options={[
+              { value: 'plain', label: 'Plain (teks)' },
+              { value: 'md', label: 'MD (markdown)' },
+              { value: 'html', label: 'HTML (render native)' },
+              { value: 'webview', label: 'Webview (muat isi)' },
+            ]}
+          />
         </Form.Item>
         <Form.Item
           name="body"
@@ -142,6 +170,14 @@ export function AnnouncementDrawer({
         </Form.Item>
         <Form.Item name="expires_at" label="Berlaku sampai (opsional)" extra="Kosong = tayang tanpa batas.">
           <DatePicker showTime style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item
+          name="pinned"
+          label="Pin ke beranda aplikasi"
+          valuePropName="checked"
+          extra="Pengumuman dipin tampil di halaman prioritas aplikasi. Lepas pin = hilang dari sana, tetap tayang di feed."
+        >
+          <Switch checkedChildren="Dipin" unCheckedChildren="Tidak" />
         </Form.Item>
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>Batal</Button>
