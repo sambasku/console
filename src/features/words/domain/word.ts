@@ -48,6 +48,7 @@ export const TAKEDOWN_REASON_CODES = [
   'duplicate',
   'inappropriate',
   'spam',
+  'vulgar',
   'other',
 ] as const;
 export type TakedownReasonCode = (typeof TAKEDOWN_REASON_CODES)[number];
@@ -58,6 +59,7 @@ export const TAKEDOWN_REASON_LABELS: Record<TakedownReasonCode, string> = {
   duplicate: 'Duplikat entri lain',
   inappropriate: 'Tidak pantas',
   spam: 'Spam',
+  vulgar: 'Konten vulgar',
   other: 'Lainnya',
 };
 
