@@ -13,6 +13,8 @@ describe('normalizePublicProfile', () => {
       avatar_url: null,
       stats: {
         contributions_approved: 12,
+        words_approved: 4,
+        corrections_approved: 8,
         verifications_done: 34,
         comments_published: 5,
       },
@@ -28,6 +30,8 @@ describe('normalizePublicProfile', () => {
       avatarUrl: null,
       stats: {
         contributionsApproved: 12,
+        wordsApproved: 4,
+        correctionsApproved: 8,
         verificationsDone: 34,
         commentsPublished: 5,
       },
@@ -48,6 +52,8 @@ describe('normalizePublicProfile', () => {
         contributions_approved: 1,
         verifications_done: 0,
         // backend lama / wire parsial
+        words_approved: undefined as unknown as number,
+        corrections_approved: undefined as unknown as number,
         comments_published: undefined as unknown as number,
       },
     });
