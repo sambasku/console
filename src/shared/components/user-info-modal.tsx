@@ -105,8 +105,11 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
             <Descriptions.Item label="Verifikator">
               {query.data.isVerifier ? <Tag color="cyan">Ya</Tag> : <Tag>Tidak</Tag>}
             </Descriptions.Item>
-            <Descriptions.Item label="Kontribusi disetujui">
-              {query.data.stats.contributionsApproved}
+            <Descriptions.Item label="Usul kata disetujui">
+              {query.data.stats.wordsApproved}
+            </Descriptions.Item>
+            <Descriptions.Item label="Perbaikan disetujui">
+              {query.data.stats.correctionsApproved}
             </Descriptions.Item>
             <Descriptions.Item label="Verifikasi">
               {query.data.stats.verificationsDone}

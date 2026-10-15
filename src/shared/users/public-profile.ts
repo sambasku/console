@@ -8,6 +8,8 @@ export interface PublicProfile {
   avatarUrl: string | null;
   stats: {
     contributionsApproved: number;
+    wordsApproved: number;
+    correctionsApproved: number;
     verificationsDone: number;
     commentsPublished: number;
   };
@@ -23,6 +25,8 @@ export interface PublicProfileWire {
   avatar_url: string | null;
   stats: {
     contributions_approved: number;
+    words_approved: number;
+    corrections_approved: number;
     verifications_done: number;
     comments_published: number;
   };
@@ -59,6 +63,8 @@ export function normalizePublicProfile(data: PublicProfileWire): PublicProfile {
     avatarUrl: data.avatar_url,
     stats: {
       contributionsApproved: data.stats.contributions_approved,
+      wordsApproved: data.stats.words_approved ?? 0,
+      correctionsApproved: data.stats.corrections_approved ?? 0,
       verificationsDone: data.stats.verifications_done,
       commentsPublished: data.stats.comments_published ?? 0,
     },
