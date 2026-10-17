@@ -32,6 +32,7 @@ import {
   CloudUploadOutlined,
   DatabaseOutlined,
   WhatsAppOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import { Avatar, Breadcrumb, Button, Dropdown, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -79,6 +80,7 @@ const SYSTEM_ROUTES = {
   '/system/supabase': { icon: <CloudUploadOutlined />, label: 'Supabase' },
   '/system/config': { icon: <SettingOutlined />, label: 'Konfigurasi' },
   '/system/whatsapp': { icon: <WhatsAppOutlined />, label: 'WhatsApp' },
+  '/system/email': { icon: <MailOutlined />, label: 'Email' },
 } as const;
 
 type AnalyticsRoute = keyof typeof ANALYTICS_ROUTES;

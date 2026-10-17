@@ -46,6 +46,7 @@ import { SystemDatabasePage } from '@/features/system/presentation/system-databa
 import { SystemSupabasePage } from '@/features/system/presentation/system-supabase-page';
 import { SystemConfigPage } from '@/features/system/presentation/system-config-page';
 import { SystemWhatsAppPage } from '@/features/wa/presentation/system-whatsapp-page';
+import { SystemEmailPage } from '@/features/email/presentation/system-email-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
 
 /**
@@ -375,6 +376,12 @@ const systemWhatsAppRoute = createRoute({
   component: SystemWhatsAppPage,
 });
 
+const systemEmailRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/system/email',
+  component: SystemEmailPage,
+});
+
 const systemConfigRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/system/config',
@@ -448,6 +455,7 @@ const routeTree = rootRoute.addChildren([
     systemDatabaseRoute,
     systemSupabaseRoute,
     systemWhatsAppRoute,
+    systemEmailRoute,
     systemConfigRoute,
   ]),
 ]);
