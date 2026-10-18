@@ -16,6 +16,8 @@ export interface SheetMeaning {
   translation: string;
   definition: string;
   example: string;
+  exampleTranslation: string;
+  wordClassCode: string;
   skipped: boolean;
 }
 
@@ -31,19 +33,21 @@ export interface SheetWord {
   importError?: string;
 }
 
-type TextCol = 'lemma' | 'translation' | 'definition' | 'example';
+type TextCol = 'lemma' | 'translation' | 'definition' | 'type' | 'example' | 'exampleTranslation';
 type ColId = TextCol | 'skip' | 'verify' | 'verified' | 'remove';
 
-const TEXT_COLS: TextCol[] = ['lemma', 'translation', 'definition', 'example'];
+const TEXT_COLS: TextCol[] = ['lemma', 'translation', 'definition', 'type', 'example', 'exampleTranslation'];
 
 const GUTTER_WIDTH = 44;
 const MIN_TEXT_WIDTH = 88;
-const COL_WIDTH_STORAGE_KEY = 'sambasku.import-sheet.col-widths.v2';
+const COL_WIDTH_STORAGE_KEY = 'sambasku.import-sheet.col-widths.v3';
 const DEFAULT_TEXT_WIDTH: Record<TextCol, number> = {
   lemma: 140,
   translation: 155,
   definition: 220,
+  type: 64,
   example: 165,
+  exampleTranslation: 155,
 };
 const ACTION_WIDTH: Record<Exclude<ColId, TextCol>, number> = {
   skip: 56,
@@ -97,14 +101,20 @@ const FAIL_TEXT = '#a8071a';
 
 function textOf(word: SheetWord, meaning: SheetMeaning, col: TextCol) {
   if (col === 'lemma') return word.lemma;
+  if (col === 'type') return meaning.wordClassCode;
   return meaning[col];
 }
 
 function matchesQuery(word: SheetWord, meaning: SheetMeaning, needle: string) {
   if (!needle) return true;
-  return [word.lemma, meaning.translation, meaning.definition, meaning.example].some((value) =>
-    value.toLowerCase().includes(needle),
-  );
+  return [
+    word.lemma,
+    meaning.translation,
+    meaning.definition,
+    meaning.example,
+    meaning.exampleTranslation,
+    meaning.wordClassCode,
+  ].some((value) => value.toLowerCase().includes(needle));
 }
 
 export function ImportSheet({
@@ -344,7 +354,9 @@ export function ImportSheet({
     { key: 'lemma', label: 'Kata' },
     { key: 'translation', label: 'Terjemahan' },
     { key: 'definition', label: 'Penjelasan arti' },
+    { key: 'type', label: 'Tipe', tip: 'Kode kelas kata (kb/kk/ks/kt/kd, kosong = umum)' },
     { key: 'example', label: 'Contoh' },
+    { key: 'exampleTranslation', label: 'Arti contoh' },
     { key: 'skip', label: 'Lewati' },
     ...(canVerify
       ? [
@@ -545,7 +557,7 @@ export function ImportSheet({
                         boxShadow: selected ? `inset 0 0 0 2px ${SELECT}` : undefined,
                         textDecoration: skipped && TEXT_COLS.includes(col as TextCol) ? 'line-through' : undefined,
                         fontWeight: col === 'lemma' ? 700 : undefined,
-                        fontStyle: col === 'example' ? 'italic' : undefined,
+                        fontStyle: col === 'example' || col === 'exampleTranslation' ? 'italic' : undefined,
                         color: failed ? FAIL_TEXT : skipped ? '#999' : undefined,
                         whiteSpace: 'normal',
                         overflowWrap: 'anywhere',

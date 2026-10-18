@@ -3,6 +3,9 @@ export interface ParsedMeaning {
   translation: string;
   definition: string;
   example: string;
+  /** Kode kelas kata (kb/kk/ks/kt/kd); kosong = umum. */
+  wordClassCode: string;
+  exampleTranslation: string;
 }
 
 export interface ParsedWord {
@@ -14,12 +17,25 @@ const LEMMA_HEADERS = new Set(['lemma', 'kata', 'word']);
 const TRANSLATION_HEADERS = new Set(['terjemahan', 'padanan', 'translation']);
 const DEFINITION_HEADERS = new Set(['definisi', 'arti', 'penjelasan_arti', 'definition']);
 const EXAMPLE_HEADERS = new Set(['contoh', 'example']);
+const TYPE_HEADERS = new Set(['type', 'kelas_kata', 'kelas', 'word_class', 'word_class_code']);
+const ARTI_CONTOH_HEADERS = new Set(['arti_contoh', 'example_translation']);
+
+export const WORD_CLASS_CODES = ['kb', 'kk', 'ks', 'kt', 'kd'] as const;
+
+/** Lowercase-trim; null kalau tidak dikenal. Kosong = umum (''). */
+export function normalizeWordClassCode(raw: string): string | null {
+  const code = raw.trim().toLowerCase();
+  return code === '' || (WORD_CLASS_CODES as readonly string[]).includes(code) ? code : null;
+}
 
 type Delimiter = ',' | ';' | '\t';
 
 /** Header yang diunduh dari tombol templat. Alias lama (lemma/definisi) tetap diterima saat impor. */
 export function importTemplateCsv(): string {
-  return ['kata,terjemahan,penjelasan_arti,contoh', 'makatn,makan,menghabiskan makanan,'].join('\n');
+  return [
+    'kata,terjemahan,penjelasan_arti,type,contoh,arti_contoh',
+    'makatn,makan,menghabiskan makanan,kb,die makatn,dia makan',
+  ].join('\n');
 }
 
 /**
@@ -50,12 +66,22 @@ export function parseImportCsv(text: string): { words: ParsedWord[] } {
   const seen = new Map<string, Set<string>>();
   let rowNumber = 1;
 
-  for (const row of rows.slice(1)) {
+  for (const [index, row] of rows.slice(1).entries()) {
+    const lineNumber = index + 2;
     const lemma = cell(row, columns.lemma);
     const translation = cell(row, columns.translation);
     const definition = cell(row, columns.definition);
     const example = cell(row, columns.example);
+    const exampleTranslation = cell(row, columns.exampleTranslation);
     if (!lemma || (!translation && !definition)) continue;
+
+    const rawType = cell(row, columns.type);
+    const wordClassCode = normalizeWordClassCode(rawType);
+    if (wordClassCode === null) {
+      throw new Error(
+        `Kode kelas kata "${rawType}" di baris ${lineNumber} tidak dikenal. Pakai kb, kk, ks, kt, atau kd.`,
+      );
+    }
 
     const key = lemma.toLowerCase();
     let word = groups.get(key);
@@ -70,7 +96,7 @@ export function parseImportCsv(text: string): { words: ParsedWord[] } {
     if (fingerprints.has(fingerprint)) continue;
     fingerprints.add(fingerprint);
 
-    word.meanings.push({ rowNumber, translation, definition, example });
+    word.meanings.push({ rowNumber, translation, definition, example, wordClassCode, exampleTranslation });
     rowNumber += 1;
   }
 
@@ -92,6 +118,8 @@ function mapColumns(header: string[]) {
     translation: indexOf(TRANSLATION_HEADERS),
     definition: indexOf(DEFINITION_HEADERS),
     example: indexOf(EXAMPLE_HEADERS),
+    type: indexOf(TYPE_HEADERS),
+    exampleTranslation: indexOf(ARTI_CONTOH_HEADERS),
   };
 }
 

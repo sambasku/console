@@ -184,9 +184,11 @@ export function ConsoleLayout() {
     )
       .filter(
         ([key]) =>
-          (key !== '/dashboard/traffic' && key !== '/dashboard/play' && key !== '/dashboard/mobile'
-            ? true
-            : canManageUsers),
+          key === '/dashboard'
+            ? user?.role === 'admin' || user?.role === 'root'
+            : key !== '/dashboard/traffic' && key !== '/dashboard/play' && key !== '/dashboard/mobile'
+              ? true
+              : canManageUsers,
       )
       .map(([key, { icon, label }]) => ({ key, icon, label }));
 

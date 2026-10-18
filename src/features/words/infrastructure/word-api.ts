@@ -148,7 +148,13 @@ export interface ImportWordPayload {
   verify: boolean;
   verified: boolean;
   notes?: string;
-  meanings: { translation?: string; definition?: string; example?: string }[];
+  meanings: {
+    translation?: string;
+    definition?: string;
+    example?: string;
+    word_class_code?: string;
+    example_translation?: string;
+  }[];
 }
 
 export interface ImportWordResultItem {

@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { normalizeError, type ApiError } from '@/shared/api/error';
 import {
   importTemplateCsv,
+  normalizeWordClassCode,
   parseImportCsv,
   type ParsedWord,
 } from '../application/parse-import-csv';
@@ -24,10 +25,13 @@ interface MeaningDraft {
   translation: string;
   definition: string;
   example: string;
+  exampleTranslation: string;
   useTranslation: boolean;
   useDefinition: boolean;
   useExample: boolean;
+  useExampleTranslation: boolean;
   skipped: boolean;
+  wordClassCode: string;
 }
 
 type WordImportStatus = 'pending' | 'saved' | 'failed';
@@ -173,10 +177,13 @@ function emptyMeaning(rowNumber: number): MeaningDraft {
     translation: '',
     definition: '',
     example: '',
+    exampleTranslation: '',
     useTranslation: false,
     useDefinition: false,
     useExample: false,
+    useExampleTranslation: false,
     skipped: false,
+    wordClassCode: '',
   };
 }
 
@@ -210,6 +217,7 @@ function toDrafts(words: ParsedWord[]): WordDraft[] {
         useTranslation: meaning.translation.length > 0,
         useDefinition: meaning.definition.length > 0,
         useExample: meaning.example.length > 0,
+        useExampleTranslation: meaning.exampleTranslation.length > 0,
         skipped: false,
       })),
     })),
@@ -236,6 +244,10 @@ function toPayload(words: WordDraft[], notes: string, canVerify: boolean): Impor
         translation: meaning.useTranslation ? meaning.translation : undefined,
         definition: meaning.useDefinition ? meaning.definition : undefined,
         example: meaning.useExample && meaning.example ? meaning.example : undefined,
+        ...(meaning.wordClassCode ? { word_class_code: meaning.wordClassCode } : {}),
+        ...(meaning.useExampleTranslation && meaning.exampleTranslation
+          ? { example_translation: meaning.exampleTranslation }
+          : {}),
       })),
     }))
     .filter((word) => word.lemma.length > 0 && word.meanings.length > 0);
@@ -697,10 +709,19 @@ export function ImportWordsDrawer({
   const onSheetText = (
     wordId: string,
     rowNumber: number,
-    col: 'lemma' | 'translation' | 'definition' | 'example',
+    col: 'lemma' | 'translation' | 'definition' | 'type' | 'example' | 'exampleTranslation',
     value: string,
   ) => {
     const next = value.trim();
+    if (col === 'type') {
+      const code = normalizeWordClassCode(next);
+      if (code === null) {
+        message.warning(`Kode kelas kata "${next}" tidak dikenal. Pakai kb, kk, ks, kt, atau kd.`);
+        return;
+      }
+      patchMeaning(wordId, rowNumber, { wordClassCode: code });
+      return;
+    }
     if (col === 'lemma') {
       const current = words.find((word) => word.id === wordId);
       if (!current || next === current.lemma) return;
@@ -723,7 +744,13 @@ export function ImportWordsDrawer({
       return;
     }
     const flag =
-      col === 'translation' ? 'useTranslation' : col === 'definition' ? 'useDefinition' : 'useExample';
+      col === 'translation'
+        ? 'useTranslation'
+        : col === 'definition'
+          ? 'useDefinition'
+          : col === 'exampleTranslation'
+            ? 'useExampleTranslation'
+            : 'useExample';
     patchMeaning(wordId, rowNumber, { [col]: next, [flag]: next.length > 0 });
   };
 
@@ -781,7 +808,7 @@ export function ImportWordsDrawer({
         <div>
           <div>Impor kata massal</div>
           <Typography.Text type="secondary" style={{ fontWeight: 400, fontSize: 12 }}>
-            Lembar manual atau CSV · kata, terjemahan, penjelasan arti, contoh
+            Lembar manual atau CSV · kata, terjemahan, penjelasan arti, tipe, contoh, arti contoh
           </Typography.Text>
           <div>
             <Button
@@ -1027,8 +1054,8 @@ export function ImportWordsDrawer({
                     Atau dari file CSV
                   </Typography.Title>
                   <Typography.Text type="secondary">
-                    Kolom kata, terjemahan, penjelasan_arti, contoh. Header lama (lemma/definisi) tetap
-                    diterima.
+                    Kolom kata, terjemahan, penjelasan_arti, type, contoh, arti_contoh. File 4 kolom lama
+                    (lemma/definisi) tetap diterima.
                   </Typography.Text>
                 </div>
                 <Button onClick={downloadTemplate}>Unduh templat</Button>
@@ -1166,6 +1193,8 @@ export function ImportWordsDrawer({
                 translation: meaning.translation,
                 definition: meaning.definition,
                 example: meaning.example,
+                exampleTranslation: meaning.exampleTranslation,
+                wordClassCode: meaning.wordClassCode,
                 skipped: meaning.skipped,
               })),
             }))}
