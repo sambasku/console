@@ -32,6 +32,8 @@ import { UserAbuseDrawer } from '@/features/abuse/presentation/user-abuse-drawer
 import { isMutedNow } from '@/features/abuse/domain/abuse';
 import {
   CHANGEABLE_ROLES,
+  PROVIDER_LABELS,
+  PROVIDER_TAG_COLOR,
   ROLE_LABELS,
   ROLE_OPTIONS_SELECT,
   ROLE_TAG_COLOR,
@@ -156,13 +158,30 @@ export function UsersPage() {
           );
         },
       }),
-      columnHelper.accessor('role', {
-        header: 'Peran',
-        size: 160,
-        cell: (info) => (
-          <Tag color={ROLE_TAG_COLOR[info.getValue()]}>{ROLE_LABELS[info.getValue()]}</Tag>
-        ),
-      }),
+        columnHelper.accessor('role', {
+          header: 'Peran',
+          size: 160,
+          cell: (info) => (
+            <Tag color={ROLE_TAG_COLOR[info.getValue()]}>{ROLE_LABELS[info.getValue()]}</Tag>
+          ),
+        }),
+        columnHelper.accessor('authProviders', {
+          header: 'Onboard',
+          size: 140,
+          cell: (info) => {
+            const providers = info.getValue();
+            if (providers.length === 0) return <Tag>Email</Tag>;
+            return (
+              <Flex gap={4} wrap>
+                {providers.map((p) => (
+                  <Tag key={p} color={PROVIDER_TAG_COLOR[p] ?? 'default'}>
+                    {PROVIDER_LABELS[p] ?? p}
+                  </Tag>
+                ))}
+              </Flex>
+            );
+          },
+        }),
       columnHelper.accessor('isActive', {
         header: 'Status',
         size: 140,
