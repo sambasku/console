@@ -5,9 +5,14 @@ import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { Button, DatePicker, Result, Segmented, Tabs } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { PageHeader } from '@/shared/components/page-header';
-import { StagingBlocked } from '@/shared/components/staging-blocked';
 import { useAuth } from '@/shared/auth/use-auth';
 import { RANGE_PRESET_LABELS } from '@/features/web-analytics/domain/date-range';
+import {
+  MOBILE_SECTIONS,
+  MOBILE_SECTION_LABELS,
+  type MobileSection,
+} from '@/features/mobile-analytics/domain/mobile-analytics';
+import { MobileTab } from '@/features/mobile-analytics/presentation/mobile-tab';
 import { FCM_SECTION_LABELS, FCM_SECTIONS, type FcmSection, type RangePreset } from '../domain/fcm-analytics';
 import { DeliveryTab } from './components/delivery-tab';
 import { EngagementTab } from './components/engagement-tab';
@@ -17,8 +22,11 @@ const routeApi = getRouteApi('/console-layout/dashboard/mobile');
 /** Batas rentang custom - selaras validasi API. */
 const MAX_CUSTOM_DAYS = 366;
 
+const ALL_TABS = [...MOBILE_SECTIONS, ...FCM_SECTIONS] as const;
+type NotificationsTab = MobileSection | FcmSection;
+
 export interface NotificationsSearch {
-  tab: FcmSection;
+  tab: NotificationsTab;
   range: RangePreset;
   start?: string;
   end?: string;
@@ -28,7 +36,7 @@ const YMD = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Search params `/dashboard/mobile` - nilai asing jatuh ke default. */
 export function parseNotificationsSearch(search: Record<string, unknown>): NotificationsSearch {
-  const tab = FCM_SECTIONS.includes(search.tab as FcmSection) ? (search.tab as FcmSection) : 'delivery';
+  const tab = ALL_TABS.includes(search.tab as NotificationsTab) ? (search.tab as NotificationsTab) : 'overview';
   const start = typeof search.start === 'string' && YMD.test(search.start) ? search.start : undefined;
   const end = typeof search.end === 'string' && YMD.test(search.end) ? search.end : undefined;
   const preset = (['7d', '28d', '90d', 'custom'] as const).includes(search.range as RangePreset)
@@ -43,7 +51,8 @@ export function NotificationsPage() {
   const search = routeApi.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const isFetching = useIsFetching({ queryKey: ['fcm-analytics'] }) > 0;
+  const isFetching =
+    useIsFetching({ queryKey: ['fcm-analytics'] }) + useIsFetching({ queryKey: ['mobile-analytics'] }) > 0;
   const { user } = useAuth();
   const [customOpen, setCustomOpen] = useState(search.range === 'custom');
 
@@ -56,8 +65,6 @@ export function NotificationsPage() {
       />
     );
   }
-
-  if (import.meta.env.MODE === 'staging') return <StagingBlocked title="Trafik Mobile" />;
 
   const setSearch = (next: NotificationsSearch) => void navigate({ to: '/dashboard/mobile', search: next });
   const query =
@@ -86,12 +93,15 @@ export function NotificationsPage() {
     <div className="dashboard">
       <PageHeader
         title="Trafik Mobile"
-        subtitle="Analitik aplikasi mobile SambasKu: delivery & open rate notifikasi push."
+        subtitle="Analitik aplikasi mobile SambasKu: event, layar, audiens, dan notifikasi push."
         extra={
           <Button
             icon={<ReloadOutlined />}
             loading={isFetching}
-            onClick={() => void queryClient.invalidateQueries({ queryKey: ['fcm-analytics'] })}
+            onClick={() => {
+              void queryClient.invalidateQueries({ queryKey: ['fcm-analytics'] });
+              void queryClient.invalidateQueries({ queryKey: ['mobile-analytics'] });
+            }}
           >
             Muat ulang
           </Button>
@@ -122,10 +132,16 @@ export function NotificationsPage() {
       <Tabs
         activeKey={search.tab}
         onChange={(tab) => setSearch({ ...search, tab: tab as NotificationsSearch['tab'] })}
-        items={FCM_SECTIONS.map((s) => ({ key: s, label: FCM_SECTION_LABELS[s] }))}
+        items={[
+          ...MOBILE_SECTIONS.map((s) => ({ key: s, label: MOBILE_SECTION_LABELS[s] })),
+          ...FCM_SECTIONS.map((s) => ({ key: s, label: FCM_SECTION_LABELS[s] })),
+        ]}
         className="traffic__tabs"
       />
 
+      {MOBILE_SECTIONS.includes(search.tab as MobileSection) ? (
+        <MobileTab section={search.tab as MobileSection} query={query} />
+      ) : null}
       {search.tab === 'delivery' ? <DeliveryTab query={query} /> : null}
       {search.tab === 'engagement' ? <EngagementTab query={query} /> : null}
     </div>

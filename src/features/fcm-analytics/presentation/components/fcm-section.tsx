@@ -10,14 +10,23 @@ export interface FcmSectionProps<T> {
   range: DateRangeWire | null | undefined;
   onRetry: () => void;
   children: (data: T) => ReactNode;
+  /** Override copy untuk section non-notifikasi (mis. GA4 mobile). */
+  copy?: {
+    source?: string;
+    notConfiguredTitle?: string;
+    notConfiguredDesc?: string;
+    emptyTitle?: string;
+    emptyDesc?: string;
+    errorTitle?: string;
+  };
 }
 
 /** Wrapper state data analitik notifikasi: loading, belum terhubung, error, kosong, sukses. */
-export function FcmSection<T>({ view, range, onRetry, children }: FcmSectionProps<T>) {
+export function FcmSection<T>({ view, range, onRetry, copy, children }: FcmSectionProps<T>) {
   const [setupOpen, setSetupOpen] = useState(false);
   const meta = (
     <Typography.Text type="secondary" className="traffic__source-meta">
-      Data dari Firebase Cloud Messaging + Google Analytics
+      {copy?.source ?? 'Data dari Firebase Cloud Messaging + Google Analytics'}
       {range ? ` · ${formatRangeLabel(range)}` : ''}
     </Typography.Text>
   );
@@ -43,10 +52,13 @@ export function FcmSection<T>({ view, range, onRetry, children }: FcmSectionProp
             image={<ApiOutlined className="traffic__state-icon" />}
             description={
               <>
-                <Typography.Text strong>Analitik notifikasi belum terhubung</Typography.Text>
+                <Typography.Text strong>
+                  {copy?.notConfiguredTitle ?? 'Analitik notifikasi belum terhubung'}
+                </Typography.Text>
                 <br />
                 <Typography.Text type="secondary">
-                  Hubungkan service account Firebase untuk melihat delivery dan open rate notifikasi.
+                  {copy?.notConfiguredDesc ??
+                    'Hubungkan service account Firebase untuk melihat delivery dan open rate notifikasi.'}
                 </Typography.Text>
               </>
             }
@@ -63,7 +75,7 @@ export function FcmSection<T>({ view, range, onRetry, children }: FcmSectionProp
         <Alert
           type="warning"
           showIcon
-          message="Data notifikasi belum bisa dimuat"
+          message={copy?.errorTitle ?? 'Data notifikasi belum bisa dimuat'}
           description={
             <>
               {view.message}
@@ -87,11 +99,12 @@ export function FcmSection<T>({ view, range, onRetry, children }: FcmSectionProp
             image={<CalendarOutlined className="traffic__state-icon" />}
             description={
               <>
-                <Typography.Text strong>Belum ada pengiriman notifikasi</Typography.Text>
-                <br />
-                <Typography.Text type="secondary">
-                  Belum ada push yang dikirim di rentang ini, atau datanya belum diproses Google (lambat sekitar 1 hari).
-                </Typography.Text>
+              <Typography.Text strong>{copy?.emptyTitle ?? 'Belum ada pengiriman notifikasi'}</Typography.Text>
+              <br />
+              <Typography.Text type="secondary">
+                {copy?.emptyDesc ??
+                  'Belum ada push yang dikirim di rentang ini, atau datanya belum diproses Google (lambat sekitar 1 hari).'}
+              </Typography.Text>
               </>
             }
           />

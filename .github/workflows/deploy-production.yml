@@ -61,7 +61,7 @@ jobs:
         run: pnpm build
         env:
           VITE_API_BASE_URL: https://api.sambasku.com/api/v1
-          VITE_API_BASE_URL_FALLBACKS: https://deno.sambasku.com/api/v1,https://render.sambasku.com/api/v1
+          VITE_API_BASE_URL_FALLBACKS: https://render.sambasku.com/api/v1
           VITE_APP_NAME: SambasKu - Admin Console
 
       - name: Pastikan project Cloudflare Pages ada
@@ -88,7 +88,7 @@ jobs:
           headers=$(curl -sI --retry 5 --retry-all-errors --retry-delay 3 https://console.sambasku.com/)
           echo "$headers"
           echo "$headers" | grep -qi 'content-security-policy:' || { echo 'CSP tidak ada'; exit 1; }
-          for host in api.sambasku.com deno.sambasku.com render.sambasku.com; do
+          for host in api.sambasku.com render.sambasku.com; do
             echo "$headers" | grep -i 'content-security-policy:' | grep -q "$host" || { echo "CSP tidak memuat $host"; exit 1; }
           done
           echo "$headers" | grep -qi 'x-frame-options: deny' || { echo 'X-Frame-Options DENY tidak ada'; exit 1; }
