@@ -104,8 +104,8 @@ export function PlaceDrawer({
   const lastStep = STEPS.length - 1;
 
   useEffect(() => {
-    if (!open) return;
-    setStep(0);
+  if (!open) return;
+  // reset step dipindah ke afterOpenChange (event), bukan effect
     form.setFieldsValue(
       editing
         ? {
@@ -269,6 +269,9 @@ export function PlaceDrawer({
       title={editing ? 'Edit tempat' : 'Tempat baru'}
       open={open}
       onClose={onClose}
+      afterOpenChange={(o) => {
+        if (!o) setStep(0);
+      }}
       width="min(1080px, 100vw)"
       destroyOnClose
       styles={{ body: { paddingTop: 16 } }}

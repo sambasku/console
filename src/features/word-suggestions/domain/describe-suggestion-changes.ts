@@ -363,8 +363,8 @@ function parseGroups(
   return rows;
 }
 
-function pickStringList(obj: Record<string, unknown>, camel: string, snake: string): string[] {
-  const value = obj[camel] ?? obj[snake];
+function pickStringList(obj: Record<string, unknown>, camel: string, snake?: string): string[] {
+  const value = obj[camel] ?? (snake ? obj[snake] : undefined);
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }

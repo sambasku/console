@@ -72,9 +72,13 @@ export function MapPicker({
   const loadedRef = useRef(false);
   const centerOnNextRef = useRef(value != null);
   const pointRef = useRef<MapPoint | null>(value);
-  onChangeRef.current = onChange;
-  disabledRef.current = disabled;
-  pointRef.current = value;
+  // Sinkronisasi ref dijalankan sebagai effect (bukan saat render) supaya
+  // tidak melanggar react-hooks/refs. Diletakkan sebelum effect peta.
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    disabledRef.current = disabled;
+    pointRef.current = value;
+  });
 
   const lat = value?.lat;
   const lng = value?.lng;
@@ -114,7 +118,10 @@ export function MapPicker({
     map.jumpTo({ center: [point.lng, point.lat], zoom: Math.max(map.getZoom() || 0, 15) });
   };
   const applyPointRef = useRef(applyPoint);
-  applyPointRef.current = applyPoint;
+  useEffect(() => {
+    applyPointRef.current = applyPoint;
+  });
+
   const startRef = useRef({
     lng: (value ?? defaultCenter).lng,
     lat: (value ?? defaultCenter).lat,
