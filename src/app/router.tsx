@@ -38,7 +38,12 @@ import { NotificationCampaignsPage } from '@/features/notification-campaigns/pre
 import { NotificationCampaignDetailPage } from '@/features/notification-campaigns/presentation/notification-campaign-detail-page';
 import { NotificationTemplatesPage } from '@/features/notification-campaigns/presentation/notification-templates-page';
 import { AnnouncementsPage } from '@/features/announcements/presentation/announcements-page';
+import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
+import { PlacesPage } from '@/features/places/presentation/places-page';
+import { RegionsPage } from '@/features/regions/presentation/regions-page';
+import { PlaceCategoriesPage } from '@/features/place-categories/presentation/place-categories-page';
+import { WordGroupsPage } from '@/features/word-groups/presentation/word-groups-page';
 import { ProfilePage } from '@/features/profile/presentation/pages/profile-page';
 import { LegalPage } from '@/features/legal/presentation/legal-page';
 import { OauthPage } from '@/features/oauth/presentation/oauth-page';
@@ -334,10 +339,40 @@ const announcementsRoute = createRoute({
   component: AnnouncementsPage,
 });
 
+const achievementsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/achievements',
+  component: AchievementsPage,
+});
+
 const categoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/categories',
   component: CategoriesPage,
+});
+
+const regionsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/regions',
+  component: RegionsPage,
+});
+
+const placesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/places',
+  component: PlacesPage,
+});
+
+const placeCategoriesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/place-categories',
+  component: PlaceCategoriesPage,
+});
+
+const wordGroupsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/word-groups',
+  component: WordGroupsPage,
 });
 
 const profileRoute = createRoute({
@@ -448,7 +483,12 @@ const routeTree = rootRoute.addChildren([
     notificationCampaignDetailRoute,
     notificationTemplatesRoute,
     announcementsRoute,
+    achievementsRoute,
     categoriesRoute,
+    regionsRoute,
+    placesRoute,
+    placeCategoriesRoute,
+    wordGroupsRoute,
     profileRoute,
     legalRoute,
     oauthRoute,

@@ -13,6 +13,7 @@ import { displayImageUrl } from '@/shared/utils/display-image-url';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/shared/components/page-header';
+import { isVerifierRole, VerifierMark } from '@/shared/components/verifier-mark';
 import { PageLoading } from '@/shared/components/page-loading';
 import { useAuditLogList } from '@/features/audit/application/use-audit-log-list';
 import { AuditTimeline } from '@/features/audit/presentation/audit-timeline';
@@ -444,12 +445,26 @@ function WordDetailContent({
               Dibuat dan diverifikasi oleh{' '}
               {detail.created_by.display_name?.trim() || detail.created_by.username}
             </span>
-            {['admin', 'editor', 'root', 'reviewer'].includes(detail.verified_by?.role ?? '') ? (
-              <Tag color="cyan">Verifikator</Tag>
-            ) : null}
+            <VerifierMark show={isVerifierRole(detail.created_by.role)} />
           </Space>
         ) : (
-          `Dibuat oleh ${detail.created_by.display_name?.trim() || detail.created_by.username}`
+          <Space direction="vertical" size={2}>
+            <Space size={6} wrap>
+              <span>
+                Dibuat oleh {detail.created_by.display_name?.trim() || detail.created_by.username}
+              </span>
+              <VerifierMark show={isVerifierRole(detail.created_by.role)} />
+            </Space>
+            {detail.verified_by ? (
+              <Space size={6} wrap>
+                <span>
+                  Diverifikasi oleh{' '}
+                  {detail.verified_by.display_name?.trim() || detail.verified_by.username}
+                </span>
+                <VerifierMark show={isVerifierRole(detail.verified_by.role)} />
+              </Space>
+            ) : null}
+          </Space>
         )
       ) : (
         '-'
@@ -587,7 +602,7 @@ function WordDetailContent({
   return (
     <>
       <Modal
-        title="Verifikator"
+        title="Atribusi"
         open={verifierOpen}
         onCancel={() => setVerifierOpen(false)}
         footer={null}
@@ -603,25 +618,29 @@ function WordDetailContent({
                   {detail.created_by.display_name?.trim() ||
                     detail.created_by.username}
                 </Text>
-                {['admin', 'editor', 'root', 'reviewer'].includes(detail.verified_by.role) ? (
-                  <Tag color="cyan">Verifikator</Tag>
-                ) : null}
+                <VerifierMark show={isVerifierRole(detail.created_by.role)} />
               </Space>
             ) : (
               <>
                 {detail.created_by ? (
-                  <Text>
-                    Dibuat oleh{' '}
-                    {detail.created_by.display_name?.trim() ||
-                      detail.created_by.username}
-                  </Text>
+                  <Space size={6} wrap>
+                    <Text>
+                      Dibuat oleh{' '}
+                      {detail.created_by.display_name?.trim() ||
+                        detail.created_by.username}
+                    </Text>
+                    <VerifierMark show={isVerifierRole(detail.created_by.role)} />
+                  </Space>
                 ) : null}
                 {detail.verified_by ? (
-                  <Text>
-                    Diverifikasi oleh{' '}
-                    {detail.verified_by.display_name?.trim() ||
-                      detail.verified_by.username}
-                  </Text>
+                  <Space size={6} wrap>
+                    <Text>
+                      Diverifikasi oleh{' '}
+                      {detail.verified_by.display_name?.trim() ||
+                        detail.verified_by.username}
+                    </Text>
+                    <VerifierMark show={isVerifierRole(detail.verified_by.role)} />
+                  </Space>
                 ) : null}
               </>
             )}
@@ -630,7 +649,7 @@ function WordDetailContent({
             ) : null}
           </Space>
         ) : (
-          <Text>Verifikator tidak diketahui</Text>
+          <Text>Atribusi tidak diketahui</Text>
         )}
       </Modal>
       <Tabs

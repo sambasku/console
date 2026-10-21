@@ -80,14 +80,24 @@ function WordSuggestionDetail({ id }: { id: string }) {
       ...(data.diff.relations?.added ?? []),
       ...(data.diff.relations?.removed ?? []),
     ]) {
-      if (relation.lemma) lemmaByWordId.set(relation.word_id, relation.lemma);
+      if (relation.word_id && relation.lemma) lemmaByWordId.set(relation.word_id, relation.lemma);
     }
+    // Lemma target yang belum ada di kamus - akan dibuat saat approve.
+    const newWordLemmas = new Set(
+      [
+        ...(data.diff.relations?.added ?? [])
+          .filter((relation) => relation.new_word && relation.lemma)
+          .map((relation) => relation.lemma as string),
+        ...(data.diff.groups?.created ?? []).flatMap((group) => group.new_word_lemmas ?? []),
+      ].map((lemma) => lemma.trim().toLowerCase()),
+    );
     return describeSuggestionChanges({
       proposed: data.suggestion.proposed_changes,
       current: data.current_word,
       categoryName: (id) => categoryById.get(id) ?? (categoriesReady ? 'Kategori tidak dikenal' : ''),
-      wordClassName: (id) => classById.get(id) ?? (classesReady ? 'Kelas kata tidak dikenal' : ''),
+      wordClassName: (id) => classById.get(id) ?? (classesReady ? 'Kelas tidak dikenal' : ''),
       relationLemma: (wordId) => lemmaByWordId.get(wordId),
+      newWordLemmas,
     });
   }, [
     categoryQuery.data,
@@ -442,6 +452,16 @@ function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
         <div>
           <Typography.Text strong>Varian</Typography.Text>
           {variantLines.map((line, index) => (
+            <div key={`${line}-${index}`} style={{ marginTop: 4 }}>
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {view.groups.added.length > 0 || view.groups.removed.length > 0 ? (
+        <div>
+          <Typography.Text strong>Kelompok makna</Typography.Text>
+          {[...view.groups.added, ...view.groups.removed].map((line, index) => (
             <div key={`${line}-${index}`} style={{ marginTop: 4 }}>
               {line}
             </div>

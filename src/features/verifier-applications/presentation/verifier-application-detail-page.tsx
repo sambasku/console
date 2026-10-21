@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { CheckOutlined, CloseOutlined, RollbackOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, PictureOutlined, RollbackOutlined } from '@ant-design/icons';
 import {
-  Alert,
-  App as AntdApp,
-  Button,
-  Card,
-  Descriptions,
-  Flex,
-  Form,
-  Image,
-  Input,
-  Modal,
-  Result,
-  Space,
-  Tag,
-  Typography,
+ Alert,
+ App as AntdApp,
+ Button,
+ Card,
+ Descriptions,
+ Flex,
+ Form,
+ Image,
+ Input,
+ Modal,
+ Result,
+ Space,
+ Tag,
+ Typography,
+ Upload,
 } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { PageHeader } from '@/shared/components/page-header';
@@ -27,6 +28,8 @@ import {
   useReviewVerifierApplication,
   type VerifierApplicationDecision,
 } from '../application/use-review-verifier-application';
+import { useUpdateVerifierScreenshot } from '../application/use-update-verifier-screenshot';
+import { uploadVerifierScreenshot } from '../infrastructure/verifier-screenshot-upload';
 import {
   SOCIAL_PLATFORM_LABELS,
   VERIFIER_APPLICATION_STATUS_LABELS,
@@ -46,12 +49,14 @@ export function VerifierApplicationDetailPage() {
   const { id } = useParams({ from: '/console-layout/verifier-applications/$id' });
   const { user } = useAuth();
   const canManage = user?.role === 'admin' || user?.role === 'root';
-  const detailQuery = useVerifierApplicationDetail(id);
-  const reviewMutation = useReviewVerifierApplication();
-  const { message } = AntdApp.useApp();
+ const detailQuery = useVerifierApplicationDetail(id);
+ const reviewMutation = useReviewVerifierApplication();
+ const screenshotMutation = useUpdateVerifierScreenshot();
+ const { message } = AntdApp.useApp();
 
-  const [decision, setDecision] = useState<VerifierApplicationDecision | null>(null);
-  const [comment, setComment] = useState('');
+ const [decision, setDecision] = useState<VerifierApplicationDecision | null>(null);
+ const [comment, setComment] = useState('');
+ const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
 
   const detail = detailQuery.data;
   const isPending = detail?.status === 'pending';
@@ -59,6 +64,42 @@ export function VerifierApplicationDetailPage() {
   const closeDecision = () => {
     setDecision(null);
     setComment('');
+  };
+
+  /** Ganti screenshot akun sosial (issue #50): konfirmasi dulu dengan clue platform + username. */
+  const replaceScreenshot = async (
+    index: number,
+    link: { platform: string; username: string },
+    file: File,
+  ) => {
+    if (!detail) return;
+    const platform = SOCIAL_PLATFORM_LABELS[link.platform] ?? link.platform;
+    const ok = await new Promise<boolean>((resolve) => {
+      Modal.confirm({
+        title: 'Ganti screenshot?',
+        content: `Screenshot baru akan dipakai untuk akun ${platform} ${link.username || '-'}.`,
+        okText: 'Lanjut upload',
+        cancelText: 'Batal',
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+    if (!ok) return;
+    setReplacingIndex(index);
+    try {
+      const uploaded = await uploadVerifierScreenshot(file);
+      await screenshotMutation.mutateAsync({
+        id: detail.id,
+        index,
+        url: uploaded.url,
+        providerFileId: uploaded.providerFileId,
+      });
+      message.success('Screenshot diperbarui.');
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Gagal mengganti screenshot.');
+    } finally {
+      setReplacingIndex(null);
+    }
   };
 
   const submitDecision = async () => {
@@ -128,7 +169,7 @@ export function VerifierApplicationDetailPage() {
           <Descriptions.Item label="Media sosial">
             <Image.PreviewGroup>
               <Space direction="vertical" size={12}>
-                {detail.social_links.map((link) => (
+                {detail.social_links.map((link, index) => (
                   <Space key={`${link.platform}-${link.username}`} align="start" size={12}>
                     {link.screenshot?.url ? (
                       <Image
@@ -145,6 +186,27 @@ export function VerifierApplicationDetailPage() {
                       <Text strong>{SOCIAL_PLATFORM_LABELS[link.platform] ?? link.platform}</Text>
                       <br />
                       <Text>{link.username || '-'}</Text>
+                      {isPending && canManage ? (
+                        <div style={{ marginTop: 4 }}>
+                          <Upload
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                              void replaceScreenshot(index, link, file);
+                              return Upload.LIST_IGNORE;
+                            }}
+                          >
+                            <Button
+                              size="small"
+                              icon={<PictureOutlined />}
+                              loading={replacingIndex === index}
+                              disabled={replacingIndex !== null && replacingIndex !== index}
+                            >
+                              Ganti screenshot
+                            </Button>
+                          </Upload>
+                        </div>
+                      ) : null}
                     </div>
                   </Space>
                 ))}

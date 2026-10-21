@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Alert, Avatar, Descriptions, Flex, List, Modal, Spin, Tag, Typography } from 'antd';
+import { Alert, Avatar, Descriptions, Flex, List, Modal, Space, Spin, Tag, Typography } from 'antd';
+import { VerifierMark } from '@/shared/components/verifier-mark';
 import { usePublicActivity, usePublicProfile } from '@/shared/hooks/use-public-profile';
 import { displayImageUrl } from '@/shared/utils/display-image-url';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -85,9 +86,12 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
               {query.data.displayName.slice(0, 2).toUpperCase()}
             </Avatar>
             <div>
-              <Typography.Title level={5} style={{ margin: 0 }}>
-                {query.data.displayName}
-              </Typography.Title>
+              <Space size={8} align="center">
+                <Typography.Title level={5} style={{ margin: 0 }}>
+                  {query.data.displayName}
+                </Typography.Title>
+                <VerifierMark show={query.data.isVerifier} />
+              </Space>
               {query.data.displayName !== query.data.username ? (
                 <Typography.Text type="secondary">@{query.data.username}</Typography.Text>
               ) : null}
@@ -101,9 +105,6 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
           <Descriptions size="small" column={1} bordered>
             <Descriptions.Item label="Peran">
               <Tag>{roleLabel(query.data.role)}</Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Verifikator">
-              {query.data.isVerifier ? <Tag color="cyan">Ya</Tag> : <Tag>Tidak</Tag>}
             </Descriptions.Item>
             <Descriptions.Item label="Usul kata disetujui">
               {query.data.stats.wordsApproved}
@@ -153,6 +154,8 @@ export interface UserInfoLinkProps {
   username: string | null | undefined;
   /** Teks tampilan; default = username. Tap tetap buka modal by username. */
   label?: string | null;
+  /** Centang verifikator di samping nama, sama seperti balasan diskusi. */
+  isVerifier?: boolean;
   fallback?: ReactNode;
 }
 
@@ -163,6 +166,7 @@ export interface UserInfoLinkProps {
 export function UserInfoLink({
   username,
   label,
+  isVerifier = false,
   fallback = 'Pengguna terhapus',
 }: UserInfoLinkProps) {
   const [open, setOpen] = useState(false);
@@ -174,7 +178,10 @@ export function UserInfoLink({
 
   return (
     <>
-      <Typography.Link onClick={() => setOpen(true)}>{text}</Typography.Link>
+      <Space size={6}>
+        <Typography.Link onClick={() => setOpen(true)}>{text}</Typography.Link>
+        <VerifierMark show={isVerifier} />
+      </Space>
       <UserInfoModal username={username} open={open} onClose={() => setOpen(false)} />
     </>
   );

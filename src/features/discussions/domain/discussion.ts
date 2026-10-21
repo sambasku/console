@@ -36,6 +36,7 @@ export interface DiscussionListItem {
   user_id: string;
   username: string | null;
   display_name: string | null;
+  is_verifier?: boolean;
   body: string | null;
   link_url: string | null;
   images: DiscussionImage[];

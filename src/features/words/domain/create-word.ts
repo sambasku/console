@@ -10,7 +10,15 @@ import type { UsageLabel, WordStatus, WordType } from './word';
 export const TRANSLATION_TYPES = ['direct', 'descriptive', 'idiomatic'] as const;
 export type TranslationType = (typeof TRANSLATION_TYPES)[number];
 
-export const RELATION_TYPES = ['synonym', 'antonym', 'has_component', 'derived_from'] as const;
+export const RELATION_TYPES = [
+  'synonym',
+  'antonym',
+  'has_component',
+  'derived_from',
+  // PRD relasi-lemma: variasi bentuk + bentuk tidak baku terverifikasi.
+  'variant_of',
+  'nonstandard_of',
+] as const;
 export type RelationType = (typeof RELATION_TYPES)[number];
 
 export const VARIANT_TYPES = ['inflection', 'derivation', 'alternative', 'reduplication'] as const;
@@ -33,6 +41,8 @@ export const RELATION_TYPE_LABELS: Record<RelationType, string> = {
   antonym: 'Antonim',
   has_component: 'Kata pembentuk',
   derived_from: 'Turunan dari',
+  variant_of: 'Variasi dari',
+  nonstandard_of: 'Bentuk tidak baku dari',
 };
 
 export const VARIANT_TYPE_LABELS: Record<VariantType, string> = {

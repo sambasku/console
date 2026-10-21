@@ -24,6 +24,8 @@ export interface SuggestionChangeView {
   categories: { added: string[]; removed: string[] };
   relations: { added: string[]; removed: string[] };
   variants: { added: string[]; removed: string[] };
+  /** PRD relasi-lemma: perubahan keanggotaan kelompok makna. */
+  groups: { added: string[]; removed: string[] };
 }
 
 export interface DescribeSuggestionInput {
@@ -32,6 +34,8 @@ export interface DescribeSuggestionInput {
   categoryName: (id: string) => string;
   wordClassName: (id: string) => string;
   relationLemma: (wordId: string) => string | undefined;
+  /** Lemma target yang API laporkan belum ada (dibuat saat approve). */
+  newWordLemmas?: ReadonlySet<string>;
 }
 
 /**
@@ -49,6 +53,14 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
   const notes = pickString(proposed, 'notes');
   if (notes !== undefined && notes !== (current.notes ?? '')) {
     texts.push({ label: 'Catatan', before: current.notes, after: notes });
+  }
+  const wordType = pickString(proposed, 'wordType', 'word_type');
+  if (wordType !== undefined && wordType !== current.word_type) {
+    texts.push({
+      label: 'Jenis entri',
+      before: wordTypeLabel(current.word_type),
+      after: wordTypeLabel(wordType),
+    });
   }
 
   const meanings = parseMeanings(proposed.meanings ?? proposed['meanings']).map((change) =>
@@ -69,8 +81,14 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
 
   const relations = { added: [] as string[], removed: [] as string[] };
   for (const relation of parseRelations(proposed.relations)) {
-    const phrase = relationPhrase(relation.relationType, input.relationLemma(relation.wordId));
-    if (relation.action === 'add') relations.added.push(`Tambah ${phrase}`);
+    const lemma = relation.wordId ? input.relationLemma(relation.wordId) : relation.lemma;
+    const phrase = relationPhrase(relation.relationType, lemma);
+    const isNew =
+      relation.action === 'add' &&
+      !!relation.lemma &&
+      (input.newWordLemmas?.has(relation.lemma) ?? false);
+    const suffix = isNew ? ' (kata baru)' : '';
+    if (relation.action === 'add') relations.added.push(`Tambah ${phrase}${suffix}`);
     if (relation.action === 'remove') relations.removed.push(`Hapus ${phrase}`);
   }
 
@@ -81,7 +99,33 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
     if (variant.action === 'remove') variants.removed.push(`Hapus ${phrase}`);
   }
 
-  return { texts, meanings: meanings.filter((block) => block.lines.length > 0 || block.heading === 'Makna dihapus'), categories, relations, variants };
+  // PRD relasi-lemma: kelompok makna. Nama grup baru = teks bebas; grup
+  // lama diselesaikan dari current_word.groups (bukan lemma).
+  const currentGroups = new Map((current.groups ?? []).map((g) => [g.group_id, g.name]));
+  const groups = { added: [] as string[], removed: [] as string[] };
+  for (const group of parseGroups(proposed.groups)) {
+    if (group.action === 'add') {
+      if (group.groupId) {
+        if (currentGroups.has(group.groupId)) continue; // sudah anggota
+        const name = currentGroups.get(group.groupId) ?? 'kelompok';
+        groups.added.push(`Gabung kelompok: ${name}`);
+      } else if (group.name?.trim()) {
+        const ids = group.wordIds ?? [];
+        const lemmas = group.lemmas ?? [];
+        const members = [...ids.map(input.relationLemma).filter(Boolean), ...lemmas];
+        const suffix = members.length
+          ? ` (anggota lain: ${members.join(', ')})`
+          : '';
+        groups.added.push(`Buat kelompok baru "${group.name.trim()}"${suffix}`);
+      }
+    }
+    if (group.action === 'remove' && group.groupId) {
+      if (!currentGroups.has(group.groupId)) continue; // bukan anggota
+      groups.removed.push(`Keluar dari kelompok: ${currentGroups.get(group.groupId) ?? group.groupId}`);
+    }
+  }
+
+  return { texts, meanings: meanings.filter((block) => block.lines.length > 0 || block.heading === 'Makna dihapus'), categories, relations, variants, groups };
 }
 
 export function suggestionChangesAreEmpty(view: SuggestionChangeView): boolean {
@@ -93,7 +137,9 @@ export function suggestionChangesAreEmpty(view: SuggestionChangeView): boolean {
     view.relations.added.length === 0 &&
     view.relations.removed.length === 0 &&
     view.variants.added.length === 0 &&
-    view.variants.removed.length === 0
+    view.variants.removed.length === 0 &&
+    view.groups.added.length === 0 &&
+    view.groups.removed.length === 0
   );
 }
 
@@ -108,6 +154,7 @@ export function summarizeSuggestionChanges(summary: SuggestionListItem['summary_
   if (summary.relations_count) parts.push('relasi');
   if (summary.variants_count) parts.push('varian');
   if (summary.images_count) parts.push('gambar');
+  if (summary.groups_count) parts.push('kelompok makna');
   return parts.join(', ') || '-';
 }
 
@@ -171,6 +218,21 @@ function describeMeaning(
   return { heading, lines };
 }
 
+function wordTypeLabel(code: string | undefined): string | null {
+  switch (code) {
+    case 'idiom':
+      return 'Idiom';
+    case 'peribahasa':
+      return 'Peribahasa';
+    case 'ungkapan':
+      return 'Ungkapan';
+    case 'word':
+      return 'Kata';
+    default:
+      return code?.trim() || null;
+  }
+}
+
 function relationPhrase(relationType: string, lemma: string | undefined): string {
   const label =
     RELATION_TYPE_LABELS[relationType as RelationType] ?? relationType;
@@ -223,17 +285,32 @@ function parseTranslations(raw: unknown): Array<{ translationText: string }> {
   return texts;
 }
 
-function parseRelations(raw: unknown): Array<{ action: string; relationType: string; wordId: string }> {
+function parseRelations(raw: unknown): Array<{
+  action: string;
+  relationType: string;
+  wordId?: string;
+  lemma?: string;
+  isNew?: boolean;
+}> {
   if (!Array.isArray(raw)) return [];
-  const rows: Array<{ action: string; relationType: string; wordId: string }> = [];
+  const rows: Array<{
+    action: string;
+    relationType: string;
+    wordId?: string;
+    lemma?: string;
+    isNew?: boolean;
+  }> = [];
   for (const item of raw) {
     const row = asRecord(item);
     if (!row) continue;
     const action = pickString(row, 'action');
     const relationType = pickString(row, 'relationType', 'relation_type');
     const wordId = pickString(row, 'wordId', 'word_id');
-    if (!action || !relationType || !wordId) continue;
-    rows.push({ action, relationType, wordId });
+    const lemma = pickString(row, 'lemma');
+    // add tanpa word_id = lemma target; remove selalu butuh word_id.
+    if (!action || !relationType || (!wordId && !lemma)) continue;
+    if (action === 'remove' && !wordId) continue;
+    rows.push({ action, relationType, wordId, lemma });
   }
   return rows;
 }
@@ -256,8 +333,38 @@ function parseVariants(raw: unknown): Array<{ action: string; form: string; vari
   return rows;
 }
 
-function pickStringList(obj: Record<string, unknown>, camel: string, snake: string): string[] {
-  const value = obj[camel] ?? obj[snake];
+// PRD relasi-lemma: payload groups { action, groupId?, name?, wordIds?, lemmas? }.
+function parseGroups(
+  raw: unknown,
+): Array<{ action: string; groupId?: string; name?: string; wordIds?: string[]; lemmas?: string[] }> {
+  if (!Array.isArray(raw)) return [];
+  const rows: Array<{
+    action: string;
+    groupId?: string;
+    name?: string;
+    wordIds?: string[];
+    lemmas?: string[];
+  }> = [];
+  for (const item of raw) {
+    const row = asRecord(item);
+    if (!row) continue;
+    const action = pickString(row, 'action');
+    if (!action) continue;
+    const groupId = pickString(row, 'groupId', 'group_id');
+    const name = pickString(row, 'name');
+    rows.push({
+      action,
+      ...(groupId ? { groupId } : {}),
+      ...(name ? { name } : {}),
+      wordIds: pickStringList(row, 'wordIds', 'word_ids'),
+      lemmas: pickStringList(row, 'lemmas'),
+    });
+  }
+  return rows;
+}
+
+function pickStringList(obj: Record<string, unknown>, camel: string, snake?: string): string[] {
+  const value = obj[camel] ?? (snake ? obj[snake] : undefined);
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }

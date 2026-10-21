@@ -25,6 +25,7 @@ export interface AdminCommentItem {
   user_id: string;
   username: string | null;
   display_name: string | null;
+  is_verifier?: boolean;
   body: string;
   body_original: string | null;
   is_censored: boolean;

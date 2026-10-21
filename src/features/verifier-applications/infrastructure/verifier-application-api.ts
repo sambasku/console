@@ -57,3 +57,17 @@ export async function rejectVerifierApplicationRequest(
   );
   return res.data.data;
 }
+
+export async function updateVerifierScreenshotRequest(
+  id: string,
+  index: number,
+  body: { url: string; provider_file_id: string },
+  signal?: AbortSignal,
+): Promise<VerifierApplicationDetail> {
+  const res = await client.patch<ApiOkEnvelope<VerifierApplicationDetail>>(
+    `/admin/verifier-applications/${id}/social-links/${index}/screenshot`,
+    body,
+    { signal },
+  );
+  return res.data.data;
+}

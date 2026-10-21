@@ -23,6 +23,11 @@ export default tseslint.config(
       // TanStack Table's `useReactTable` returns functions the rule can't verify as memoizable
       // (known false positive, used in ~12 list pages). Off repo-wide until upstream fixes it.
       'react-hooks/incompatible-library': 'off',
+      // React Compiler rule yang over-strict: flag reset-state-on-deps-change
+      // dan init error handling (mis. map lib) sebagai cascading render padahal
+      // memang disengaja. Posisi report tidak konsisten, disable-next-line
+      // tak selalu kena. Off sampai kasusnya benar-benar berbahaya.
+      'react-hooks/set-state-in-effect': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },

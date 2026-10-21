@@ -2,14 +2,25 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const consoleRoot = fileURLToPath(new URL('.', import.meta.url));
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    // Prebundle Vite merusak URL worker MapLibre, petanya jadi kanvas kosong.
+    exclude: ['maplibre-gl'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {
+    fs: {
+      // regions.json ada di repo data/, di luar root paket console.
+      allow: [consoleRoot, repoRoot],
+    },
     port: 5174,
     // Dev lokal HARUS same-origin lewat proxy ini - kalau tidak, frontend
     // (http://localhost:5174) cross-site ke API, cookie refresh_token

@@ -8,6 +8,7 @@ import {
   CommentOutlined,
   DashboardOutlined,
   EditOutlined,
+  EnvironmentOutlined,
   FileTextOutlined,
   FlagOutlined,
   InboxOutlined,
@@ -23,13 +24,17 @@ import {
   SettingOutlined,
   SoundOutlined,
   StopOutlined,
-  TranslationOutlined,
-  UserOutlined,
+  TagsOutlined,
+  TeamOutlined,
+TranslationOutlined,
+TrophyOutlined,
+UserOutlined,
   WarningOutlined,
   FileProtectOutlined,
   ApiOutlined,
   CloudServerOutlined,
   CloudUploadOutlined,
+  CompassOutlined,
   DatabaseOutlined,
   WhatsAppOutlined,
   MailOutlined,
@@ -65,6 +70,17 @@ const KAMUS_ROUTES = {
   '/search-misses': { icon: <SearchOutlined />, label: 'Pencarian' },
   '/vote-moderation': { icon: <LikeOutlined />, label: 'Vote' },
   '/categories': { icon: <BookOutlined />, label: 'Kategori' },
+  // PRD relasi-lemma: kelompok makna (lema bermakna sama/berdekatan).
+  '/word-groups': { icon: <TeamOutlined />, label: 'Kelompok makna' },
+  // Pencapaian: katalog border/badge/stiker + evaluasi otomatis.
+  '/achievements': { icon: <TrophyOutlined />, label: 'Pencapaian' },
+} as const;
+
+/** Leaf routes di bawah grup Eksplorasi. */
+const EKSPLORASI_ROUTES = {
+  '/place-categories': { icon: <TagsOutlined />, label: 'Kategori tempat' },
+  '/regions': { icon: <CompassOutlined />, label: 'Wilayah' },
+  '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
 } as const;
 
 /** Leaf routes di bawah grup Notifikasi. */
@@ -85,6 +101,7 @@ const SYSTEM_ROUTES = {
 
 type AnalyticsRoute = keyof typeof ANALYTICS_ROUTES;
 type KamusRoute = keyof typeof KAMUS_ROUTES;
+type EksplorasiRoute = keyof typeof EKSPLORASI_ROUTES;
 type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
@@ -94,10 +111,17 @@ type TopRoute =
   | '/verifier-applications'
   | '/legal'
   | '/oauth';
-type MenuRoute = AnalyticsRoute | KamusRoute | NotificationRoute | SystemRoute | TopRoute;
+type MenuRoute =
+  | AnalyticsRoute
+  | KamusRoute
+  | EksplorasiRoute
+  | NotificationRoute
+  | SystemRoute
+  | TopRoute;
 
 const ANALYTICS_GROUP_KEY = 'analitik';
 const KAMUS_GROUP_KEY = 'kamus';
+const EKSPLORASI_GROUP_KEY = 'eksplorasi';
 const NOTIFICATION_GROUP_KEY = 'notifikasi';
 const SYSTEM_GROUP_KEY = 'system';
 
@@ -120,7 +144,10 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-campaigns': 'Campaign',
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
+  achievements: 'Pencapaian',
   categories: 'Kategori',
+  regions: 'Wilayah',
+  places: 'Wisata',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',
@@ -139,6 +166,7 @@ function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
   if (top === '/dashboard') return ANALYTICS_GROUP_KEY;
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
+  if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
   if (pathname.startsWith('/system')) return SYSTEM_GROUP_KEY;
   return null;
@@ -206,6 +234,19 @@ export function ConsoleLayout() {
         children: kamusChildren,
       },
     ];
+    if (canModerateContent) {
+      items.push({
+        key: EKSPLORASI_GROUP_KEY,
+        icon: <CompassOutlined />,
+        label: 'Eksplorasi',
+        children: (
+          Object.entries(EKSPLORASI_ROUTES) as [
+            EksplorasiRoute,
+            (typeof EKSPLORASI_ROUTES)[EksplorasiRoute],
+          ][]
+        ).map(([key, { icon, label }]) => ({ key, icon, label })),
+      });
+    }
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({
@@ -244,10 +285,12 @@ export function ConsoleLayout() {
     const segments = pathname.split('/').filter(Boolean);
     const label = BREADCRUMB_LABELS[segments[0]] ?? 'Halaman';
     const inNotificationGroup = groupKeyForPath(pathname) === NOTIFICATION_GROUP_KEY;
+    const inEksplorasiGroup = groupKeyForPath(pathname) === EKSPLORASI_GROUP_KEY;
     const inSystemGroup = groupKeyForPath(pathname) === SYSTEM_GROUP_KEY;
     const items = [
       { title: 'Konsol' },
       ...(inNotificationGroup ? [{ title: 'Notifikasi' }] : []),
+      ...(inEksplorasiGroup ? [{ title: 'Eksplorasi' }] : []),
       ...(inSystemGroup
         ? [
             { title: 'System' },

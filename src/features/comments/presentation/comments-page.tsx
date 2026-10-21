@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { EyeOutlined, StopOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Alert, App as AntdApp, Button, Flex, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { Alert, App as AntdApp, Button, Flex, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { VerifierMark } from '@/shared/components/verifier-mark';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
 import { useNavigate } from '@tanstack/react-router';
@@ -100,7 +101,10 @@ export function CommentsPage() {
         cell: (info) => {
           const label = personLabel(info.row.original.display_name, info.getValue());
           return label !== '-' ? (
-            <Typography.Text strong>{label}</Typography.Text>
+            <Space size={6}>
+              <Typography.Text strong>{label}</Typography.Text>
+              <VerifierMark show={info.row.original.is_verifier} />
+            </Space>
           ) : (
             <Typography.Text type="secondary" italic>
               Pengguna terhapus

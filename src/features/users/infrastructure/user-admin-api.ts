@@ -7,6 +7,7 @@ export interface AdminUserWire {
   username: string;
   email: string;
   role: string;
+  avatar_url?: string | null;
   /** Provider OAuth tertaut (google/fb/github); kosong = onboard email/password. */
   auth_providers?: string[];
   is_active: boolean;

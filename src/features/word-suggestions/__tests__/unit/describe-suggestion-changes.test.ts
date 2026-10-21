@@ -8,6 +8,7 @@ import type { SuggestionDetail } from '../../domain/word-suggestion';
 const current: SuggestionDetail['current_word'] = {
   lemma: 'ayam',
   notes: 'catatan lama',
+  word_type: 'word',
   meanings: [
     {
       id: 'm1',
@@ -23,6 +24,19 @@ const current: SuggestionDetail['current_word'] = {
 };
 
 describe('describeSuggestionChanges', () => {
+  it('menampilkan jenis entri dengan label, bukan kode', () => {
+    const view = describeSuggestionChanges({
+      proposed: { word_type: 'ungkapan' },
+      current,
+      categoryName: (id) => id,
+      wordClassName: (id) => id,
+      relationLemma: () => undefined,
+    });
+    expect(view.texts).toEqual([
+      { label: 'Jenis entri', before: 'Kata', after: 'Ungkapan' },
+    ]);
+  });
+
   it('memberi label definisi, terjemahan, dan kelas kata', () => {
     const view = describeSuggestionChanges({
       proposed: {
@@ -42,6 +56,7 @@ describe('describeSuggestionChanges', () => {
       relationLemma: () => undefined,
     });
 
+    expect(view.texts).toEqual([]);
     expect(view.meanings[0]?.lines).toEqual([
       { label: 'Kelas kata', before: 'Nomina', after: 'Verba' },
       { label: 'Definisi', before: 'unggas', after: 'orang yang kurang pandai' },
@@ -67,6 +82,27 @@ describe('describeSuggestionChanges', () => {
     expect(view.meanings).toEqual([]);
   });
 
+  it('menandai relasi ke lemma baru sebagai kata baru', () => {
+    const view = describeSuggestionChanges({
+      proposed: {
+        relations: [
+          { action: 'add', relationType: 'derived_from', lemma: 'anak ayam' },
+          { action: 'add', relationType: 'synonym', lemma: 'unggas' },
+        ],
+      },
+      current,
+      categoryName: (id) => id,
+      wordClassName: (id) => id,
+      relationLemma: () => undefined,
+      newWordLemmas: new Set(['anak ayam']),
+    });
+
+    expect(view.relations.added).toEqual([
+      'Tambah turunan dari: anak ayam (kata baru)',
+      'Tambah sinonim: unggas',
+    ]);
+  });
+
   it('meringkas antrean dengan frasa, bukan shorthand', () => {
     expect(
       summarizeSuggestionChanges({
@@ -78,6 +114,7 @@ describe('describeSuggestionChanges', () => {
         relations_count: 0,
         variants_count: 0,
         images_count: 1,
+        groups_count: 0,
       }),
     ).toBe('ubah kata, 2 makna, kategori, gambar');
   });

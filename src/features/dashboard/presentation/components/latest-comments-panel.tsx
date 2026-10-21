@@ -2,6 +2,7 @@ import { Button, Skeleton, Typography } from 'antd';
 import { useLatestComments } from '@/features/comments/application/use-latest-comments';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
+import { VerifierMark } from '@/shared/components/verifier-mark';
 
 export interface LatestCommentsPanelProps {
   enabled?: boolean;
@@ -67,6 +68,12 @@ export function LatestCommentsPanel({
                 <span className="dashboard__comments-body">{item.body}</span>
                 <span className="dashboard__comments-meta">
                   {personLabel(item.display_name, item.username, 'pengguna')}
+                  {item.is_verifier ? (
+                    <>
+                      {' '}
+                      <VerifierMark show />
+                    </>
+                  ) : null}
                   {item.word_lemma ? (
                     <>
                       <span aria-hidden> · </span>

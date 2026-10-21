@@ -10,6 +10,10 @@ export type SuggestionReasonCode =
   | 'change_photo'
   | 'synonym'
   | 'antonym'
+  | 'variant_of'
+  | 'nonstandard_of'
+  | 'derived_from'
+  | 'meaning_group'
   | 'spelling_variant'
   | 'lemma_notes'
   | 'typo'
@@ -39,6 +43,7 @@ export interface SuggestionListItem {
     relations_count: number;
     variants_count: number;
     images_count: number;
+    groups_count: number;
   };
 }
 
@@ -59,6 +64,7 @@ export interface SuggestionDetail {
   current_word: {
     lemma: string;
     notes: string | null;
+    word_type: string;
     meanings: Array<{
       id: string;
       word_class: { code: string; name: string } | null;
@@ -69,22 +75,35 @@ export interface SuggestionDetail {
     relations: Array<{ relation_type: string; word_id: string; lemma: string }>;
     variants: Array<{ form: string; variant_type: string; dialect_id: string | null }>;
     images: Array<{ id: string; url: string; is_primary: boolean; alt_text: string | null }>;
+    groups?: Array<{ group_id: string; name: string; member_word_ids: string[] }>;
   };
   diff: {
     lemma: { current: string | null; proposed: string | null; changed: boolean };
     notes: { current: string | null; proposed: string | null; changed: boolean };
+    word_type: { current: string | null; proposed: string | null; changed: boolean };
     meanings: Array<{
       meaning_id: string | null;
       changes: Array<{ current: string | null; proposed: string | null; changed: boolean }>;
     }>;
     categories: { added: string[]; removed: string[] };
     relations: {
-      added: Array<{ relation_type: string; word_id: string; lemma?: string }>;
+      added: Array<{
+        relation_type: string;
+        word_id?: string;
+        lemma?: string;
+        /** Target belum ada di kamus - dibuat sebagai kata baru saat approve. */
+        new_word?: boolean;
+      }>;
       removed: Array<{ relation_type: string; word_id: string; lemma?: string }>;
     };
     variants: {
       added: Array<{ form: string; variant_type: string }>;
       removed: Array<{ form: string; variant_type: string }>;
+    };
+    groups?: {
+      joined: Array<{ group_id: string; name: string }>;
+      left: Array<{ group_id: string; name: string }>;
+      created: Array<{ name: string; member_lemmas: string[]; new_word_lemmas?: string[] }>;
     };
     images: {
       added: Array<{
@@ -114,6 +133,10 @@ export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
   change_photo: 'Ubah foto',
   synonym: 'Sinonim',
   antonym: 'Antonim',
+  variant_of: 'Variasi bentuk',
+  nonstandard_of: 'Bentuk tidak baku',
+  derived_from: 'Kata turunan',
+  meaning_group: 'Kelompok makna',
   spelling_variant: 'Variasi penulisan',
   lemma_notes: 'Lemma atau catatan',
   typo: 'Kesalahan penulisan',
