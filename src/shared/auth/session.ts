@@ -77,10 +77,30 @@ function cacheUser(user: SessionUser): void {
 }
 
 /**
+ * Rank role tertinggi -> terendah. Harus sinkron dengan `ROLE_RANK` di
+ * api/src/modules/auth/domain/entities/user.entity.ts - urutan `roles[]`
+ * dari tabel `user_roles` = urutan insert, bukan rank.
+ */
+const ROLE_RANK: Record<string, number> = {
+  root: 5,
+  admin: 4,
+  reviewer: 3,
+  editor: 2,
+  contributor: 1,
+};
+
+/** Derived tertinggi dari roles (klaim `role` deprecated = tertinggi). */
+function derivePrimaryRole(roles: string[]): string {
+  let best = roles[0];
+  for (const r of roles) if ((ROLE_RANK[r] ?? 0) > (ROLE_RANK[best] ?? 0)) best = r;
+  return best;
+}
+
+/**
  * Bangun SessionUser dari klaim JWT (sub = user_id, role/roles) dengan fallback ke
  * user yang di-cache di sessionStorage (username). Null kalau `sub` tidak ada
  * (token invalid bentuk).
- * 
+ *
  * Legacy token hanya punya `role` string, normalisasi ke `roles: [role]`.
  */
 export function userFromJwtClaims(
@@ -93,7 +113,7 @@ export function userFromJwtClaims(
     : claims.role
       ? [claims.role]
       : cached?.roles ?? ['contributor'];
-  const primary = roles[0]; // fallback pertama
+  const primary = derivePrimaryRole(roles);
   return {
     id: claims.sub,
     username: cached?.username ?? claims.username ?? claims.sub,

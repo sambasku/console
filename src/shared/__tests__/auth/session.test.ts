@@ -105,7 +105,17 @@ describe('userFromJwtClaims', () => {
     expect(user?.display_name).toBe('Budi');
   });
 
-  it('mengembalikan null tanpa sub (token bentuk tidak valid)', () => {
-    expect(userFromJwtClaims({ role: 'admin' })).toBeNull();
-  });
+it('mengembalikan null tanpa sub (token bentuk tidak valid)', () => {
+  expect(userFromJwtClaims({ role: 'admin' })).toBeNull();
+});
+it('role derived = tertinggi dari roles[], bukan roles[0] (urutan insert)', () => {
+  // Regression: sidebar menu hilang karena role=roles[0]='contributor'
+  // padahal user punya role admin (multi role user_roles junction).
+  const user = userFromJwtClaims({ sub: '01HXYZABC', roles: ['contributor', 'admin'] });
+  expect(user?.role).toBe('admin');
+});
+it('role derived mengalahkan klaim role legacy bila roles lebih spesifik', () => {
+  const user = userFromJwtClaims({ sub: '01HXYZABC', role: 'contributor', roles: ['contributor', 'reviewer'] });
+  expect(user?.role).toBe('reviewer');
+});
 });

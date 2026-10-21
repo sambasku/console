@@ -63,12 +63,19 @@ export function StatCards({
           `Dikoreksi ${contributions.byStatus.corrected.toLocaleString('id-ID')}`,
       ]) || 'Belum ada data';
 
-  const roleMeta = formatMeta([
-    `Aktif 15 mnt ${users.onlineRecently.toLocaleString('id-ID')}`,
-    ...(Object.entries(users.byRole) as Array<[keyof typeof users.byRole, number]>)
-      .filter(([, n]) => n > 0)
-      .map(([role, n]) => `${ROLE_LABELS_SHORT[role]} ${n.toLocaleString('id-ID')}`),
-  ]);
+// Hitung total role untuk menentukan user tanpa role
+const totalByRole = Object.values(users.byRole).reduce((a, b) => a + b, 0);
+
+// Tambah "Contributor" untuk user tanpa role
+const roleMeta = formatMeta([
+  `Aktif 15 mnt ${users.onlineRecently.toLocaleString('id-ID')}`,
+  ...(totalByRole < users.active
+    ? [`Contributor ${users.active - totalByRole}`]
+    : []),
+  ...(Object.entries(users.byRole) as Array<[keyof typeof users.byRole, number]>)
+    .filter(([, n]) => n > 0)
+    .map(([role, n]) => `${ROLE_LABELS_SHORT[role]} ${n.toLocaleString('id-ID')}`),
+]);
   const items: Array<{
     key: string;
     label: string;

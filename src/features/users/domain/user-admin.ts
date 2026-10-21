@@ -5,6 +5,8 @@ export interface AdminUserListItem {
   username: string;
   email: string;
   role: AdminUserRole;
+  /** URL foto profil. Null = pakai avatar default. */
+  avatarUrl: string | null;
   /** Provider OAuth tertaut; kosong = onboard email/password. */
   authProviders: string[];
   isActive: boolean;

@@ -11,7 +11,6 @@ import {
 import {
   Alert,
   App as AntdApp,
-  Badge,
   Button,
   Card,
   Checkbox,
@@ -30,6 +29,7 @@ import { personLabel } from '@/shared/utils/person-label';
 import { PageHeader } from '@/shared/components/page-header';
 import { PageLoading } from '@/shared/components/page-loading';
 import { UserInfoLink } from '@/shared/components/user-info-modal';
+import { VerifierMark } from '@/shared/components/verifier-mark';
 import { normalizeError } from '@/shared/api/error';
 import { useDiscussionDetail } from '../application/use-discussion-detail';
 import {
@@ -262,9 +262,16 @@ export function DiscussionDetailPage() {
       <PageHeader
         title="Detail Ruang Diskusi"
         subtitle={
-          detail.username
-            ? `Dari ${personLabel(detail.display_name, detail.username)} · ${formatDateTime(detail.created_at)}`
-            : formatDateTime(detail.created_at)
+          detail.username ? (
+            <Space size={6}>
+              <span>
+                Dari {personLabel(detail.display_name, detail.username)} · {formatDateTime(detail.created_at)}
+              </span>
+              <VerifierMark show={detail.is_verifier} />
+            </Space>
+          ) : (
+            formatDateTime(detail.created_at)
+          )
         }
         extra={
           <Space wrap>
@@ -297,7 +304,11 @@ export function DiscussionDetailPage() {
               key: 'user',
               label: 'Pengirim',
               children: detail.username ? (
-                <UserInfoLink username={detail.username} label={detail.display_name} />
+                <UserInfoLink
+                  username={detail.username}
+                  label={detail.display_name}
+                  isVerifier={detail.is_verifier}
+                />
               ) : (
                 '-'
               ),
@@ -552,11 +563,11 @@ export function DiscussionDetailPage() {
                               <UserInfoLink
                                 username={reply.username}
                                 label={reply.display_name}
+                                isVerifier={reply.is_verifier}
                               />
                             ) : (
                               <Text type="secondary">Anonim</Text>
                             )}
-                            {reply.is_verifier ? <Badge status="processing" text="Verifikator" /> : null}
                             {reply.is_pinned ? <Tag color="blue">Dipin</Tag> : null}
                             {takenDown ? (
                               <Tag>{reply.status === 'deleted_by_author' ? 'Dihapus penulis' : 'Ditarik'}</Tag>

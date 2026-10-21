@@ -4,6 +4,7 @@ import { AlertOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined
 import {
   Alert,
   App as AntdApp,
+  Avatar,
   Button,
   Col,
   Flex,
@@ -121,13 +122,23 @@ export function UsersPage() {
         size: 280,
         meta: { fixed: 'left' },
         cell: (info) => (
-          <div>
-            <Typography.Text strong>{info.getValue()}</Typography.Text>
-            <br />
-            <Typography.Text type="secondary" italic style={{ fontSize: 12 }}>
-              @{info.row.original.email}
-            </Typography.Text>
-          </div>
+          <Flex gap={10} align="center">
+            <Avatar
+              size={32}
+              shape="circle"
+              src={info.row.original.avatarUrl ?? undefined}
+              icon={<UserOutlined />}
+              alt={info.getValue()}
+              style={{ flexShrink: 0 }}
+            />
+            <div>
+              <Typography.Text strong>{info.getValue()}</Typography.Text>
+              <br />
+              <Typography.Text type="secondary" italic style={{ fontSize: 12 }}>
+                @{info.row.original.email}
+              </Typography.Text>
+            </div>
+          </Flex>
         ),
       }),
       columnHelper.display({

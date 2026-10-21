@@ -75,7 +75,11 @@ export function DiscussionsPage() {
         cell: (info) => {
           const name = info.getValue();
           return name ? (
-            <UserInfoLink username={name} label={info.row.original.display_name} />
+            <UserInfoLink
+              username={name}
+              label={info.row.original.display_name}
+              isVerifier={info.row.original.is_verifier}
+            />
           ) : (
             <Typography.Text type="secondary">Anonim</Typography.Text>
           );
