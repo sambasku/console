@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -27,6 +28,8 @@ import {
   useCreatePlace,
   useDeletePlace,
   usePlaceList,
+  usePlaceViews,
+  usePlaceViewsReport,
   useUpdatePlace,
 } from '../application/use-places';
 import { useAllRegions } from '@/features/regions/application/use-regions';
@@ -34,7 +37,34 @@ import { useAllPlaceCategories } from '@/features/place-categories/application/u
 import { PlaceDrawer } from './place-drawer';
 import { PlaceProposalDrawer } from './place-proposal-drawer';
 
-const columnHelper = createColumnHelper<Place>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, Place>();
+
+/**
+ * Top 10 wisata terpopuler. Sumbernya laporan yang sama dengan halaman
+ * analitik (`/admin/places/views/daily`) - nama ikut dari server supaya
+ * tidak terbatas halaman tabel yang sedang dimuat.
+ */
+function TopPlaces({ days }: { days: number | 'all' }) {
+  const report = usePlaceViewsReport(days === 'all' ? 3650 : days);
+  const top = (report.data?.items ?? []).slice(0, 10);
+  if (top.length === 0) return null;
+  return (
+    <Table
+      style={{ marginBottom: 16 }}
+      rowKey="placeId"
+      pagination={false}
+      size="small"
+      title={() => 'Wisata terpopuler'}
+      dataSource={top}
+      columns={[
+        { title: 'Wisata', dataIndex: 'name' },
+        { title: 'Kategori', dataIndex: 'category', width: 120 },
+        { title: 'Dilihat', dataIndex: 'views', width: 100 },
+        { title: 'Terakhir dilihat', dataIndex: 'lastViewed', width: 140 },
+      ]}
+    />
+  );
+}
 
 function PendingProposals({
   onPreview,
@@ -57,8 +87,10 @@ function PendingProposals({
       dataSource={rows}
       title={() => 'Usulan menunggu tinjauan'}
       columns={[
-        { title: 'Nama', dataIndex: ['payload', 'name'] },
-        { title: 'Slug', dataIndex: ['payload', 'slug'] },
+        // `as const`: TS7 infer array literal jadi `string[]`, bukan tuple
+        // path - tanpa ini `dataIndex` tidak cocok dengan tipe antd.
+        { title: 'Nama', dataIndex: ['payload', 'name'] as const },
+        { title: 'Slug', dataIndex: ['payload', 'slug'] as const },
         {
           title: 'Jenis',
           width: 140,
@@ -96,6 +128,8 @@ export function PlacesPage() {
   const [editing, setEditing] = useState<Place | null>(null);
   const [proposal, setProposal] = useState<PlaceProposal | null>(null);
   const [proposalReload, setProposalReload] = useState(0);
+  const [viewDays, setViewDays] = useState<number | 'all'>(30);
+  const views = usePlaceViews(viewDays === 'all' ? undefined : viewDays);
 
   const catalog = useQuery({
     queryKey: ['places', 'name-catalog'],
@@ -117,7 +151,7 @@ export function PlacesPage() {
   }, [categories.data]);
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('name', {
         header: 'Nama',
         size: 240,
@@ -147,6 +181,16 @@ export function PlacesPage() {
             <Tag color={s === 'published' ? 'green' : s === 'draft' ? 'gold' : 'default'}>{s}</Tag>
           );
         },
+      }),
+      columnHelper.display({
+        id: 'views',
+        header: 'Dilihat',
+        size: 90,
+        cell: (info) => (
+          <Tooltip title="Pembaca unik: 1 orang dihitung sekali per hari walau refresh berkali-kali.">
+            <Typography.Text>{views.data?.get(info.row.original.id) ?? 0}</Typography.Text>
+          </Tooltip>
+        ),
       }),
       columnHelper.display({
         id: 'wilayah',
@@ -194,15 +238,15 @@ export function PlacesPage() {
           );
         },
       }),
-    ],
-    [categoryName, regionName, deleteMutation, message],
+    ]),
+    [categoryName, regionName, deleteMutation, message, views.data],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: list.items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
@@ -238,6 +282,7 @@ export function PlacesPage() {
       />
 
       <PendingProposals reloadKey={proposalReload} onPreview={setProposal} />
+      <TopPlaces days={viewDays} />
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
@@ -251,7 +296,10 @@ export function PlacesPage() {
           placeholder="Kategori"
           style={{ width: 140 }}
           onChange={(v) => setCategory(v)}
-          options={(categories.data ?? []).map((c) => ({ value: c.id, label: c.name }))}
+          options={(categories.data ?? []).map((c) => ({
+            value: c.id,
+            label: c.name,
+          }))}
         />
         <Select
           allowClear
@@ -262,6 +310,17 @@ export function PlacesPage() {
             { value: 'published', label: 'Published' },
             { value: 'draft', label: 'Draft' },
             { value: 'archived', label: 'Archived' },
+          ]}
+        />
+        <Select
+          placeholder="Periode Dilihat"
+          style={{ width: 140 }}
+          value={viewDays}
+          onChange={(v) => setViewDays(v)}
+          options={[
+            { value: 7, label: '7 hari' },
+            { value: 30, label: '30 hari' },
+            { value: 'all', label: 'Semua waktu' },
           ]}
         />
       </Space>
@@ -305,7 +364,10 @@ export function PlacesPage() {
       <PlaceDrawer
         open={drawerOpen}
         editing={editing}
-        catalog={(catalog.data?.items ?? list.items).map((p) => ({ slug: p.slug, name: p.name }))}
+        catalog={(catalog.data?.items ?? list.items).map((p) => ({
+          slug: p.slug,
+          name: p.name,
+        }))}
         onClose={() => setDrawerOpen(false)}
         onSaved={() => list.refetch()}
         submit={async (values) => {

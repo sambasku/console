@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Input, Tag, Typography } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
@@ -12,7 +13,7 @@ import { useImportSessionList } from '../application/use-import-sessions';
 import type { WordImportSession, WordImportSessionStatus } from '../infrastructure/word-api';
 import { SUPPORT_TYPE_LABEL } from './import-attribution-fields';
 
-const columnHelper = createColumnHelper<WordImportSession>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, WordImportSession>();
 
 const STATUS_LABEL: Record<WordImportSessionStatus, string> = {
   running: 'Berjalan',
@@ -36,7 +37,7 @@ export function ImportHistoryPage() {
     useImportSessionList(debouncedSearch);
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('finished_at', {
         header: 'Waktu',
         size: 170,
@@ -114,15 +115,15 @@ export function ImportHistoryPage() {
           );
         },
       }),
-    ],
+    ]),
     [navigate],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

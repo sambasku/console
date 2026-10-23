@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { useNavigate } from '@tanstack/react-router';
 import { CaretDownOutlined, CaretUpOutlined, DeleteOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
@@ -38,8 +39,8 @@ import {
   type AdminVoteTargetType,
 } from '../domain/vote-admin';
 
-const voteColumnHelper = createColumnHelper<AdminVoteListItem>();
-const topColumnHelper = createColumnHelper<AdminTopTargetItem>();
+const voteColumnHelper = createColumnHelper<typeof tableFeatureSet, AdminVoteListItem>();
+const topColumnHelper = createColumnHelper<typeof tableFeatureSet, AdminTopTargetItem>();
 
 /** Preview target: comment → body; word → lemma (+ link); fallback type:id. */
 function TargetPreviewCell({
@@ -149,7 +150,7 @@ function VoteListTab() {
     useAdminVoteList({ q, targetType, value, targetId: targetIdInput || undefined });
 
   const columns = useMemo(
-    () => [
+    () => voteColumnHelper.columns([
       voteColumnHelper.accessor('voterUsername', {
         header: 'Pengguna',
         size: 280,
@@ -210,15 +211,15 @@ function VoteListTab() {
         meta: { fixed: 'right' },
         cell: ({ row }) => <DeleteVoteAction vote={row.original} />,
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
@@ -309,7 +310,7 @@ function TopTargetsTab({ enabled }: { enabled: boolean }) {
   });
 
   const columns = useMemo(
-    () => [
+    () => topColumnHelper.columns([
       topColumnHelper.display({
         id: 'rank',
         header: 'Peringkat',
@@ -365,15 +366,15 @@ function TopTargetsTab({ enabled }: { enabled: boolean }) {
         meta: { fixed: 'right' },
         cell: ({ row }) => <ResetTargetAction target={row.original} />,
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => `${row.targetType}:${row.targetId}`,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

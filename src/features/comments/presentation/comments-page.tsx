@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { EyeOutlined, StopOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Alert, App as AntdApp, Button, Flex, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { VerifierMark } from '@/shared/components/verifier-mark';
@@ -21,7 +22,7 @@ import {
   type CommentStatus,
 } from '../domain/comment';
 
-const columnHelper = createColumnHelper<AdminCommentItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, AdminCommentItem>();
 
 export function CommentsPage() {
   const { user } = useAuth();
@@ -74,7 +75,7 @@ export function CommentsPage() {
   };
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('body', {
         header: 'Komentar',
         size: 420,
@@ -192,7 +193,7 @@ export function CommentsPage() {
           );
         },
       }),
-    ],
+    ]),
     [
       navigate,
       takedownMutation.isPending,
@@ -202,11 +203,11 @@ export function CommentsPage() {
     ],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -15,7 +16,7 @@ import {
   type VerifierApplicationStatus,
 } from '../domain/verifier-application';
 
-const columnHelper = createColumnHelper<VerifierApplicationListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, VerifierApplicationListItem>();
 
 const STATUS_TAG_COLOR: Record<VerifierApplicationStatus, string> = {
   pending: 'orange',
@@ -43,7 +44,7 @@ export function VerifierApplicationsPage() {
     useVerifierApplicationList({ status, enabled: canManage });
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('username', {
         header: 'Username',
         size: 180,
@@ -84,15 +85,15 @@ export function VerifierApplicationsPage() {
           </Tooltip>
         ),
       }),
-    ],
+    ]),
     [navigate],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

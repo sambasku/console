@@ -1000,6 +1000,16 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- Analitik Wisata (place views) - menumpang gaya .dashboard ---- */
+
+/* Nama tempat bisa panjang - potong, bukan menabrak bar. */
+.dashboard__bars-label--place {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .traffic__grid-2 {
     grid-template-columns: 1fr;

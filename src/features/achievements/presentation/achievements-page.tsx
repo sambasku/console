@@ -11,6 +11,7 @@ import {
   App as AntdApp,
   Badge,
   Button,
+  Drawer,
   Image,
   Input,
   Modal,
@@ -375,11 +376,12 @@ export function AchievementsPage() {
         )}
       </Modal>
 
-      <Modal
+      <Drawer
         title={recipientsTarget ? `Penerima - ${recipientsTarget.title}` : 'Penerima'}
+        placement="right"
+        width={640}
         open={!!recipientsTarget}
-        onCancel={() => setRecipientsTarget(null)}
-        footer={null}
+        onClose={() => setRecipientsTarget(null)}
         destroyOnHidden
       >
         {recipients.isLoading ? (
@@ -440,7 +442,7 @@ export function AchievementsPage() {
         ) : (
           <Typography.Text type="secondary">Belum ada penerima.</Typography.Text>
         )}
-      </Modal>
+      </Drawer>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { DeleteOutlined, PlusOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { Alert, App as AntdApp, Button, Flex, Input, Popconfirm, Space, Typography, Upload } from 'antd';
 import { DataTable } from '@/shared/components/data-table';
@@ -14,7 +15,7 @@ import { splitBlocklistText, wordsFromWordlist } from '../application/parse-bloc
 import { bulkResultTone, formatBulkResultMessage } from '../application/format-bulk-result';
 import type { BlocklistWordItem, BulkBlocklistResult } from '../domain/blocklist-word';
 
-const columnHelper = createColumnHelper<BlocklistWordItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, BlocklistWordItem>();
 const MAX_WORDLIST_BYTES = 2 * 1024 * 1024;
 const MAX_WORDLIST_WORDS = 20_000;
 
@@ -73,7 +74,7 @@ export function CommentBlocklistPage() {
   };
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('word', {
         header: 'Kata',
         size: 280,
@@ -111,15 +112,15 @@ export function CommentBlocklistPage() {
           </Popconfirm>
         ),
       }),
-    ],
+    ]),
     [deleteMutation.isPending, deleteMutation.variables, message],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

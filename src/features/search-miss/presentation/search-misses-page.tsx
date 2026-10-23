@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Key } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import {
   LinkOutlined,
   PlusOutlined,
@@ -44,7 +45,7 @@ import {
 } from '../domain/search-miss';
 import { ResolveSearchMissModal } from './resolve-search-miss-modal';
 
-const columnHelper = createColumnHelper<SearchMissListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, SearchMissListItem>();
 
 const directionOptions: { value: SearchMissDirection; label: string }[] = [
   { value: 'lemma', label: DIRECTION_LABELS.lemma },
@@ -197,7 +198,7 @@ export function SearchMissesPage() {
   const selectedCount = selectedRowKeys.length;
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('term', {
         header: 'Kata Dicari',
         size: 240,
@@ -325,7 +326,7 @@ export function SearchMissesPage() {
           );
         },
       }),
-    ],
+    ]),
     [
       canDismiss,
       canEdit,
@@ -340,11 +341,11 @@ export function SearchMissesPage() {
     ],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

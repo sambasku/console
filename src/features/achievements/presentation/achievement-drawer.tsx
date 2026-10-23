@@ -6,6 +6,7 @@ import {
   Drawer,
   Flex,
   Form,
+  Image,
   Input,
   InputNumber,
   Select,
@@ -14,6 +15,7 @@ import {
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
+import { uploadImageToCdn } from '@/shared/api/image-upload';
 import {
   ACHIEVEMENT_CATEGORY_LABELS,
   REWARD_TYPE_LABELS,
@@ -96,7 +98,9 @@ export function AchievementDrawer({
   const { message } = AntdApp.useApp();
   const [form] = Form.useForm<FormValues>();
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const source = Form.useWatch('source', form);
+  const badgeUrl = Form.useWatch('badge_url', form);
 
   useEffect(() => {
     if (!open) return;
@@ -224,11 +228,42 @@ export function AchievementDrawer({
         <Form.Item
           name="badge_url"
           label="URL aset (opsional)"
-          extra="Aset bingkai/badge/stiker di repo images (jsDelivr). Contoh: https://cdn.jsdelivr.net/gh/sambasku/images@main/assets/achievements/angkatan-ke-1.png"
+          extra="Tempel URL, atau unggah gambar dari komputer. Aset tersimpan di CDN gambar."
         >
           <Input placeholder="https://cdn.jsdelivr.net/gh/sambasku/images@main/assets/achievements/..." />
         </Form.Item>
-
+        <Form.Item label="Unggah gambar" extra="PNG/JPEG/WebP untuk bingkai. Maks 2 MB.">
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            style={{ display: 'block' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (!file) return;
+              if (file.size > 2 * 1024 * 1024) {
+                message.error('Ukuran gambar maksimal 2 MB');
+                return;
+              }
+              setUploading(true);
+              try {
+                const { url } = await uploadImageToCdn(file, '/achievements');
+                form.setFieldValue('badge_url', url);
+                message.success('Gambar terunggah');
+              } catch (err) {
+                message.error(normalizeError(err).message);
+              } finally {
+                setUploading(false);
+              }
+            }}
+          />
+          {uploading ? <Typography.Text type="secondary">Mengunggah...</Typography.Text> : null}
+        </Form.Item>
+        {badgeUrl ? (
+          <Form.Item label="Pratinjau">
+            <Image src={badgeUrl} width={120} height={120} style={{ objectFit: 'contain' }} />
+          </Form.Item>
+        ) : null}
         <Typography.Title level={5}>Kriteria</Typography.Title>
         <Form.Item
           name="source"

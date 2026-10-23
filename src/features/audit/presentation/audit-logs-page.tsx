@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { FilterOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, DatePicker, Flex, Input, Result, Select, Tag, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
@@ -12,7 +13,7 @@ import { useAuditLogList } from '../application/use-audit-log-list';
 import { AUDIT_ACTIONS, AUDIT_ACTION_TAG_COLOR, type AuditLogListItem } from '../domain/audit-log';
 import { AuditChangesCell } from './audit-changes-cell';
 
-const columnHelper = createColumnHelper<AuditLogListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, AuditLogListItem>();
 
 /** ULID dipersingkat untuk tampilan (tetap unik sampai prefix 8 char). */
 function shortUlid(id: string | null): string {
@@ -67,7 +68,7 @@ export function AuditLogsPage() {
   };
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('created_at', {
         header: 'Waktu',
         size: 180,
@@ -110,15 +111,15 @@ export function AuditLogsPage() {
         header: 'Perubahan',
         cell: (info) => <AuditChangesCell oldData={info.row.original.old_data} newData={info.row.original.new_data} />,
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

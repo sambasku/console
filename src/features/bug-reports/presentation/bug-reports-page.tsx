@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Alert, App as AntdApp, Button, Flex, Image, Input, Modal, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -18,7 +19,7 @@ import {
   type BugReportStatus,
 } from '../domain/bug-report';
 
-const columnHelper = createColumnHelper<BugReportListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, BugReportListItem>();
 
 type StatusTab = BugReportStatus | 'all';
 
@@ -66,7 +67,7 @@ export function BugReportsPage() {
   };
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('description', {
         header: 'Keterangan',
         size: 280,
@@ -159,15 +160,15 @@ export function BugReportsPage() {
           );
         },
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

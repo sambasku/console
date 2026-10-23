@@ -75,11 +75,11 @@ export function CorrectContributionDrawer({
   // submit error antar bukaan - reset cukup di awal handleSubmit.
   useEffect(() => {
     if (!open) return;
-    if (isWord) {
-      form.setFieldsValue(wordEntityToFormValues(detail.word!));
-    } else {
-      form.setFieldsValue(detail.child!.fields as CorrectFormValues);
+    if (detail.entityType === 'word') {
+      if (!detail.entityMissing) form.setFieldsValue(wordEntityToFormValues(detail.word));
+      return;
     }
+    form.setFieldsValue(detail.child.fields as CorrectFormValues);
   }, [open, isWord, detail, form]);
 
   const handleSubmit = async () => {
@@ -116,7 +116,9 @@ export function CorrectContributionDrawer({
     }
   };
 
-  const titlePrefix = isWord ? detail.word!.lemma : detail.child!.wordLemma ?? 'entri';
+  const titlePrefix = isWord
+    ? detail.word?.lemma || detail.contribution.word_lemma?.trim() || 'entri'
+    : detail.child!.wordLemma ?? 'entri';
   const width = isWord ? 'min(720px, 100vw)' : 560;
 
   return (

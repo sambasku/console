@@ -5,6 +5,7 @@ import {
   AuditOutlined,
   BarChartOutlined,
   BookOutlined,
+  CalendarOutlined,
   CommentOutlined,
   DashboardOutlined,
   EditOutlined,
@@ -56,6 +57,7 @@ const ANALYTICS_ROUTES = {
   '/dashboard/traffic': { icon: <LineChartOutlined />, label: 'Trafik Web' },
   '/dashboard/mobile': { icon: <MobileOutlined />, label: 'Trafik Mobile' },
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
+  '/places/views': { icon: <EnvironmentOutlined />, label: 'Wisata' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -81,6 +83,7 @@ const EKSPLORASI_ROUTES = {
   '/place-categories': { icon: <TagsOutlined />, label: 'Kategori tempat' },
   '/regions': { icon: <CompassOutlined />, label: 'Wilayah' },
   '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
+  '/events': { icon: <CalendarOutlined />, label: 'Acara' },
 } as const;
 
 /** Leaf routes di bawah grup Notifikasi. */
@@ -148,6 +151,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   categories: 'Kategori',
   regions: 'Wilayah',
   places: 'Wisata',
+  events: 'Acara',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',
@@ -164,7 +168,7 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
-  if (top === '/dashboard') return ANALYTICS_GROUP_KEY;
+  if (top === '/dashboard' || pathname === '/places/views') return ANALYTICS_GROUP_KEY;
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
@@ -343,7 +347,7 @@ export function ConsoleLayout() {
   }, [isLoggedIn, navigate]);
 
   const currentMenuKey =
-    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/')
+    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/') || pathname === '/places/views'
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'

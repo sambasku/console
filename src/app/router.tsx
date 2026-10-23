@@ -41,6 +41,8 @@ import { AnnouncementsPage } from '@/features/announcements/presentation/announc
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
+import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
+import { EventsPage } from '@/features/events/presentation/events-page';
 import { RegionsPage } from '@/features/regions/presentation/regions-page';
 import { PlaceCategoriesPage } from '@/features/place-categories/presentation/place-categories-page';
 import { WordGroupsPage } from '@/features/word-groups/presentation/word-groups-page';
@@ -363,6 +365,18 @@ const placesRoute = createRoute({
   component: PlacesPage,
 });
 
+const placeViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/places/views',
+  component: PlaceViewsPage,
+});
+
+const eventsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/events',
+  component: EventsPage,
+});
+
 const placeCategoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/place-categories',
@@ -487,6 +501,8 @@ const routeTree = rootRoute.addChildren([
     categoriesRoute,
     regionsRoute,
     placesRoute,
+    placeViewsRoute,
+    eventsRoute,
     placeCategoriesRoute,
     wordGroupsRoute,
     profileRoute,

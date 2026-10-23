@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -50,7 +51,7 @@ import { WordCommaSplitsPanel } from './word-comma-splits-panel';
 import { useDuplicateWordGroups } from '../application/use-duplicate-words';
 import { useCommaSplits } from '../application/use-comma-splits';
 
-const columnHelper = createColumnHelper<WordListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, WordListItem>();
 
 const wordTypeOptions = WORD_TYPES.map((type) => ({ value: type, label: WORD_TYPE_LABELS[type] }));
 
@@ -192,7 +193,7 @@ export function WordsPage() {
   };
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('lemma', {
         header: 'Kata Sambas',
         size: 220,
@@ -310,7 +311,7 @@ export function WordsPage() {
           </Flex>
         ),
       }),
-    ],
+    ]),
     [
       navigate,
       user?.role,
@@ -324,11 +325,11 @@ export function WordsPage() {
     ],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
