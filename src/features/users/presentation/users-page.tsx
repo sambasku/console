@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { AlertOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import {
   Alert,
@@ -44,7 +45,7 @@ import {
 
 type PendingRoleMap = Record<string, AdminUserRole | undefined>;
 
-const columnHelper = createColumnHelper<AdminUserListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, AdminUserListItem>();
 
 const allRoleFilterOptions: { value: AdminUserRole; label: string }[] = [
   ...(ROLE_OPTIONS_SELECT as unknown as { value: AdminUserRole; label: string }[]),
@@ -116,7 +117,7 @@ export function UsersPage() {
   );
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('username', {
         header: 'Pengguna',
         size: 280,
@@ -176,7 +177,12 @@ export function UsersPage() {
             <Tag color={ROLE_TAG_COLOR[info.getValue()]}>{ROLE_LABELS[info.getValue()]}</Tag>
           ),
         }),
-        columnHelper.accessor('authProviders', {
+        columnHelper.accessor('phone', {
+        header: 'Nomor HP',
+        size: 150,
+        cell: (info) => info.getValue() ?? '-',
+      }),
+      columnHelper.accessor('authProviders', {
           header: 'Onboard',
           size: 140,
           cell: (info) => {
@@ -299,15 +305,15 @@ export function UsersPage() {
           );
         },
       }),
-    ],
+    ]),
     [pendingRoles, updateRole.variables, updateRole.isPending, onSaveRole, setContribute, setActive, user?.id],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
@@ -350,7 +356,7 @@ export function UsersPage() {
         <Col xs={24} md={10}>
           <Input.Search
             allowClear
-            placeholder="Cari username atau email…"
+            placeholder="Cari username, email, atau nomor HP…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             loading={isFetching && !items.length}

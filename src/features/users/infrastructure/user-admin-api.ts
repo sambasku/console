@@ -6,6 +6,8 @@ export interface AdminUserWire {
   id: string;
   username: string;
   email: string;
+  /** Nomor HP ternormalisasi 62… (null = belum diisi). */
+  phone?: string | null;
   role: string;
   avatar_url?: string | null;
   /** Provider OAuth tertaut (google/fb/github); kosong = onboard email/password. */

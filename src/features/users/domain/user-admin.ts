@@ -4,6 +4,8 @@ export interface AdminUserListItem {
   id: string;
   username: string;
   email: string;
+  /** Nomor HP ternormalisasi 62…; null = belum diisi (atau akun lama). */
+  phone: string | null;
   role: AdminUserRole;
   /** URL foto profil. Null = pakai avatar default. */
   avatarUrl: string | null;
