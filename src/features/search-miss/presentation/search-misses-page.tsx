@@ -189,6 +189,14 @@ export function SearchMissesPage() {
     [navigate],
   );
 
+  /** Badge "usulan menunggu": buka langsung usulan pending tertua di antrean review. */
+  const onOpenPendingContribution = useCallback(
+    (contributionId: string) => {
+      void navigate({ to: '/contributions', search: { id: contributionId } });
+    },
+    [navigate],
+  );
+
   const updatingId =
     updateSearchMiss.isPending && updateSearchMiss.variables
       ? updateSearchMiss.variables.id
@@ -262,12 +270,27 @@ export function SearchMissesPage() {
       columnHelper.accessor('fulfilled', {
         header: 'Terpenuhi',
         size: 160,
-        cell: (info) =>
-          info.getValue() ? (
-            <Tag color="green">Sudah Terpenuhi</Tag>
-          ) : (
-            <Tag color="orange">Belum</Tag>
-          ),
+        cell: (info) => {
+          const row = info.row.original;
+          const pendingBadge =
+            row.pendingContributionCount > 0 && row.pendingContributionId ? (
+              <Tooltip title="Sudah ada usulan kata untuk term ini yang menunggu review - cek antrean dulu sebelum buat kata baru">
+                <Tag
+                  color="gold"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => void onOpenPendingContribution(row.pendingContributionId!)}
+                >
+                  {row.pendingContributionCount} usulan menunggu
+                </Tag>
+              </Tooltip>
+            ) : null;
+          return (
+            <Space size={4} wrap>
+              {info.getValue() ? <Tag color="green">Sudah Terpenuhi</Tag> : <Tag color="orange">Belum</Tag>}
+              {pendingBadge}
+            </Space>
+          );
+        },
       }),
       columnHelper.accessor('createdAt', {
         header: 'Dibuat',
@@ -327,12 +350,13 @@ export function SearchMissesPage() {
         },
       }),
     ]),
-    [
-      canDismiss,
-      canEdit,
-      onDismiss,
-      onCreateWord,
-      onSaveTerm,
+      [
+        canDismiss,
+        canEdit,
+        onDismiss,
+        onCreateWord,
+        onOpenPendingContribution,
+        onSaveTerm,
       onToggleVisible,
       dismissSearchMiss.isPending,
       dismissSearchMiss.variables,

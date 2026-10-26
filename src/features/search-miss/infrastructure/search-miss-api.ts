@@ -8,6 +8,10 @@ export interface SearchMissWire {
   direction: string;
   hit_count: number;
   is_fulfilled: boolean;
+  /** Usulan kata baru yang menaut miss ini & masih pending review. */
+  pending_contribution_count: number;
+  /** Id usulan pending tertua (untuk link langsung ke antrean review). */
+  pending_contribution_id: string | null;
   is_visible: boolean;
   created_at: string;
 }

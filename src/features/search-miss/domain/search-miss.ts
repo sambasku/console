@@ -7,6 +7,13 @@ export interface SearchMissListItem {
   direction: SearchMissDirection;
   searchCount: number;
   fulfilled: boolean;
+  /**
+   * Jumlah usulan kata baru yang menaut miss ini dan masih menunggu review.
+   * >0 berarti verifikator sebaiknya review usulan dulu, bukan buat kata dobel.
+   */
+  pendingContributionCount: number;
+  /** Id usulan pending tertua - dipakai untuk deep link ke antrean review. */
+  pendingContributionId: string | null;
   isVisible: boolean;
   createdAt: string;
 }

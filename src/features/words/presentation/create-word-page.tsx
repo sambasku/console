@@ -511,7 +511,7 @@ export function CreateWordPage() {
         title="Tambah Kata Baru"
         subtitle={
           fillMode === 'simple'
-            ? 'Mode sederhana - kata Sambas, terjemahan, dan penjelasan arti. Dialek & kelas kata diisi otomatis (umum).'
+            ? 'Mode sederhana - kata Sambas, terjemahan, dan penjelasan arti. Dialek & kelas kata diisi otomatis (umum). Kata dengan lebih dari satu kelas kata (mis. kata benda sekaligus kata kerja)? Pakai mode lengkap, lalu Tambah makna.'
             : 'Form lengkap - kata, makna, terjemahan, contoh, dan relasi.'
         }
       />
