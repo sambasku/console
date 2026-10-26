@@ -33,7 +33,7 @@ export interface PublicProfileWire {
 }
 
 export interface PublicActivityItem {
-  kind: 'contribution' | 'comment' | 'verification';
+  kind: 'contribution' | 'correction' | 'comment' | 'verification' | 'vote';
   occurredAt: string;
   wordId: string | null;
   lemma: string | null;
@@ -42,7 +42,7 @@ export interface PublicActivityItem {
 
 export interface PublicActivityWire {
   items: Array<{
-    kind: 'contribution' | 'comment' | 'verification';
+    kind: 'contribution' | 'correction' | 'comment' | 'verification' | 'vote';
     occurred_at: string;
     word_id: string | null;
     lemma: string | null;

@@ -23,7 +23,7 @@ export interface EventWire {
   lat: number | null;
   lng: number | null;
   maps_url: string | null;
-  poster_url: string | null;
+  poster_urls: string[];
   organizer: string | null;
   source_url: string | null;
   source_type: EventSourceType | null;
@@ -54,7 +54,7 @@ export function mapEvent(w: EventWire): Event {
     lat: w.lat,
     lng: w.lng,
     mapsUrl: w.maps_url,
-    posterUrl: w.poster_url,
+    posterUrls: w.poster_urls ?? [],
     organizer: w.organizer,
     sourceUrl: w.source_url,
     sourceType: w.source_type,
@@ -122,7 +122,7 @@ export type EventInput = {
   lat?: number | null;
   lng?: number | null;
   maps_url?: string | null;
-  poster_url?: string | null;
+  poster_urls?: string[];
   organizer?: string | null;
   source_url?: string | null;
   source_type?: EventSourceType | null;

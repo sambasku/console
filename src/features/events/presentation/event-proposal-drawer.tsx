@@ -4,6 +4,7 @@ import {
   Button,
   Descriptions,
   Drawer,
+  Image,
   Input,
   Modal,
   Radio,
@@ -152,7 +153,17 @@ export function EventProposalDrawer({
             <Descriptions.Item label="Kecamatan">{regionName(payload.region_id)}</Descriptions.Item>
             <Descriptions.Item label="Desa">{regionName(payload.village_id)}</Descriptions.Item>
             <Descriptions.Item label="Koordinat">
-              {payload.lat != null && payload.lng != null ? `${payload.lat}, ${payload.lng}` : '-'}
+              {payload.lat != null && payload.lng != null ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${payload.lat},${payload.lng}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {payload.lat}, {payload.lng}
+                </a>
+              ) : (
+                '-'
+              )}
             </Descriptions.Item>
             <Descriptions.Item label="Penyelenggara">{textOrDash(payload.organizer)}</Descriptions.Item>
             <Descriptions.Item label="Link sumber">
@@ -171,6 +182,27 @@ export function EventProposalDrawer({
             <Descriptions.Item label="Kredit sumber">{textOrDash(payload.source_attribution)}</Descriptions.Item>
             <Descriptions.Item label="Dikirim">{formatDateTime(proposal.createdAt)}</Descriptions.Item>
           </Descriptions>
+          {payload.poster_urls.length > 0 ? (
+            <>
+              <Typography.Title level={5} style={{ margin: 0 }}>
+                Poster ({payload.poster_urls.length})
+              </Typography.Title>
+              <Image.PreviewGroup>
+                <Space wrap>
+                  {payload.poster_urls.map((url) => (
+                    <Image
+                      key={url}
+                      src={url}
+                      alt={payload.name}
+                      width={120}
+                      height={120}
+                      style={{ objectFit: 'cover', borderRadius: 8 }}
+                    />
+                  ))}
+                </Space>
+              </Image.PreviewGroup>
+            </>
+          ) : null}
         </Space>
       ) : null}
 

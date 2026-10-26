@@ -1,0 +1,35 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v5.0.5 /Users/ibnulmutaki/Development/github/sambasku/console
+
+ ❯ src/features/places/__tests__/unit/place-views-mappers.test.ts (3 tests | 1 failed) 5ms
+   ❯ fillTrendDays (1)
+     × mengisi hari kosong dengan 0 (WIB) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/places/__tests__/unit/place-views-mappers.test.ts > fillTrendDays > mengisi hari kosong dengan 0 (WIB)
+AssertionError: expected +0 to be 12 // Object.is equality
+
+- Expected
++ Received
+
+- 12
++ 0
+
+ ❯ src/features/places/__tests__/unit/place-views-mappers.test.ts:31:52
+     29|     const trend = fillTrendDays(report, 7);
+     30|     expect(trend).toHaveLength(7);
+     31|     expect(trend.reduce((s, p) => s + p.total, 0)).toBe(12);
+       |                                                    ^
+     32|     expect(trend.every((p) => /^\d{4}-\d{2}-\d{2}$/.test(p.day))).toBe…
+     33|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  03:07:43
+   Duration  110ms (tests 32%, transform 21%, import 17%, setup 15%, worker 14%)
+

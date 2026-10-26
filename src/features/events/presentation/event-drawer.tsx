@@ -5,18 +5,24 @@ import {
   Col,
   Drawer,
   Form,
+  Image,
   Input,
   Row,
   Select,
+  Space,
+  Tag,
   Typography,
+  Upload,
 } from 'antd';
-import type { FormProps } from 'antd';
+import type { FormProps, UploadProps } from 'antd';
+import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import { useAllRegions } from '@/features/regions/application/use-regions';
 import { useEventCategories } from '../application/use-events';
 import type { Event, EventSourceType, EventStatus } from '../domain/event';
 import type { EventInput } from '../infrastructure/event-api';
 import { EVENT_SOURCE_TYPE_OPTIONS } from '../infrastructure/event-contribution-api';
+import { uploadEventPoster } from '../infrastructure/event-image-api';
 
 interface FormValues {
   name: string;
@@ -32,7 +38,7 @@ interface FormValues {
   lat?: number | null;
   lng?: number | null;
   maps_url?: string;
-  poster_url?: string;
+  poster_urls?: string[];
   organizer?: string;
   source_url?: string;
   source_type?: EventSourceType | null;
@@ -62,6 +68,96 @@ function slugify(name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 120);
+}
+
+/** Poster multi-gambar: unggah file (kompres otomatis, bisa banyak sekaligus) atau tempel URL https satu per satu. */
+function PosterUrlsField({
+  value,
+  onChange,
+}: {
+  value?: string[];
+  onChange?: (urls: string[]) => void;
+}) {
+  const { message } = AntdApp.useApp();
+  const [uploading, setUploading] = useState(0);
+  const [urlDraft, setUrlDraft] = useState('');
+  const urls = value ?? [];
+
+  const push = (url: string) => onChange?.([...urls, url]);
+  const remove = (url: string) => onChange?.(urls.filter((u) => u !== url));
+
+  const beforeUpload: UploadProps['beforeUpload'] = (file) => {
+    if (urls.length + uploading >= 10) {
+      message.warning('Maksimal 10 poster');
+      return Upload.LIST_IGNORE;
+    }
+    setUploading((n) => n + 1);
+    uploadEventPoster(file as File)
+      .then(push)
+      .catch((err) => message.error(normalizeError(err).message || 'Gagal mengunggah poster'))
+      .finally(() => setUploading((n) => n - 1));
+    return false;
+  };
+
+  const addUrl = () => {
+    const url = urlDraft.trim();
+    if (!url.startsWith('https://')) {
+      message.warning('URL poster harus https');
+      return;
+    }
+    if (urls.length >= 10) {
+      message.warning('Maksimal 10 poster');
+      return;
+    }
+    push(url);
+    setUrlDraft('');
+  };
+
+  return (
+    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+      <Upload
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        showUploadList={false}
+        beforeUpload={beforeUpload}
+      >
+        <Button icon={<UploadOutlined />} loading={uploading > 0}>
+          Unggah poster ({urls.length}/10)
+        </Button>
+      </Upload>
+      <Space.Compact style={{ width: '100%' }}>
+        <Input
+          placeholder="Atau tempel URL https"
+          value={urlDraft}
+          onChange={(e) => setUrlDraft(e.target.value)}
+          onPressEnter={addUrl}
+        />
+        <Button onClick={addUrl}>Tambah URL</Button>
+      </Space.Compact>
+      {urls.length > 0 ? (
+        <Space wrap>
+          {urls.map((url) => (
+            <div key={url} style={{ position: 'relative', width: 96, height: 96 }}>
+              <Image src={url} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+              <Button
+                size="small"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+                style={{ position: 'absolute', top: -8, right: -8 }}
+                onClick={() => remove(url)}
+              />
+              {url === urls[0] ? (
+                <Tag color="blue" style={{ position: 'absolute', left: 2, bottom: 2, margin: 0 }}>
+                  Sampul
+                </Tag>
+              ) : null}
+            </div>
+          ))}
+        </Space>
+      ) : null}
+    </Space>
+  );
 }
 
 export function EventDrawer({
@@ -108,7 +204,7 @@ export function EventDrawer({
             lat: editing.lat,
             lng: editing.lng,
             maps_url: editing.mapsUrl ?? undefined,
-            poster_url: editing.posterUrl ?? undefined,
+            poster_urls: editing.posterUrls,
             organizer: editing.organizer ?? undefined,
             source_url: editing.sourceUrl ?? undefined,
             source_type: editing.sourceType ?? undefined,
@@ -159,7 +255,7 @@ export function EventDrawer({
         lat: values.lat ?? null,
         lng: values.lng ?? null,
         maps_url: values.maps_url?.trim() || null,
-        poster_url: values.poster_url?.trim() || null,
+        poster_urls: values.poster_urls ?? [],
         organizer: values.organizer?.trim() || null,
         source_url: values.source_url?.trim() || null,
         source_type: values.source_type ?? null,
@@ -193,7 +289,7 @@ export function EventDrawer({
   const kecOptions = kecamatanList.map((k) => ({ value: k.id, label: k.name }));
   const desaOptions = desaList
     .filter((d) => d.parentId === regionId)
-    .map((d) => ({ value: d.id, label: d.code ? `${d.name} (${d.code})` : d.name }));
+    .map((d) => ({ value: d.id, label: d.name }));
 
   return (
     <Drawer
@@ -236,7 +332,7 @@ export function EventDrawer({
           </Col>
           <Col xs={24} md={10}>
             <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Wajib diisi' }]}>
-              <Input disabled={!!editing} placeholder="pawai-blocks-2026" />
+              <Input disabled={!!editing} placeholder="slug-acara" />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
@@ -308,7 +404,7 @@ export function EventDrawer({
           </Col>
           <Col span={24}>
             <Form.Item name="location_text" label="Lokasi acara" rules={[{ required: true, message: 'Wajib diisi' }]}>
-              <Input placeholder="Lapangan utama Pemangkat" />
+              <Input placeholder="Nama lokasi atau alamat" />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
@@ -344,12 +440,16 @@ export function EventDrawer({
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item name="organizer" label="Penyelenggara">
-              <Input placeholder="Panitia Pawai Blocks Keywords 2026" />
+              <Input placeholder="Nama penanggung jawab" />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
-            <Form.Item name="poster_url" label="URL poster">
-              <Input placeholder="https://... (hasil /api/v1/images)" />
+            <Form.Item
+              name="poster_urls"
+              label="Poster (bisa lebih dari satu)"
+              extra="Unggah file (dikompres 720px WebP) atau tempel URL https."
+            >
+              <PosterUrlsField />
             </Form.Item>
           </Col>
           <Col xs={24} md={14}>
@@ -368,7 +468,7 @@ export function EventDrawer({
           </Col>
           <Col span={24}>
             <Form.Item name="source_attribution" label="Kredit sumber">
-              <Input placeholder="@nama_akun atau Panitia Pawai" />
+              <Input placeholder="@nama_akun atau nama penanggung jawab" />
             </Form.Item>
           </Col>
         </Row>

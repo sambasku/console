@@ -45,7 +45,7 @@ export function mapContribution(w: EventContributionWire): EventContribution {
       lat: p.lat ?? null,
       lng: p.lng ?? null,
       maps_url: p.maps_url ?? null,
-      poster_url: p.poster_url ?? null,
+      poster_urls: p.poster_urls ?? [],
       organizer: p.organizer ?? null,
       source_url: p.source_url ?? null,
       source_type: p.source_type ?? null,

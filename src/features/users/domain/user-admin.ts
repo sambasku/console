@@ -15,6 +15,12 @@ export interface AdminUserListItem {
   canContribute: boolean;
   /** Mute sementara dari policy abuse (ISO); null = tidak dibatasi. */
   contributeMutedUntil: string | null;
+  /** Status verifikasi email (OTP). false = user belum bisa login. */
+  emailVerified: boolean;
+  /** Waktu verifikasi email (ISO); null = belum terverifikasi. */
+  emailVerifiedAt: string | null;
+  /** Kadaluarsa OTP terakhir (ISO); null = tidak ada OTP tertunda. */
+  otpExpiresAt: string | null;
   createdAt: string;
   updatedAt: string | null;
 }

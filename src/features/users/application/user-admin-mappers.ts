@@ -11,9 +11,12 @@ export function normalizeAdminUserListItem(wire: AdminUserWire): AdminUserListIt
   avatarUrl: wire.avatar_url?.trim() ? wire.avatar_url : null,
   authProviders: wire.auth_providers ?? [],
   isActive: wire.is_active,
-    canContribute: wire.can_contribute ?? true,
-    contributeMutedUntil: wire.contribute_muted_until ?? null,
-    createdAt: wire.created_at,
+  canContribute: wire.can_contribute ?? true,
+  contributeMutedUntil: wire.contribute_muted_until ?? null,
+  emailVerified: wire.email_verified ?? false,
+  emailVerifiedAt: wire.email_verified_at ?? null,
+  otpExpiresAt: wire.otp?.expires_at ?? null,
+  createdAt: wire.created_at,
     updatedAt: wire.updated_at,
   };
 }

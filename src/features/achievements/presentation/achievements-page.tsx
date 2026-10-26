@@ -341,7 +341,7 @@ export function AchievementsPage() {
           rows={6}
           value={usernames}
           onChange={(e) => setUsernames(e.target.value)}
-          placeholder={'contoh: andi\nbudi\nsiti'}
+          placeholder={'contoh: nama-user-1\nnama-user-2\nnama-user-3'}
         />
       </Modal>
 

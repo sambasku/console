@@ -26,7 +26,9 @@ const report: PlaceViewsReport = {
 
 describe('fillTrendDays', () => {
   it('mengisi hari kosong dengan 0 (WIB)', () => {
-    const trend = fillTrendDays(report, 7);
+    // Waktu dipatok supaya 2026-10-20 masuk jendela 7 hari (test deterministik).
+    const now = Date.parse('2026-10-22T10:00:00+07:00');
+    const trend = fillTrendDays(report, 7, now);
     expect(trend).toHaveLength(7);
     expect(trend.reduce((s, p) => s + p.total, 0)).toBe(12);
     expect(trend.every((p) => /^\d{4}-\d{2}-\d{2}$/.test(p.day))).toBe(true);

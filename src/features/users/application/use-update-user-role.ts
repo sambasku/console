@@ -6,6 +6,7 @@ import {
   setCanContributeRequest,
   setUserActiveRequest,
   updateUserRoleRequest,
+  verifyUserEmailRequest,
   type CreateAdminUserInput,
 } from '../infrastructure/user-admin-api';
 import type { AdminUserRole } from '../domain/user-admin';
@@ -96,6 +97,24 @@ export function useSetUserActive() {
     onError: (err, vars) => {
       message.warning(
         `Gagal mengubah status "${vars.username}": ${normalizeError(err).message || 'Kesalahan tidak diketahui'}`,
+      );
+    },
+  });
+}
+
+/** Verifikasi email manual: untuk user yang mentok karena email OTP gagal terkirim. */
+export function useVerifyUserEmail() {
+  const queryClient = useQueryClient();
+  const { message } = App.useApp();
+  return useMutation({
+    mutationFn: (vars: { id: string; username: string }) => verifyUserEmailRequest(vars.id),
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      message.success(`Email ${vars.username} ditandai terverifikasi. User bisa login sekarang.`);
+    },
+    onError: (err, vars) => {
+      message.warning(
+        `Gagal verifikasi email "${vars.username}": ${normalizeError(err).message || 'Kesalahan tidak diketahui'}`,
       );
     },
   });

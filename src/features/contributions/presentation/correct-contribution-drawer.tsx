@@ -483,7 +483,7 @@ function CorrectPronunciationForm({ form }: { form: FormInstance<CorrectFormValu
         <Input placeholder="https://…" allowClear />
       </Form.Item>
       <Form.Item name="speaker_name" label="Nama Penutur">
-        <Input placeholder="mis. Pak Samsul" allowClear />
+        <Input placeholder="Nama penutur" allowClear />
       </Form.Item>
       <Form.Item name="notes" label="Catatan">
         <Input.TextArea rows={2} placeholder="Opsional" />
@@ -498,7 +498,7 @@ function CorrectWordAudioForm({ form }: { form: FormInstance<CorrectFormValues> 
   return (
     <Form form={form} layout="vertical" requiredMark>
       <Form.Item name="speaker_name" label="Nama Penutur">
-        <Input placeholder="mis. Pak Samsul" allowClear />
+        <Input placeholder="Nama penutur" allowClear />
       </Form.Item>
       <Form.Item name="dialect_id" label="Dialek">
         <Select

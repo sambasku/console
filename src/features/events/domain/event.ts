@@ -50,7 +50,7 @@ export interface Event {
   lat: number | null;
   lng: number | null;
   mapsUrl: string | null;
-  posterUrl: string | null;
+  posterUrls: string[];
   /** Penyelenggara opsional - UI skip kalau kosong. */
   organizer: string | null;
   /** Link original konten. Disimpan bersih tanpa UTM (helper UTM saat render). */
@@ -80,7 +80,7 @@ export interface EventContributionPayload {
   lat: number | null;
   lng: number | null;
   maps_url: string | null;
-  poster_url: string | null;
+  poster_urls: string[];
   organizer: string | null;
   source_url: string | null;
   source_type: EventSourceType | null;

@@ -7,6 +7,13 @@
 Konsol admin **Kamus Digital Sambas-Indonesia**. Dipakai verifikator dan
 admin untuk mengelola kata, antrean kontribusi, moderasi, dan pengguna.
 
+## Dikerjakan dengan AI
+
+Kode dan dokumentasi di repo ini ditulis bersama agen AI. Manusia tetap
+yang memutuskan arah produk, meninjau setiap perubahan, dan menjalankan
+verifikasi sebelum rilis. Tidak ada agen yang punya akses commit, merge,
+atau deploy otomatis. Semua keputusan akhir ada di tangan pengelola.
+
 ## Stack
 
 | Layer | Pilihan |
