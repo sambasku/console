@@ -499,7 +499,7 @@ function WordDetailContent({
     {
       key: 'vote',
       label: 'Vote',
-      children: <WordVoteCount wordId={detail.id} />,
+      children: <WordVoteCount meaningIds={(detail.meanings ?? []).map((m) => m.id)} />,
     },
     {
       key: 'categories',

@@ -5,6 +5,7 @@ export function normalizeAdminUserListItem(wire: AdminUserWire): AdminUserListIt
   return {
     id: wire.id,
     username: wire.username,
+    displayName: wire.display_name?.trim() || wire.username,
     email: wire.email,
     phone: wire.phone ?? null,
     role: wire.role as AdminUserRole,

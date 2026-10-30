@@ -302,7 +302,7 @@ function VoteListTab() {
 
 /** Tab 2 - top target per entity type terurut skor bersih + reset massal. */
 function TopTargetsTab({ enabled }: { enabled: boolean }) {
-  const [targetType, setTargetType] = useState<AdminVoteTargetType>('word');
+  const [targetType, setTargetType] = useState<AdminVoteTargetType>('meaning');
 
   const { data: items = [], isLoading, isFetching, isError, error, refetch } = useTopTargetVotes({
     targetType,

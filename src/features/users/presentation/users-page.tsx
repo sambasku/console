@@ -123,25 +123,32 @@ export function UsersPage() {
         header: 'Pengguna',
         size: 280,
         meta: { fixed: 'left' },
-        cell: (info) => (
-          <Flex gap={10} align="center">
-            <Avatar
-              size={32}
-              shape="circle"
-              src={info.row.original.avatarUrl ?? undefined}
-              icon={<UserOutlined />}
-              alt={info.getValue()}
-              style={{ flexShrink: 0 }}
-            />
-            <div>
-              <Typography.Text strong>{info.getValue()}</Typography.Text>
-              <br />
-              <Typography.Text type="secondary" italic style={{ fontSize: 12 }}>
-                @{info.row.original.email}
-              </Typography.Text>
-            </div>
-          </Flex>
-        ),
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <Flex gap={10} align="center">
+              <Avatar
+                size={32}
+                shape="circle"
+                src={row.avatarUrl ?? undefined}
+                icon={<UserOutlined />}
+                alt={row.displayName}
+                style={{ flexShrink: 0 }}
+              />
+              <div>
+                <Typography.Text strong>{row.displayName}</Typography.Text>
+                <br />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  @{row.username}
+                </Typography.Text>
+                <br />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {row.email}
+                </Typography.Text>
+              </div>
+            </Flex>
+          );
+        },
       }),
       columnHelper.display({
         id: 'contribute',

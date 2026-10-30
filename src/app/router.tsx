@@ -51,6 +51,7 @@ import { CulinaryPage } from '@/features/culinary/presentation/culinary-page';
 import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-claims-page';
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
+import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { RegionsPage } from '@/features/regions/presentation/regions-page';
 import { PlaceCategoriesPage } from '@/features/place-categories/presentation/place-categories-page';
@@ -441,6 +442,12 @@ const pantunModerationRoute = createRoute({
   component: PantunModerationPage,
 });
 
+const pantunReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/pantun-reports',
+  component: PantunReportsPage,
+});
+
 const placeCategoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/place-categories',
@@ -581,6 +588,7 @@ const routeTree = rootRoute.addChildren([
   culinaryReportsRoute,
   culinaryCategoriesRoute,
   pantunModerationRoute,
+  pantunReportsRoute,
     placeCategoriesRoute,
     wordGroupsRoute,
     profileRoute,

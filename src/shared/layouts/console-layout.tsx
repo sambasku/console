@@ -98,6 +98,7 @@ const EKSPLORASI_ROUTES = {
   '/culinary-claims': { icon: <KeyOutlined />, label: 'Klaim kuliner' },
   '/culinary-reports': { icon: <WarningOutlined />, label: 'Laporan kuliner' },
   '/pantun': { icon: <ReadOutlined />, label: 'Pantun' },
+  '/pantun-reports': { icon: <WarningOutlined />, label: 'Laporan pantun' },
 } as const;
 
 /** Leaf routes di bawah grup Notifikasi. */
@@ -176,6 +177,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'culinary-claims': 'Klaim kuliner',
   'culinary-reports': 'Laporan kuliner',
   pantun: 'Pantun',
+  'pantun-reports': 'Laporan pantun',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',

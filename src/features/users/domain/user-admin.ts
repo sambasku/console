@@ -3,6 +3,8 @@ export type AdminUserRole = 'contributor' | 'editor' | 'reviewer' | 'admin' | 'r
 export interface AdminUserListItem {
   id: string;
   username: string;
+  /** Nama tampilan publik; fallback username jika wire lama belum punya field. */
+  displayName: string;
   email: string;
   /** Nomor HP ternormalisasi 62…; null = belum diisi (atau akun lama). */
   phone: string | null;

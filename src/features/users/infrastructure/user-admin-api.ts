@@ -5,6 +5,8 @@ import type { AdminUserRole } from '../domain/user-admin';
 export interface AdminUserWire {
   id: string;
   username: string;
+  /** Nama tampilan publik; awalnya = username. Opsional untuk wire API lama. */
+  display_name?: string;
   email: string;
   /** Nomor HP ternormalisasi 62… (null = belum diisi). */
   phone?: string | null;

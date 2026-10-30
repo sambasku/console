@@ -1,22 +1,28 @@
 import { CaretUpOutlined, CaretDownOutlined } from '@ant-design/icons';
 import { Flex, Skeleton, Tag, Typography, theme } from 'antd';
-import { toVoteCountMap } from '../application/use-vote-counts';
-import { useVoteCounts } from '../application/use-vote-counts';
+import { MAX_VOTE_TARGETS } from '../domain/vote';
+import { sumVoteCounts, toVoteCountMap, useVoteCounts } from '../application/use-vote-counts';
 
 const { Text } = Typography;
 
 /**
- * Ringkasan vote kata (READ-ONLY) - GET /api/v1/votes/counts untuk
- * target `word:<id>`. Tampilan: up ↑, down ↓, skor. Tanpa tombol vote -
- * admin mengawasi engagement, bukan memilih (keputusan produk admin).
+ * Ringkasan vote MAKNA sebuah kata (READ-ONLY) - `GET /api/v1/votes/counts`
+ * untuk target `meaning:<id>` tiap makna, lalu dijumlahkan.
  *
- * Icon caret atas/bawah (ala Reddit), bukan thumbs.
+ * 0101 memensiunkan vote level kata: `word:<id>` tidak menerima vote baru
+ * dan baris lamanya dihapus backfill 0105, jadi membaca `word:` akan selalu
+ * tampil 0 dan menyesatkan admin. Admin mengawasi engagement, bukan memilih.
  */
-export function WordVoteCount({ wordId }: { wordId: string }) {
-  const target = `word:${wordId}`;
+export function WordVoteCount({ meaningIds }: { meaningIds: string[] }) {
+  const targets = meaningIds
+    .slice(0, MAX_VOTE_TARGETS)
+    .map((id) => `meaning:${id}`);
   const baselineColor = theme.useToken().token.colorTextSecondary;
+  const { data, isLoading, isError } = useVoteCounts(targets);
 
-  const { data, isLoading, isError } = useVoteCounts([target]);
+  if (meaningIds.length === 0) {
+    return <Text type="secondary">Belum ada makna</Text>;
+  }
 
   if (isLoading) {
     return <Skeleton.Node active style={{ width: 180, height: 32 }} />;
@@ -30,10 +36,11 @@ export function WordVoteCount({ wordId }: { wordId: string }) {
     );
   }
 
-  const { upvotes, downvotes } = toVoteCountMap(data)[target] ?? { upvotes: 0, downvotes: 0 };
+  const counts = toVoteCountMap(data);
+  const { upvotes, downvotes } = sumVoteCounts(counts, targets);
 
   return (
-    <Flex gap={8} align="center">
+    <Flex gap={8} align="center" wrap>
       <Tag icon={<CaretUpOutlined />} color="green">
         {upvotes}
       </Tag>
@@ -41,6 +48,9 @@ export function WordVoteCount({ wordId }: { wordId: string }) {
         {downvotes}
       </Tag>
       <Text type="secondary">Skor {upvotes - downvotes}</Text>
+      {meaningIds.length > MAX_VOTE_TARGETS ? (
+        <Text type="secondary">({MAX_VOTE_TARGETS} makna pertama)</Text>
+      ) : null}
     </Flex>
   );
 }

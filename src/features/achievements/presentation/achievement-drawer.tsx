@@ -35,6 +35,8 @@ interface FormValues {
   threshold: number | null;
   window_from?: Dayjs | null;
   window_to?: Dayjs | null;
+  /** Filter entity_type untuk contributions_approved. */
+  filter_entity_type?: string | null;
   family: string;
   level: number | null;
   is_active: boolean;
@@ -43,16 +45,71 @@ interface FormValues {
 /**
  * Source kriteria - cerminan registry backend
  * (`api/src/modules/achievement/domain/achievement-registry.ts`).
- * Backend menolak source yang tidak dikenal, jadi daftar di sini harus
- * selalu sama dengan registry.
+ * Backend menolak source yang tidak dikenal / field yang tidak didukung
+ * (ACHIEVEMENT_ENHANCEMENT P0-3). Daftar di sini harus 1:1 dengan registry.
  */
-const SOURCE_OPTIONS = [
-  { value: 'registration', label: 'Kohort pendaftaran (tanggal registrasi)' },
-  { value: 'manual', label: 'Manual (diberikan admin)' },
+const SOURCE_OPTIONS: Array<{
+  value: string;
+  label: string;
+  supportsThreshold: boolean;
+  supportsWindow: boolean;
+  /** Filter tertutup per source (cermin registry filterFields). */
+  filterFields?: Array<{ key: string; label: string; options: string[] }>;
+}> = [
+  {
+    value: 'registration',
+    label: 'Kohort pendaftaran (tanggal registrasi)',
+    supportsThreshold: false,
+    supportsWindow: true,
+  },
+  {
+    value: 'manual',
+    label: 'Manual (diberikan admin)',
+    supportsThreshold: false,
+    supportsWindow: false,
+  },
+  {
+    value: 'contributions_approved',
+    label: 'Kontribusi disetujui',
+    supportsThreshold: true,
+    supportsWindow: true,
+    filterFields: [
+      {
+        key: 'entity_type',
+        label: 'Jenis kontribusi',
+        options: ['word', 'pronunciation', 'word_image', 'word_audio', 'example', 'meaning'],
+      },
+    ],
+  },
+  {
+    value: 'verifications_done',
+    label: 'Verifikasi dilakukan',
+    supportsThreshold: true,
+    supportsWindow: true,
+  },
+  {
+    value: 'comments_published',
+    label: 'Komentar tayang',
+    supportsThreshold: true,
+    supportsWindow: true,
+  },
+  {
+    value: 'discussions_created',
+    label: 'Diskusi disetujui',
+    supportsThreshold: true,
+    supportsWindow: true,
+  },
+  {
+    value: 'discussion_replies_published',
+    label: 'Balasan diskusi tayang',
+    supportsThreshold: true,
+    supportsWindow: true,
+  },
 ];
 
-/** Source yang butuh rentang tanggal. */
-const WINDOW_SOURCES = new Set(['registration']);
+function sourceMeta(source: string | undefined) {
+  return SOURCE_OPTIONS.find((s) => s.value === source) ?? null;
+}
 
 /** Dayjs -> ISO 8601 dengan offset WIB (+07:00), tanpa plugin utcOffset. */
 function toIsoWithOffset(d: Dayjs): string {
@@ -89,6 +146,7 @@ export function AchievementDrawer({
       source: string;
       threshold?: number | null;
       window?: { from: string; to: string } | null;
+      filters?: Record<string, string> | null;
     };
     family?: string | null;
     level?: number | null;
@@ -118,6 +176,7 @@ export function AchievementDrawer({
             threshold: criteria?.threshold ?? null,
             window_from: criteria?.window?.from ? fromIso(criteria.window.from) : undefined,
             window_to: criteria?.window?.to ? fromIso(criteria.window.to) : undefined,
+            filter_entity_type: criteria?.filters?.entity_type ?? null,
             family: editing.family ?? '',
             level: editing.level ?? null,
             is_active: editing.isActive,
@@ -133,6 +192,7 @@ export function AchievementDrawer({
             threshold: null,
             window_from: undefined,
             window_to: undefined,
+            filter_entity_type: null,
             family: '',
             level: null,
             is_active: true,
@@ -143,8 +203,14 @@ export function AchievementDrawer({
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
     try {
-      const needsWindow = WINDOW_SOURCES.has(values.source);
+      const meta = sourceMeta(values.source);
+      const needsWindow = meta?.supportsWindow === true;
+      const needsThreshold = meta?.supportsThreshold === true;
       const hasWindow = needsWindow && values.window_from && values.window_to;
+      const filters: Record<string, string> = {};
+      if (meta?.filterFields?.some((f) => f.key === 'entity_type') && values.filter_entity_type) {
+        filters.entity_type = values.filter_entity_type;
+      }
       await submit({
         code: values.code.trim(),
         title: values.title.trim(),
@@ -154,10 +220,12 @@ export function AchievementDrawer({
         badge_url: values.badge_url?.trim() || null,
         criteria: {
           source: values.source,
-          threshold: values.source === 'manual' ? null : (values.threshold ?? null),
+          // Jangan kirim threshold/window bila source tidak support - API menolak.
+          threshold: needsThreshold ? (values.threshold ?? null) : null,
           window: hasWindow
             ? { from: toIsoWithOffset(values.window_from!), to: toIsoWithOffset(values.window_to!) }
             : null,
+          filters: Object.keys(filters).length > 0 ? filters : null,
         },
         family: values.family?.trim() || null,
         level: values.level ?? null,
@@ -273,18 +341,41 @@ export function AchievementDrawer({
         >
           <Select options={SOURCE_OPTIONS} />
         </Form.Item>
-        {source !== 'manual' ? (
-          <Form.Item name="threshold" label="Ambang minimum (opsional)">
-            <InputNumber min={1} style={{ width: '100%' }} placeholder="Kosong = tanpa ambang" />
+        {sourceMeta(source)?.supportsThreshold ? (
+          <Form.Item
+            name="threshold"
+            label="Ambang minimum"
+            extra="Kosong = minimal 1 (default mesin agregat)."
+          >
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Mis. 10" />
           </Form.Item>
         ) : null}
-        {WINDOW_SOURCES.has(source ?? '') ? (
+        {sourceMeta(source)?.filterFields?.some((f) => f.key === 'entity_type') ? (
+          <Form.Item
+            name="filter_entity_type"
+            label="Jenis kontribusi (opsional)"
+            extra="Kosong = semua jenis yang disetujui."
+          >
+            <Select
+              allowClear
+              placeholder="Semua jenis"
+              options={(sourceMeta(source)?.filterFields?.find((f) => f.key === 'entity_type')
+                ?.options ?? []
+              ).map((value) => ({ value, label: value }))}
+            />
+          </Form.Item>
+        ) : null}
+        {sourceMeta(source)?.supportsWindow ? (
           <Flex gap={8}>
             <Form.Item
               name="window_from"
               label="Mulai"
               style={{ flex: 1 }}
-              rules={[{ required: true, message: 'Wajib diisi' }]}
+              rules={
+                source === 'registration'
+                  ? [{ required: true, message: 'Wajib diisi' }]
+                  : undefined
+              }
             >
               <DatePicker showTime style={{ width: '100%' }} />
             </Form.Item>
@@ -293,7 +384,9 @@ export function AchievementDrawer({
               label="Selesai"
               style={{ flex: 1 }}
               rules={[
-                { required: true, message: 'Wajib diisi' },
+                ...(source === 'registration'
+                  ? [{ required: true, message: 'Wajib diisi' } as const]
+                  : []),
                 {
                   validator: async (_, value: Dayjs | null) => {
                     const from = form.getFieldValue('window_from') as Dayjs | undefined;
