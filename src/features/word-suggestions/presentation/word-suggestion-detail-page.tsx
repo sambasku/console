@@ -3,7 +3,6 @@ import {
   App,
   Button,
   Card,
-  Collapse,
   Descriptions,
   Flex,
   Image,
@@ -309,20 +308,6 @@ function WordSuggestionDetail({ id }: { id: string }) {
         <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
           Kata yang tayang sekarang: {current_word.lemma}
         </Typography.Paragraph>
-        <Collapse
-          ghost
-          items={[
-            {
-              key: 'raw',
-              label: 'Data teknis',
-              children: (
-                <pre style={{ fontSize: 12, overflow: 'auto', maxHeight: 200, margin: 0 }}>
-                  {JSON.stringify(suggestion.proposed_changes, null, 2)}
-                </pre>
-              ),
-            },
-          ]}
-        />
       </Card>
 
       {pending && (
