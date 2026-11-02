@@ -1,10 +1,13 @@
 /**
  * Item antrean / detail komentar - GET /api/v1/admin/comments
- * . Post-moderation statuses.
+ * . Post-moderation statuses + foto opsi B (image_status terpisah).
  */
 
 export const COMMENT_STATUSES = ['published', 'taken_down', 'deleted_by_author'] as const;
 export type CommentStatus = (typeof COMMENT_STATUSES)[number];
+
+export const COMMENT_IMAGE_STATUSES = ['pending_review', 'published', 'rejected'] as const;
+export type CommentImageStatus = (typeof COMMENT_IMAGE_STATUSES)[number];
 
 export const COMMENT_STATUS_LABELS: Record<CommentStatus, string> = {
   published: 'Diterbitkan',
@@ -18,6 +21,17 @@ export const COMMENT_STATUS_TAG_COLOR: Record<CommentStatus, string> = {
   deleted_by_author: 'default',
 };
 
+export interface AdminCommentImage {
+  status: CommentImageStatus;
+  url: string | null;
+  provider: string | null;
+  provider_file_id: string | null;
+  public_url: string | null;
+  content_warnings: string[];
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+}
+
 export interface AdminCommentItem {
   id: string;
   word_id: string;
@@ -29,6 +43,7 @@ export interface AdminCommentItem {
   body: string;
   body_original: string | null;
   is_censored: boolean;
+  image?: AdminCommentImage | null;
   status: CommentStatus;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -38,6 +53,7 @@ export interface AdminCommentItem {
 export interface ListCommentsParams {
   status?: CommentStatus;
   wordId?: string;
+  imageStatus?: CommentImageStatus;
   limit?: number;
   cursor?: string;
 }

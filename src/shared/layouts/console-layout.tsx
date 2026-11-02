@@ -5,6 +5,7 @@ import {
   AuditOutlined,
   BarChartOutlined,
   BookOutlined,
+  CalendarOutlined,
   CommentOutlined,
   DashboardOutlined,
   EditOutlined,
@@ -32,10 +33,15 @@ UserOutlined,
   WarningOutlined,
   FileProtectOutlined,
   ApiOutlined,
+  AppstoreOutlined,
   CloudServerOutlined,
   CloudUploadOutlined,
   CompassOutlined,
   DatabaseOutlined,
+  KeyOutlined,
+  ShopOutlined,
+  CoffeeOutlined,
+  ReadOutlined,
   WhatsAppOutlined,
   MailOutlined,
 } from '@ant-design/icons';
@@ -56,6 +62,7 @@ const ANALYTICS_ROUTES = {
   '/dashboard/traffic': { icon: <LineChartOutlined />, label: 'Trafik Web' },
   '/dashboard/mobile': { icon: <MobileOutlined />, label: 'Trafik Mobile' },
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
+  '/places/views': { icon: <EnvironmentOutlined />, label: 'Wisata' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -81,6 +88,17 @@ const EKSPLORASI_ROUTES = {
   '/place-categories': { icon: <TagsOutlined />, label: 'Kategori tempat' },
   '/regions': { icon: <CompassOutlined />, label: 'Wilayah' },
   '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
+  '/events': { icon: <CalendarOutlined />, label: 'Acara' },
+  '/usaha': { icon: <ShopOutlined />, label: 'Usaha' },
+  '/usaha-categories': { icon: <AppstoreOutlined />, label: 'Kategori usaha' },
+  '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
+  '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
+  '/culinary': { icon: <CoffeeOutlined />, label: 'Kuliner' },
+  '/culinary-categories': { icon: <AppstoreOutlined />, label: 'Kategori kuliner' },
+  '/culinary-claims': { icon: <KeyOutlined />, label: 'Klaim kuliner' },
+  '/culinary-reports': { icon: <WarningOutlined />, label: 'Laporan kuliner' },
+  '/pantun': { icon: <ReadOutlined />, label: 'Pantun' },
+  '/pantun-reports': { icon: <WarningOutlined />, label: 'Laporan pantun' },
 } as const;
 
 /** Leaf routes di bawah grup Notifikasi. */
@@ -95,6 +113,7 @@ const SYSTEM_ROUTES = {
   '/system/database': { icon: <DatabaseOutlined />, label: 'Database' },
   '/system/supabase': { icon: <CloudUploadOutlined />, label: 'Supabase' },
   '/system/config': { icon: <SettingOutlined />, label: 'Konfigurasi' },
+  '/system/mobile-release': { icon: <MobileOutlined />, label: 'Mobile Release' },
   '/system/whatsapp': { icon: <WhatsAppOutlined />, label: 'WhatsApp' },
   '/system/email': { icon: <MailOutlined />, label: 'Email' },
 } as const;
@@ -148,6 +167,17 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   categories: 'Kategori',
   regions: 'Wilayah',
   places: 'Wisata',
+  events: 'Acara',
+  'usaha-categories': 'Kategori usaha',
+  'usaha-claims': 'Klaim usaha',
+  'usaha-reports': 'Laporan usaha',
+  usaha: 'Usaha',
+  culinary: 'Kuliner',
+  'culinary-categories': 'Kategori kuliner',
+  'culinary-claims': 'Klaim kuliner',
+  'culinary-reports': 'Laporan kuliner',
+  pantun: 'Pantun',
+  'pantun-reports': 'Laporan pantun',
   profile: 'Profil',
   legal: 'Legal',
   oauth: 'OAuth',
@@ -164,7 +194,7 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
-  if (top === '/dashboard') return ANALYTICS_GROUP_KEY;
+  if (top === '/dashboard' || pathname === '/places/views') return ANALYTICS_GROUP_KEY;
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
@@ -343,7 +373,7 @@ export function ConsoleLayout() {
   }, [isLoggedIn, navigate]);
 
   const currentMenuKey =
-    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/')
+    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/') || pathname === '/places/views'
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'

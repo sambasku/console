@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Image, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -17,7 +18,7 @@ import {
   type DiscussionStatus,
 } from '../domain/discussion';
 
-const columnHelper = createColumnHelper<DiscussionListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, DiscussionListItem>();
 
 type StatusTab = DiscussionStatus | 'all';
 
@@ -44,7 +45,7 @@ export function DiscussionsPage() {
     useDiscussionList({ status, enabled: canModerate });
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('body', {
         header: 'Isi',
         size: 280,
@@ -134,15 +135,15 @@ export function DiscussionsPage() {
           </Tooltip>
         ),
       }),
-    ],
+    ]),
     [navigate],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

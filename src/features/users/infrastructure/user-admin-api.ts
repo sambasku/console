@@ -5,7 +5,11 @@ import type { AdminUserRole } from '../domain/user-admin';
 export interface AdminUserWire {
   id: string;
   username: string;
+  /** Nama tampilan publik; awalnya = username. Opsional untuk wire API lama. */
+  display_name?: string;
   email: string;
+  /** Nomor HP ternormalisasi 62… (null = belum diisi). */
+  phone?: string | null;
   role: string;
   avatar_url?: string | null;
   /** Provider OAuth tertaut (google/fb/github); kosong = onboard email/password. */
@@ -13,6 +17,10 @@ export interface AdminUserWire {
   is_active: boolean;
   can_contribute: boolean;
   contribute_muted_until: string | null;
+  email_verified?: boolean;
+  email_verified_at?: string | null;
+  /** OTP verifikasi terakhir; null = tidak ada OTP tertunda. */
+  otp?: { created_at: string; expires_at: string } | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -56,6 +64,17 @@ export async function updateUserRoleRequest(
 
 export async function setCanContributeRequest(id: string, canContribute: boolean): Promise<void> {
   await client.patch(`/admin/contribution-access/${id}`, { can_contribute: canContribute });
+}
+
+/** Verifikasi email manual oleh admin (mis. OTP gagal terkirim ke user). */
+export async function verifyUserEmailRequest(
+  id: string,
+): Promise<{ id: string; email_verified: true; email_verified_at: string }> {
+  const res = await client.post<{
+    success: true;
+    data: { id: string; email_verified: true; email_verified_at: string };
+  }>(`/admin/users/${id}/verify-email`);
+  return res.data.data;
 }
 
 export interface CreateAdminUserInput {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Tabs, Tag, Typography } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
@@ -16,7 +17,7 @@ import {
   type WordReportStatus,
 } from '../domain/word-report';
 
-const columnHelper = createColumnHelper<WordReportListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, WordReportListItem>();
 
 type StatusTab = WordReportStatus | 'all';
 
@@ -34,7 +35,7 @@ export function WordReportsPage() {
     useWordReportList({ status });
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('lemma', {
         header: 'Entri',
         size: 180,
@@ -91,15 +92,15 @@ export function WordReportsPage() {
           );
         },
       }),
-    ],
+    ]),
     [navigate],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

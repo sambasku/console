@@ -7,7 +7,8 @@ const IDN_ID = '01HXZIDN000000000000000001';
 const WC_ID = '01HXZWC00000000000000000001';
 
 // Akses anggota union redistributed oleh `entityType` (word vs child).
-const wordOf = (d: ContributionDetailView) => (d.entityType === 'word' ? d.word : null);
+const wordOf = (d: ContributionDetailView) =>
+  d.entityType === 'word' && !d.entityMissing ? d.word : null;
 const childOf = (d: ContributionDetailView) => (d.entityType === 'word' ? null : d.child);
 
 function listItem(overrides: Partial<ContributionListItem>): ContributionListItem {
@@ -399,5 +400,20 @@ describe('normalizeContributionDetail - anak (word_image & example)', () => {
     const detail = normalizeContributionDetail(payload);
     expect(detail.review?.comment).toBe('Definisi kurang tepat');
     expect(wordOf(detail)!.lemma).toBe('x');
+    if (detail.entityType === 'word') expect(detail.entityMissing).toBe(false);
+  });
+
+  it('entity null tidak jadi kata kosong', () => {
+    const payload: ContributionDetailPayload = {
+      contribution: listItem({ word_lemma: 'kasang' }),
+      review: null,
+      entity: null,
+    };
+    const detail = normalizeContributionDetail(payload);
+    expect(detail.entityType).toBe('word');
+    if (detail.entityType !== 'word') return;
+    expect(detail.entityMissing).toBe(true);
+    expect(detail.word).toBeNull();
+    expect(detail.contribution.word_lemma).toBe('kasang');
   });
 });

@@ -77,7 +77,7 @@ export function EditWordPage() {
 
   const isContributor = user?.role === 'contributor';
 
-  // Contributor dilarang (05-api-edit-kata.md): jangan bakar request prefill,
+  // Kontributor dilarang (05-api-edit-kata.md): jangan bakar request prefill,
   // tampilkan 403 alih-alih halaman kosong.
   const detailQuery = useWordDetail(id, { enabled: !isContributor });
   const detail = detailQuery.data;

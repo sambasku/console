@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Line } from '@ant-design/plots';
-import { theme, Typography } from 'antd';
+import { Area } from '@ant-design/plots';
+import { Typography } from 'antd';
 import type { ActivityDailyPoint } from '../../domain/dashboard-stats';
+import { buildTrendConfig, seriesColor, type ChartRow } from '@/shared/charts/chart-theme';
 
 export interface ActivityDailyChartProps {
   points: ActivityDailyPoint[];
@@ -33,35 +34,13 @@ function formatFullDate(ymd: string): string {
   });
 }
 
-type ChartRow = {
-  date: string;
-  dateLabel: string;
-  series: string;
-  value: number;
-};
-
 /**
- * Line chart multi-series via @ant-design/plots - full width, tooltip overlay stabil.
+ * Area chart multi-series gaya Cloudflare (smooth + gradient) - full width,
+ * tooltip overlay stabil. Warna dari CHART_PALETTE, bukan token antd
+ * (colorInfo = colorPrimary dulu bikin 2 series sama warna).
  */
 export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
-  const { token } = theme.useToken();
-
-  const colors = useMemo(
-    () => [
-      token.colorPrimary,
-      token.colorSuccess,
-      token.colorWarning,
-      token.colorInfo,
-      token.colorError,
-    ],
-    [
-      token.colorPrimary,
-      token.colorSuccess,
-      token.colorWarning,
-      token.colorInfo,
-      token.colorError,
-    ],
-  );
+  const colors = useMemo(() => SERIES.map((_, i) => seriesColor(i)), []);
 
   const totals = useMemo(
     () => ({
@@ -74,14 +53,13 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
     [points],
   );
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartRow[]>(() => {
     const rows: ChartRow[] = [];
     for (const point of points) {
-      const dateLabel = formatDayLabel(point.date);
       for (const s of SERIES) {
         rows.push({
           date: point.date,
-          dateLabel,
+          dateLabel: formatDayLabel(point.date),
           series: s.label,
           value: point[s.key],
         });
@@ -91,51 +69,29 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
   }, [points]);
 
   const config = useMemo(
-    () => ({
-      data: chartData,
-      xField: 'dateLabel',
-      yField: 'value',
-      colorField: 'series',
-      autoFit: true,
-      height: 240,
-      scale: {
-        color: { range: colors },
-        y: { nice: true, domainMin: 0 },
-      },
-      axis: {
-        x: {
-          title: false,
-          labelAutoHide: true,
-          labelAutoRotate: false,
-        },
-        y: {
-          title: false,
-        },
-      },
-      legend: false,
-      style: {
-        lineWidth: 2,
-      },
-      interaction: {
+    () =>
+      buildTrendConfig({
+        data: chartData,
+        colors,
+        height: 240,
         tooltip: {
-          shared: true,
+          title: (d: ChartRow) => formatFullDate(d.date),
+          items: [
+            (d: ChartRow) => ({
+              name: d.series,
+              value: d.value.toLocaleString('id-ID'),
+            }),
+          ],
         },
-      },
-      tooltip: {
-        title: (d: ChartRow) => formatFullDate(d.date),
-        items: [
-          (d: ChartRow) => ({
-            name: d.series,
-            value: d.value.toLocaleString('id-ID'),
-          }),
-        ],
-      },
-    }),
+      }),
     [chartData, colors],
   );
 
   return (
-    <section className="dashboard__chart dashboard__chart--activity" aria-label="Aktivitas harian 30 hari terakhir">
+    <section
+      className="dashboard__chart dashboard__chart--activity"
+      aria-label="Aktivitas harian 30 hari terakhir"
+    >
       <div className="dashboard__chart-header">
         <div>
           <Typography.Title level={5} className="dashboard__chart-title">
@@ -163,9 +119,8 @@ export function ActivityDailyChart({ points }: ActivityDailyChartProps) {
           </ul>
         </div>
       </div>
-
       <div className="dashboard__chart-canvas">
-        <Line {...config} />
+        <Area {...config} />
       </div>
     </section>
   );

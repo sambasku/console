@@ -661,6 +661,7 @@ export function MeaningFields({
                     <Form.Item
                       name={[...name, 'word_class_id']}
                       label="Kelas Kata"
+                      extra="Setiap makna punya kelas kata sendiri - satu kata bisa jadi kata benda sekaligus kata kerja. Tambah makna lain untuk kelas berbeda."
                       rules={[{ required: true, message: 'Kelas kata wajib dipilih' }]}
                     >
                       <Select

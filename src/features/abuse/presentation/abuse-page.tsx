@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined } from '@ant-design/icons';
 import { Alert, Button, Drawer, Flex, Input, Popconfirm, Result, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import { DataTable } from '@/shared/components/data-table';
@@ -69,7 +70,7 @@ function ListFooter({ count, hasMore, loadMore, loading }: { count: number; hasM
   );
 }
 
-const userColumnHelper = createColumnHelper<UserAbuseEvent>();
+const userColumnHelper = createColumnHelper<typeof tableFeatureSet, UserAbuseEvent>();
 
 function UserEventsTab() {
   const [filters, setFilters] = useState<UserAbuseFilters>({});
@@ -87,7 +88,7 @@ function UserEventsTab() {
     : null;
 
   const columns = useMemo(
-    () => [
+    () => userColumnHelper.columns([
       userColumnHelper.accessor('created_at', {
         header: 'Waktu',
         size: 170,
@@ -151,15 +152,15 @@ function UserEventsTab() {
           );
         },
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
@@ -270,7 +271,7 @@ function AnonMutesDrawer({
   );
 }
 
-const anonColumnHelper = createColumnHelper<AnonAbuseEvent>();
+const anonColumnHelper = createColumnHelper<typeof tableFeatureSet, AnonAbuseEvent>();
 
 function AnonTab() {
   const [filters, setFilters] = useState<AnonAbuseFilters>({});
@@ -286,7 +287,7 @@ function AnonTab() {
   };
 
   const columns = useMemo(
-    () => [
+    () => anonColumnHelper.columns([
       anonColumnHelper.accessor('created_at', {
         header: 'Waktu',
         size: 170,
@@ -332,15 +333,15 @@ function AnonTab() {
         meta: { responsive: ['lg'] },
         cell: (info) => <MetaCell meta={info.getValue()} />,
       }),
-    ],
+    ]),
     [],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

@@ -1079,6 +1079,13 @@ export function ImportWordsDrawer({
 
       {words.length > 0 ? (
         <div style={{ padding: 12 }}>
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 8 }}
+            message="Duplikat makna dilewati otomatis"
+            description="Kalau lemma + makna (definisi/padanan) sudah ada di kamus, baris itu dihitung Duplikat dan tidak diimpor lagi. Hanya makna baru yang ditambah ke kata induk. Ini beda dari form Tambah kata, yang menampilkan konfirmasi vote saat makna kembar."
+          />
           {resume ? (
             <Alert
               type="warning"

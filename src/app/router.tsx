@@ -41,6 +41,18 @@ import { AnnouncementsPage } from '@/features/announcements/presentation/announc
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
+import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
+import { EventsPage } from '@/features/events/presentation/events-page';
+import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
+import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
+import { UsahaReportsPage } from '@/features/usaha/presentation/usaha-reports-page';
+import { UsahaCategoriesPage } from '@/features/usaha/presentation/usaha-categories-page';
+import { CulinaryPage } from '@/features/culinary/presentation/culinary-page';
+import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-claims-page';
+import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
+import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
+import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
+import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { RegionsPage } from '@/features/regions/presentation/regions-page';
 import { PlaceCategoriesPage } from '@/features/place-categories/presentation/place-categories-page';
 import { WordGroupsPage } from '@/features/word-groups/presentation/word-groups-page';
@@ -50,6 +62,7 @@ import { OauthPage } from '@/features/oauth/presentation/oauth-page';
 import { SystemDatabasePage } from '@/features/system/presentation/system-database-page';
 import { SystemSupabasePage } from '@/features/system/presentation/system-supabase-page';
 import { SystemConfigPage } from '@/features/system/presentation/system-config-page';
+import { MobileReleasePage } from '@/features/mobile-release/presentation/mobile-release-page';
 import { SystemWhatsAppPage } from '@/features/wa/presentation/system-whatsapp-page';
 import { SystemEmailPage } from '@/features/email/presentation/system-email-page';
 import { NotFoundPage } from '@/shared/layouts/not-found-page';
@@ -363,6 +376,78 @@ const placesRoute = createRoute({
   component: PlacesPage,
 });
 
+const placeViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/places/views',
+  component: PlaceViewsPage,
+});
+
+const eventsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/events',
+  component: EventsPage,
+});
+
+const usahaRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/usaha',
+  component: UsahaPage,
+});
+
+const usahaClaimsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/usaha-claims',
+  component: UsahaClaimsPage,
+});
+
+const usahaReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/usaha-reports',
+  component: UsahaReportsPage,
+});
+
+const usahaCategoriesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/usaha-categories',
+  component: UsahaCategoriesPage,
+});
+
+const culinaryRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/culinary',
+  component: CulinaryPage,
+});
+
+const culinaryClaimsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/culinary-claims',
+  component: CulinaryClaimsPage,
+});
+
+const culinaryReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/culinary-reports',
+  component: CulinaryReportsPage,
+});
+
+const culinaryCategoriesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/culinary-categories',
+  component: CulinaryCategoriesPage,
+});
+
+const pantunModerationRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/pantun',
+  component: PantunModerationPage,
+});
+
+const pantunReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/pantun-reports',
+  component: PantunReportsPage,
+});
+
 const placeCategoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/place-categories',
@@ -418,9 +503,14 @@ const systemEmailRoute = createRoute({
 });
 
 const systemConfigRoute = createRoute({
-  getParentRoute: () => consoleLayoutRoute,
-  path: '/system/config',
-  component: SystemConfigPage,
+getParentRoute: () => consoleLayoutRoute,
+path: '/system/config',
+component: SystemConfigPage,
+});
+const systemMobileReleaseRoute = createRoute({
+getParentRoute: () => consoleLayoutRoute,
+path: '/system/mobile-release',
+component: MobileReleasePage,
 });
 
 /**
@@ -487,6 +577,18 @@ const routeTree = rootRoute.addChildren([
     categoriesRoute,
     regionsRoute,
     placesRoute,
+    placeViewsRoute,
+    eventsRoute,
+  usahaRoute,
+  usahaClaimsRoute,
+  usahaReportsRoute,
+  usahaCategoriesRoute,
+  culinaryRoute,
+  culinaryClaimsRoute,
+  culinaryReportsRoute,
+  culinaryCategoriesRoute,
+  pantunModerationRoute,
+  pantunReportsRoute,
     placeCategoriesRoute,
     wordGroupsRoute,
     profileRoute,
@@ -497,6 +599,7 @@ const routeTree = rootRoute.addChildren([
     systemWhatsAppRoute,
     systemEmailRoute,
     systemConfigRoute,
+  systemMobileReleaseRoute,
   ]),
 ]);
 

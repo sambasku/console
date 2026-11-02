@@ -6,7 +6,9 @@ export type AdminVoteTargetType =
   | 'word_image'
   | 'comment'
   | 'discussion_reply'
-  | 'discussion';
+  | 'discussion'
+  | 'pantun'
+  | 'pantun_reply';
 
 export interface AdminVoteListItem {
   id: string;
@@ -33,13 +35,17 @@ export interface AdminTopTargetItem {
 
 export const TARGET_TYPE_LABELS: Record<AdminVoteTargetType, string> = {
   word: 'Kata',
-  meaning: 'Terjemahan',
+  // 'meaning' = makna kata (satu baris arti), bukan terjemahan. Terjemahan
+  // punya target sendiri di kontribusi, tapi vote makna = vote arti.
+  meaning: 'Arti',
   example: 'Contoh',
   pronunciation: 'Pelafalan',
   word_image: 'Gambar Kata',
   comment: 'Komentar',
   discussion_reply: 'Balasan Diskusi',
   discussion: 'Pertanyaan Diskusi',
+  pantun: 'Pantun',
+  pantun_reply: 'Balasan Pantun',
 };
 
 export const TARGET_TYPE_TAG_COLOR: Record<AdminVoteTargetType, string> = {
@@ -51,6 +57,8 @@ export const TARGET_TYPE_TAG_COLOR: Record<AdminVoteTargetType, string> = {
   comment: 'green',
   discussion_reply: 'magenta',
   discussion: 'volcano',
+  pantun: 'gold',
+  pantun_reply: 'lime',
 };
 
 export const VALUE_LABELS: Record<1 | -1, string> = {

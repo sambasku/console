@@ -253,3 +253,39 @@ export async function reviewProposal(
 ): Promise<void> {
   await client.post(`/admin/place-contributions/${id}/${action}`, reject);
 }
+
+/** Total view per place_id. `days` undefined = semua waktu. */
+export async function listPlaceViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ place_id: string; views: number }> };
+  }>('/admin/places/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.place_id, i.views]));
+}
+
+export interface PlaceViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    placeId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+/** Laporan tren harian + ranking untuk halaman analitik wisata. */
+export async function getPlaceViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<PlaceViewsReport> {
+  const res = await client.get<{ success: true; data: PlaceViewsReport }>(
+    '/admin/places/views/daily',
+    { params: { days }, signal },
+  );
+  return res.data.data;
+}

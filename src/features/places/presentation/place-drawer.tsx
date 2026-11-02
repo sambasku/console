@@ -373,7 +373,6 @@ export function PlaceDrawer({
               <Form.Item
                 name="short_description"
                 label="Deskripsi singkat"
-                rules={[{ required: true, message: 'Wajib diisi' }]}
               >
                 <Input.TextArea rows={5} />
               </Form.Item>

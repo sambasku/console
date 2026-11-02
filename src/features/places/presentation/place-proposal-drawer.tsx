@@ -111,9 +111,17 @@ export function PlaceProposalDrawer({
             <Descriptions.Item label="Kecamatan">{regionName(payload.region_id)}</Descriptions.Item>
             <Descriptions.Item label="Desa">{regionName(payload.village_id)}</Descriptions.Item>
             <Descriptions.Item label="Koordinat">
-              {payload.lat != null && payload.lng != null
-                ? `${payload.lat}, ${payload.lng}`
-                : '-'}
+              {payload.lat != null && payload.lng != null ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${payload.lat},${payload.lng}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {payload.lat}, {payload.lng}
+                </a>
+              ) : (
+                '-'
+              )}
             </Descriptions.Item>
             <Descriptions.Item label="Jam buka">{textOrDash(payload.hours)}</Descriptions.Item>
             <Descriptions.Item label="Kontak">{textOrDash(payload.contact)}</Descriptions.Item>

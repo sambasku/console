@@ -48,11 +48,25 @@ export function normalizeContributionDetail(payload: ContributionDetailPayload):
   const entity = payload?.entity;
 
   if (contribution.entity_type === 'word') {
+    // null / bukan objek = kata tidak terbaca. Jangan jadi kata palsu
+    // dengan lemma kosong dan "Tidak ada makna."
+    if (!isWordEntityPayload(entity)) {
+      return {
+        contribution,
+        review,
+        priorReviews,
+        entityType: 'word',
+        entityMissing: true,
+        word: null,
+        rawEntity: entity,
+      };
+    }
     return {
       contribution,
       review,
       priorReviews,
       entityType: 'word',
+      entityMissing: false,
       word: normalizeWordEntity(entity),
       rawEntity: entity,
     };
@@ -109,8 +123,12 @@ function normalizeContributionMeta(
   };
 }
 
+function isWordEntityPayload(value: unknown): value is AnyRecord {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 function toRecord(value: unknown): AnyRecord {
-  return value && typeof value === 'object' && !Array.isArray(value) ? (value as AnyRecord) : {};
+  return isWordEntityPayload(value) ? value : {};
 }
 
 /** Nilai pertama yang terdefinisi non-null dari kunci (camelCase/snake_case). */
@@ -221,6 +239,7 @@ function normalizeMeaning(raw: unknown): WordMeaningView {
     orderIndex: Number(pickDefined(m, ['order_index', 'orderIndex']) ?? 0),
     translations,
     examples,
+    sourceLemma: asString(pickDefined(m, ['source_lemma', 'sourceLemma'])),
   };
 }
 

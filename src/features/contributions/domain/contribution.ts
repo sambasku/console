@@ -112,6 +112,8 @@ export interface WordMeaningView {
   orderIndex: number;
   translations: WordMeaningTranslationView[];
   examples: WordMeaningExampleView[];
+  /** Terisi bila makna ini milik lemma lain yang sudah ada. */
+  sourceLemma?: string | null;
 }
 
 export interface WordPronunciationView {
@@ -224,15 +226,27 @@ export interface ChildEntityView<D> {
 }
 
 /** View model detail kontribusi - union terdiskriminasi oleh `entityType`
- * (word → `word` dibutuhkan; entity anak → `child` dibutuhkan). */
+ * (word → `word` dibutuhkan; entity anak → `child` dibutuhkan).
+ * `entityMissing` memisahkan kata yang benar-benar kosong dari payload
+ * `entity: null` (kata terhapus / id tidak ketemu). */
 export type ContributionDetailView =
   | {
       contribution: ContributionListItem;
       review: ContributionReview | null;
       priorReviews: ContributionReview[];
       entityType: 'word';
+      entityMissing: false;
       word: WordEntityView;
       /** payload entity mentah - dipakai prefill form koreksi (tetap tersimpan) */
+      rawEntity: unknown;
+    }
+  | {
+      contribution: ContributionListItem;
+      review: ContributionReview | null;
+      priorReviews: ContributionReview[];
+      entityType: 'word';
+      entityMissing: true;
+      word: null;
       rawEntity: unknown;
     }
   | {

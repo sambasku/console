@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { AlertOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import {
   Alert,
@@ -27,7 +28,7 @@ import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
 import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { useUserAdminList, type UseUserAdminListArgs } from '../application/use-user-admin-list';
-import { useSetCanContribute, useSetUserActive, useUpdateUserRole } from '../application/use-update-user-role';
+import { useSetCanContribute, useSetUserActive, useUpdateUserRole, useVerifyUserEmail } from '../application/use-update-user-role';
 import { CreateUserDrawer } from './create-user-drawer';
 import { UserAbuseDrawer } from '@/features/abuse/presentation/user-abuse-drawer';
 import { isMutedNow } from '@/features/abuse/domain/abuse';
@@ -44,7 +45,7 @@ import {
 
 type PendingRoleMap = Record<string, AdminUserRole | undefined>;
 
-const columnHelper = createColumnHelper<AdminUserListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, AdminUserListItem>();
 
 const allRoleFilterOptions: { value: AdminUserRole; label: string }[] = [
   ...(ROLE_OPTIONS_SELECT as unknown as { value: AdminUserRole; label: string }[]),
@@ -64,6 +65,7 @@ export function UsersPage() {
   const updateRole = useUpdateUserRole();
   const setContribute = useSetCanContribute();
   const setActive = useSetUserActive();
+  const verifyEmail = useVerifyUserEmail();
   const listArgs: UseUserAdminListArgs = {
     q,
     role: filterRole,
@@ -116,30 +118,37 @@ export function UsersPage() {
   );
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('username', {
         header: 'Pengguna',
         size: 280,
         meta: { fixed: 'left' },
-        cell: (info) => (
-          <Flex gap={10} align="center">
-            <Avatar
-              size={32}
-              shape="circle"
-              src={info.row.original.avatarUrl ?? undefined}
-              icon={<UserOutlined />}
-              alt={info.getValue()}
-              style={{ flexShrink: 0 }}
-            />
-            <div>
-              <Typography.Text strong>{info.getValue()}</Typography.Text>
-              <br />
-              <Typography.Text type="secondary" italic style={{ fontSize: 12 }}>
-                @{info.row.original.email}
-              </Typography.Text>
-            </div>
-          </Flex>
-        ),
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <Flex gap={10} align="center">
+              <Avatar
+                size={32}
+                shape="circle"
+                src={row.avatarUrl ?? undefined}
+                icon={<UserOutlined />}
+                alt={row.displayName}
+                style={{ flexShrink: 0 }}
+              />
+              <div>
+                <Typography.Text strong>{row.displayName}</Typography.Text>
+                <br />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  @{row.username}
+                </Typography.Text>
+                <br />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {row.email}
+                </Typography.Text>
+              </div>
+            </Flex>
+          );
+        },
       }),
       columnHelper.display({
         id: 'contribute',
@@ -176,7 +185,12 @@ export function UsersPage() {
             <Tag color={ROLE_TAG_COLOR[info.getValue()]}>{ROLE_LABELS[info.getValue()]}</Tag>
           ),
         }),
-        columnHelper.accessor('authProviders', {
+        columnHelper.accessor('phone', {
+        header: 'Nomor HP',
+        size: 150,
+        cell: (info) => info.getValue() ?? '-',
+      }),
+      columnHelper.accessor('authProviders', {
           header: 'Onboard',
           size: 140,
           cell: (info) => {
@@ -193,6 +207,53 @@ export function UsersPage() {
             );
           },
         }),
+      columnHelper.accessor('emailVerified', {
+        header: 'Verifikasi email',
+        size: 230,
+        cell: (info) => {
+          const row = info.row.original;
+          if (row.emailVerified) {
+            return (
+              <Tooltip title={row.emailVerifiedAt ? `Terverifikasi ${formatDateTime(row.emailVerifiedAt)}` : undefined}>
+                <Tag color="green">Terverifikasi</Tag>
+              </Tooltip>
+            );
+          }
+          // ponytail: label pakai keberadaan OTP, bukan hitung Date.now() saat render
+          // (aturan react-hooks/purity). Admin lihat tanggal kadaluarsa langsung.
+          const otpExpiresAt = row.otpExpiresAt;
+          return (
+            <Flex gap={6} align="center" wrap>
+              {otpExpiresAt ? (
+                <Tag color="orange">Menunggu OTP s/d {formatDateTime(otpExpiresAt)}</Tag>
+              ) : (
+                <Tag color="red">Belum verifikasi</Tag>
+              )}
+              <Popconfirm
+                title={`Verifikasi email "${row.username}" manual?`}
+                description={
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Dipakai kalau email OTP gagal terkirim. Email user langsung ditandai
+                    terverifikasi, OTP tertunda dihapus, dan user bisa login.
+                  </Typography.Text>
+                }
+                okText="Verifikasi"
+                okButtonProps={{ type: 'primary' }}
+                cancelText="Batal"
+                onConfirm={() => verifyEmail.mutate({ id: row.id, username: row.username })}
+              >
+                <Button
+                  type="link"
+                  size="small"
+                  loading={verifyEmail.isPending && verifyEmail.variables?.id === row.id}
+                >
+                  Verifikasi manual
+                </Button>
+              </Popconfirm>
+            </Flex>
+          );
+        },
+      }),
       columnHelper.accessor('isActive', {
         header: 'Status',
         size: 140,
@@ -299,15 +360,15 @@ export function UsersPage() {
           );
         },
       }),
-    ],
-    [pendingRoles, updateRole.variables, updateRole.isPending, onSaveRole, setContribute, setActive, user?.id],
+    ]),
+      [pendingRoles, updateRole.variables, updateRole.isPending, onSaveRole, setContribute, setActive, verifyEmail, user?.id],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
@@ -350,7 +411,7 @@ export function UsersPage() {
         <Col xs={24} md={10}>
           <Input.Search
             allowClear
-            placeholder="Cari username atau email…"
+            placeholder="Cari username, email, atau nomor HP…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             loading={isFetching && !items.length}

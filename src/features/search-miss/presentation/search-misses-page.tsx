@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Key } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import {
   LinkOutlined,
   PlusOutlined,
@@ -44,7 +45,7 @@ import {
 } from '../domain/search-miss';
 import { ResolveSearchMissModal } from './resolve-search-miss-modal';
 
-const columnHelper = createColumnHelper<SearchMissListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, SearchMissListItem>();
 
 const directionOptions: { value: SearchMissDirection; label: string }[] = [
   { value: 'lemma', label: DIRECTION_LABELS.lemma },
@@ -188,6 +189,14 @@ export function SearchMissesPage() {
     [navigate],
   );
 
+  /** Badge "usulan menunggu": buka langsung usulan pending tertua di antrean review. */
+  const onOpenPendingContribution = useCallback(
+    (contributionId: string) => {
+      void navigate({ to: '/contributions', search: { id: contributionId } });
+    },
+    [navigate],
+  );
+
   const updatingId =
     updateSearchMiss.isPending && updateSearchMiss.variables
       ? updateSearchMiss.variables.id
@@ -197,7 +206,7 @@ export function SearchMissesPage() {
   const selectedCount = selectedRowKeys.length;
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('term', {
         header: 'Kata Dicari',
         size: 240,
@@ -261,12 +270,27 @@ export function SearchMissesPage() {
       columnHelper.accessor('fulfilled', {
         header: 'Terpenuhi',
         size: 160,
-        cell: (info) =>
-          info.getValue() ? (
-            <Tag color="green">Sudah Terpenuhi</Tag>
-          ) : (
-            <Tag color="orange">Belum</Tag>
-          ),
+        cell: (info) => {
+          const row = info.row.original;
+          const pendingBadge =
+            row.pendingContributionCount > 0 && row.pendingContributionId ? (
+              <Tooltip title="Sudah ada usulan kata untuk term ini yang menunggu review - cek antrean dulu sebelum buat kata baru">
+                <Tag
+                  color="gold"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => void onOpenPendingContribution(row.pendingContributionId!)}
+                >
+                  {row.pendingContributionCount} usulan menunggu
+                </Tag>
+              </Tooltip>
+            ) : null;
+          return (
+            <Space size={4} wrap>
+              {info.getValue() ? <Tag color="green">Sudah Terpenuhi</Tag> : <Tag color="orange">Belum</Tag>}
+              {pendingBadge}
+            </Space>
+          );
+        },
       }),
       columnHelper.accessor('createdAt', {
         header: 'Dibuat',
@@ -325,13 +349,14 @@ export function SearchMissesPage() {
           );
         },
       }),
-    ],
-    [
-      canDismiss,
-      canEdit,
-      onDismiss,
-      onCreateWord,
-      onSaveTerm,
+    ]),
+      [
+        canDismiss,
+        canEdit,
+        onDismiss,
+        onCreateWord,
+        onOpenPendingContribution,
+        onSaveTerm,
       onToggleVisible,
       dismissSearchMiss.isPending,
       dismissSearchMiss.variables,
@@ -340,11 +365,11 @@ export function SearchMissesPage() {
     ],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 

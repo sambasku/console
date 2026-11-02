@@ -3,7 +3,11 @@ export type AdminUserRole = 'contributor' | 'editor' | 'reviewer' | 'admin' | 'r
 export interface AdminUserListItem {
   id: string;
   username: string;
+  /** Nama tampilan publik; fallback username jika wire lama belum punya field. */
+  displayName: string;
   email: string;
+  /** Nomor HP ternormalisasi 62…; null = belum diisi (atau akun lama). */
+  phone: string | null;
   role: AdminUserRole;
   /** URL foto profil. Null = pakai avatar default. */
   avatarUrl: string | null;
@@ -13,6 +17,12 @@ export interface AdminUserListItem {
   canContribute: boolean;
   /** Mute sementara dari policy abuse (ISO); null = tidak dibatasi. */
   contributeMutedUntil: string | null;
+  /** Status verifikasi email (OTP). false = user belum bisa login. */
+  emailVerified: boolean;
+  /** Waktu verifikasi email (ISO); null = belum terverifikasi. */
+  emailVerifiedAt: string | null;
+  /** Kadaluarsa OTP terakhir (ISO); null = tidak ada OTP tertunda. */
+  otpExpiresAt: string | null;
   createdAt: string;
   updatedAt: string | null;
 }

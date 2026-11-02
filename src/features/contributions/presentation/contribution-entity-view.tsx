@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { Button, Flex, Image, Radio, Space, Tag, Typography } from 'antd';
+import { Alert, Button, Flex, Image, Radio, Space, Tag, Typography } from 'antd';
 import { pickDefaultLanguageIds } from '@/features/words/application/create-word-utils';
 import { useDialectOptions, useLanguageOptions, useWordClassOptions } from '@/features/words/application/use-reference-data';
 import {
@@ -185,9 +185,26 @@ export function ContributionEntityView({
   onRequestCensor?: (image: WordImageView) => void;
   onClearCensor?: (imageId: string) => void;
 }) {
-  const dialectLabel = useDialectLabel(detail.entityType === 'word' ? detail.word.languageId : null);
+  const dialectLabel = useDialectLabel(
+    detail.entityType === 'word' && !detail.entityMissing ? detail.word.languageId : null,
+  );
 
   if (detail.entityType === 'word') {
+    if (detail.entityMissing) {
+      const lemma = detail.contribution.word_lemma?.trim();
+      return (
+        <Alert
+          type="warning"
+          showIcon
+          message="Detail kata tidak terbaca"
+          description={
+            lemma
+              ? `Lemma di antrean: ${lemma}. Arti dan terjemahan usulan tidak ikut termuat.`
+              : 'Arti dan terjemahan usulan tidak ikut termuat.'
+          }
+        />
+      );
+    }
     return (
       <WordEntityDetail
         word={detail.word}
@@ -304,6 +321,11 @@ function WordEntityDetail({
                   {meaning.wordClassName || `Makna ${index + 1}`}
                 </Text>
                 <div style={{ fontSize: 16, lineHeight: 1.5, marginTop: 4 }}>{meaning.definition}</div>
+                {meaning.sourceLemma ? (
+                  <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
+                    Makna ini sudah ada di {meaning.sourceLemma}.
+                  </Text>
+                ) : null}
                 {meaning.translations.length === 0 ? (
                   <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
                     Belum ada terjemahan.

@@ -13,6 +13,23 @@ export function toVoteCountMap(items: VoteCountsItem[]): Record<string, VoteCoun
   return Object.fromEntries(items.map((i) => [`${i.target_type}:${i.target_id}`, { upvotes: i.upvotes, downvotes: i.downvotes }]));
 }
 
+/**
+ * Jumlahkan counts beberapa target (mis. seluruh makna satu kata). Target
+ * tanpa vote dianggap 0/0, jadi hasil selalu { upvotes, downvotes }.
+ */
+export function sumVoteCounts(
+  counts: Record<string, VoteCountsMap>,
+  targets: string[],
+): VoteCountsMap {
+  return targets.reduce<VoteCountsMap>(
+    (acc, target) => {
+      const c = counts[target] ?? { upvotes: 0, downvotes: 0 };
+      return { upvotes: acc.upvotes + c.upvotes, downvotes: acc.downvotes + c.downvotes };
+    },
+    { upvotes: 0, downvotes: 0 },
+  );
+}
+
 /** role verifikator = bisa buka halaman yang membaca counts. */
 export function isVoteCountsReader(role: string | undefined): boolean {
   return role === 'reviewer' || role === 'admin' || role === 'root';

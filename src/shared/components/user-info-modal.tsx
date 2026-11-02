@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Alert, Avatar, Descriptions, Flex, List, Modal, Space, Spin, Tag, Typography } from 'antd';
+import { Alert, Avatar, Descriptions, Drawer, Flex, List, Space, Spin, Tag, Typography } from 'antd';
 import { VerifierMark } from '@/shared/components/verifier-mark';
 import { usePublicActivity, usePublicProfile } from '@/shared/hooks/use-public-profile';
 import { displayImageUrl } from '@/shared/utils/display-image-url';
@@ -37,7 +37,7 @@ function kindLabel(kind: string): string {
 }
 
 /**
- * Modal reusable untuk info user (profil publik).
+ * Drawer kanan untuk info user (profil publik).
  * Tidak menampilkan User ID, email, atau nomor HP.
  */
 export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
@@ -45,13 +45,13 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
   const activity = usePublicActivity(username, open && !!username);
 
   return (
-    <Modal
+    <Drawer
       title="Info pengguna"
       open={open}
-      onCancel={onClose}
-      footer={null}
+      onClose={onClose}
+      placement="right"
+      width="min(420px, 100vw)"
       destroyOnHidden
-      width={520}
     >
       {!username ? (
         <Typography.Text type="secondary">Pengguna tidak tersedia.</Typography.Text>
@@ -146,13 +146,13 @@ export function UserInfoModal({ open, username, onClose }: UserInfoModalProps) {
           </div>
         </Flex>
       ) : null}
-    </Modal>
+    </Drawer>
   );
 }
 
 export interface UserInfoLinkProps {
   username: string | null | undefined;
-  /** Teks tampilan; default = username. Tap tetap buka modal by username. */
+  /** Teks tampilan; default = username. Tap tetap buka drawer by username. */
   label?: string | null;
   /** Centang verifikator di samping nama, sama seperti balasan diskusi. */
   isVerifier?: boolean;
@@ -160,7 +160,7 @@ export interface UserInfoLinkProps {
 }
 
 /**
- * Nama orang yang bisa diklik untuk membuka `UserInfoModal`.
+ * Nama orang yang bisa diklik untuk membuka drawer info pengguna.
  * Tanpa username: teks fallback, bukan tautan.
  */
 export function UserInfoLink({

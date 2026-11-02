@@ -90,9 +90,11 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
   const detail = detailQuery.data;
   const isPending = detail?.contribution.status === 'pending';
   const canUnverifyWord = Boolean(
-    detail?.entityType === 'word' && detail.word.isVerified && !isPending,
+    detail?.entityType === 'word' && !detail.entityMissing && detail.word.isVerified && !isPending,
   );
-  const moderateImages = Boolean(isPending && detail?.entityType === 'word' && detail.word.images.length > 0);
+  const moderateImages = Boolean(
+    isPending && detail?.entityType === 'word' && !detail.entityMissing && detail.word.images.length > 0,
+  );
   const allowCensor = Boolean(
     isPending &&
       (detail?.entityType === 'word' ||
@@ -116,7 +118,7 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
   }, [detail, detailQuery, isPending, message, reopenMutation]);
 
   const unverify = useCallback(async () => {
-    if (!detail || detail.entityType !== 'word' || unverifyWord.isPending) return;
+    if (!detail || detail.entityType !== 'word' || detail.entityMissing || unverifyWord.isPending) return;
     try {
       await unverifyWord.mutateAsync(detail.word.id);
       message.success('Verifikasi kata dicabut');
@@ -133,7 +135,7 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
       decision: 'approve',
       comment: approveComment.trim() || undefined,
       imageDecisions:
-        detail.entityType === 'word' && detail.word.images.length > 0
+        detail.entityType === 'word' && !detail.entityMissing && detail.word.images.length > 0
           ? detail.word.images.map((img) => ({
               image_id: img.id,
               decision: imageDecisions[img.id] ?? 'approve',
@@ -202,7 +204,12 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
   }
 
   const entityLabel = ENTITY_TYPE_LABELS[detail.contribution.entity_type] ?? detail.contribution.entity_type;
-  const titlePrefix = detail.entityType === 'word' ? detail.word.lemma : detail.child.wordLemma ?? 'entri';
+  const titlePrefix =
+    detail.entityType !== 'word'
+      ? (detail.child.wordLemma ?? 'entri')
+      : detail.entityMissing
+        ? detail.contribution.word_lemma?.trim() || 'Kata'
+        : detail.word.lemma;
   const searchMiss = detail.contribution.search_miss_id
     ? `${detail.contribution.search_miss_term ?? detail.contribution.search_miss_id}${
         detail.contribution.search_miss_direction
@@ -233,7 +240,7 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
             </Text>
             {searchMiss ? <Tag color="purple">{searchMiss}</Tag> : null}
           </Flex>
-          {isPending && detail.entityType === 'word' ? (
+          {isPending && detail.entityType === 'word' && !detail.entityMissing ? (
             <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
               Jika ejaan sama sudah tayang, Setujui menggabungkan makna ke entri itu.
             </Text>
@@ -379,10 +386,19 @@ export function ContributionReviewPanel({ id, queueIds, onDecided, onCommit }: C
             <Button danger icon={<CloseOutlined />} onClick={() => setRejectOpen(true)}>
               Tolak
             </Button>
-            <Button icon={<EditOutlined />} onClick={() => setCorrectOpen(true)}>
+            <Button
+              icon={<EditOutlined />}
+              disabled={detail.entityType === 'word' && detail.entityMissing}
+              onClick={() => setCorrectOpen(true)}
+            >
               Koreksi
             </Button>
-            <Button type="primary" icon={<CheckOutlined />} onClick={approve}>
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              disabled={detail.entityType === 'word' && detail.entityMissing}
+              onClick={approve}
+            >
               Setujui
             </Button>
             </Flex>

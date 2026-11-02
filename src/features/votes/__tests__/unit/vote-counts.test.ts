@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTargetsQuery, MAX_VOTE_TARGETS } from '@/features/votes/domain/vote';
-import { toVoteCountMap } from '@/features/votes/application/use-vote-counts';
+import { toVoteCountMap, sumVoteCounts } from '@/features/votes/application/use-vote-counts';
 import type { VoteCountsItem } from '@/features/votes/domain/vote';
 
 describe('buildTargetsQuery', () => {
@@ -38,5 +38,30 @@ describe('toVoteCountMap', () => {
   it('target tanpa vote (0/0) ikut dipetakan apa adanya', () => {
     const map = toVoteCountMap([{ target_type: 'word', target_id: '01A', upvotes: 0, downvotes: 0 }]);
     expect(map['word:01A']).toEqual({ upvotes: 0, downvotes: 0 });
+  });
+});
+
+describe('sumVoteCounts', () => {
+  it('menjumlahkan seluruh makna satu kata', () => {
+    const map = toVoteCountMap([
+      { target_type: 'meaning', target_id: '01M1', upvotes: 3, downvotes: 1 },
+      { target_type: 'meaning', target_id: '01M2', upvotes: 2, downvotes: 0 },
+    ]);
+    expect(sumVoteCounts(map, ['meaning:01M1', 'meaning:01M2'])).toEqual({
+      upvotes: 5,
+      downvotes: 1,
+    });
+  });
+
+  it('makna yang tidak ada di respons dihitung 0, bukan gagal', () => {
+    const map = toVoteCountMap([{ target_type: 'meaning', target_id: '01M1', upvotes: 1, downvotes: 0 }]);
+    expect(sumVoteCounts(map, ['meaning:01M1', 'meaning:01M9'])).toEqual({
+      upvotes: 1,
+      downvotes: 0,
+    });
+  });
+
+  it('daftar target kosong → 0/0', () => {
+    expect(sumVoteCounts({}, [])).toEqual({ upvotes: 0, downvotes: 0 });
   });
 });

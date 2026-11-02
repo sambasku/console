@@ -1,7 +1,14 @@
 import { useMemo } from 'react';
 import { Table } from 'antd';
 import type { Breakpoint, TableProps } from 'antd';
-import type { Row, RowData, Table as TanstackTable } from '@tanstack/react-table';
+import type {
+  Cell,
+  Row,
+  RowData,
+  Table as TanstackTable,
+  TableFeatures,
+} from '@tanstack/react-table';
+import { tableFeatureSet } from './table-features';
 
 /**
  * Metadata tambahan per kolom TanStack. Dipakai `DataTable` untuk menerjemahkan
@@ -9,7 +16,7 @@ import type { Row, RowData, Table as TanstackTable } from '@tanstack/react-table
  */
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- generic nama wajib identik dengan deklarasi asli TanStack
-  interface ColumnMeta<TData extends RowData, TValue> {
+  interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
     /** Sembunyikan kolom saat viewport < breakpoint (prop antd Table `responsive`). */
     responsive?: Breakpoint[];
     /** Pin kolom saat tabel melebar (prop antd Table `fixed`) - kolom aksi
@@ -18,9 +25,9 @@ declare module '@tanstack/react-table' {
   }
 }
 
-export interface DataTableProps<TData> {
-  table: TanstackTable<TData>;
-  /** Harus konsisten dengan `getRowId` di opsi `useReactTable` (mis. `(row) => String(row.id)`). */
+export interface DataTableProps<TData extends RowData> {
+  table: TanstackTable<typeof tableFeatureSet, TData>;
+  /** Harus konsisten dengan `getRowId` di opsi `useTable` (mis. `(row) => String(row.id)`). */
   rowKey: (record: TData) => string;
   loading?: boolean;
   size?: 'small' | 'middle' | 'large';
@@ -55,7 +62,7 @@ function renderDefaultCell(value: unknown): React.ReactNode {
  * Konvensi: `rowKey` (dan `getRowId` di tabel) = `String(record.id)` - ULID
  * item (pagination).
  */
-export function DataTable<TData>({
+export function DataTable<TData extends RowData>({
   table,
   rowKey,
   loading,
@@ -82,9 +89,11 @@ export function DataTable<TData>({
           ...(responsive && responsive.length > 0 ? { responsive } : {}),
           ...(fixed ? { fixed } : {}),
           render: (_: unknown, record: TData) => {
-            const row: Row<TData> | undefined = rowsById[rowKey(record)];
+            const row: Row<typeof tableFeatureSet, TData> | undefined = rowsById[rowKey(record)];
             if (!row) return null;
-            const cell = row.getVisibleCells().find((c) => c.column.id === column.id);
+            const cell: Cell<typeof tableFeatureSet, TData> | undefined = row
+              .getVisibleCells()
+              .find((c) => c.column.id === column.id);
             if (typeof def.cell === 'function') {
               // cell.getContext() sudah berisi { table, row, column, getValue, renderValue } - tepat
               // sesuai ekspektasi ColumnDef.cell; bridge ini menyerahkan render ke definisi kolom.

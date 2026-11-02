@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { createColumnHelper, useTable } from '@tanstack/react-table';
+import { tableFeatureSet } from '../../../shared/components/table-features';
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
 import { Alert, Button, Flex, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -15,7 +16,7 @@ import {
   type SuggestionStatus,
 } from '../domain/word-suggestion';
 
-const columnHelper = createColumnHelper<SuggestionListItem>();
+const columnHelper = createColumnHelper<typeof tableFeatureSet, SuggestionListItem>();
 
 const STATUS_TAG_COLOR: Record<SuggestionStatus, string> = {
   pending: 'orange',
@@ -46,7 +47,7 @@ export function WordSuggestionsPage() {
     useWordSuggestionList({ status, enabled: canModerate });
 
   const columns = useMemo(
-    () => [
+    () => columnHelper.columns([
       columnHelper.accessor('contributor_display_name', {
         header: 'Kontributor',
         size: 160,
@@ -111,15 +112,15 @@ export function WordSuggestionsPage() {
           </Tooltip>
         ),
       }),
-    ],
+    ]),
     [navigate],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
   });
 
