@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, App as AntdApp, Button, Descriptions, Input, Modal, Select, Space, Tag, Typography } from 'antd';
-import { ReloadOutlined, RollbackOutlined } from '@ant-design/icons';
+import { ExportOutlined, ReloadOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { PageHeader } from '@/shared/components/page-header';
@@ -21,7 +21,12 @@ import {
   noteRequired,
 } from '../domain/word-report';
 
-const { Paragraph, Text } = Typography;
+const { Link, Paragraph, Text } = Typography;
+
+/** Buka detail kata di tab baru supaya form laporan tetap terbuka. */
+function openWordDetail(wordId: string) {
+  window.open(`/words/${wordId}`, '_blank', 'noopener,noreferrer');
+}
 
 export function WordReportDetailPage() {
   const { message } = AntdApp.useApp();
@@ -100,8 +105,14 @@ export function WordReportDetailPage() {
   return (
     <>
       <PageHeader
-        title={report.lemma || 'Laporan entri'}
-        subtitle="Keputusanmu di sini tidak mengubah isi entri. Perbaikan isi lewat Ubah Kata."
+        title={
+          report.lemma ? (
+            <Link onClick={() => openWordDetail(report.word_id)}>{report.lemma}</Link>
+          ) : (
+            'Laporan entri'
+          )
+        }
+        subtitle="Keputusanmu di sini tidak mengubah isi entri. Cek isi lengkap lewat Lihat isi entri; perbaikan lewat Ubah Kata di halaman itu."
         extra={
           <Space wrap>
             <Button icon={<ReloadOutlined />} onClick={() => query.refetch()} loading={query.isFetching}>
@@ -110,17 +121,21 @@ export function WordReportDetailPage() {
             <Button icon={<RollbackOutlined />} onClick={() => navigate({ to: '/word-reports' })}>
               Kembali
             </Button>
-            <Button onClick={() => navigate({ to: '/words/$id', params: { id: report.word_id } })}>
-              Buka kata
+            <Button type="primary" icon={<ExportOutlined />} onClick={() => openWordDetail(report.word_id)}>
+              Lihat isi entri
             </Button>
           </Space>
         }
       />
       <Descriptions column={{ xs: 1, md: 2 }} bordered size="small" style={{ marginBottom: 16 }}>
-        <Descriptions.Item label="Alasan">{TAKEDOWN_REASON_LABELS[report.reason_code]}</Descriptions.Item>
+        <Descriptions.Item label="Entri">
+          <Link onClick={() => openWordDetail(report.word_id)}>{report.lemma || report.word_id}</Link>
+        </Descriptions.Item>
         <Descriptions.Item label="Status kata">
           {WORD_STATUS_LABELS[wordStatus] ?? report.word_status}
         </Descriptions.Item>
+        <Descriptions.Item label="Alasan">{TAKEDOWN_REASON_LABELS[report.reason_code]}</Descriptions.Item>
+        <Descriptions.Item label="Waktu">{formatDateTime(report.created_at)}</Descriptions.Item>
         <Descriptions.Item label="Pelapor">
           {report.username ? (
             <UserInfoLink username={report.username} label={report.display_name} />
@@ -128,8 +143,7 @@ export function WordReportDetailPage() {
             '-'
           )}
         </Descriptions.Item>
-        <Descriptions.Item label="Waktu">{formatDateTime(report.created_at)}</Descriptions.Item>
-        <Descriptions.Item label="Status laporan" span={2}>
+        <Descriptions.Item label="Status laporan">
           <Tag color={report.status === 'open' ? 'orange' : 'default'}>
             {report.resolution
               ? WORD_REPORT_RESOLUTION_LABELS[report.resolution]
