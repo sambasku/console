@@ -88,10 +88,17 @@ function applyResultCounters(
 const CHUNK = 1;
 /** Percobaan maksimal per kata; gagal 5× → hentikan impor (partial tetap disimpan). */
 const MAX_ATTEMPTS = 5;
-/** Backoff antar percobaan gagal (ms). */
+/** Backoff antar percobaan gagal non-429 (ms). */
 const RETRY_BACKOFF_MS = [2000, 5000, 10000, 15000, 20000] as const;
-/** Jeda singkat antar kata sukses - jaga rate limit 30/menit. */
+/**
+ * Tunggu window rate limit (API `duration` 60s + buffer). Dulu retry 2–20s
+ * masih di dalam window → 5× RATE_LIMITED → impor berhenti di ~60 kata.
+ */
+const RATE_LIMIT_WAIT_MS = 65_000;
+/** Jeda antar kata sukses - di bawah plafon /import 120/menit. */
 const WORD_GAP_MS = 2000;
+/** Upsert riwayat tiap N kata (bukan tiap kata) supaya hemat rate limit sesi. */
+const PERSIST_EVERY = 10;
 /** Jedah singkat agar step Selesai/Gagal sempat terbaca. */
 const PHASE_HOLD_MS = 900;
 const MANUAL_STARTER_ROWS = 12;
@@ -159,7 +166,11 @@ async function importOneWithRetry(
       if (!isRetryableImportError(normalized) || attempt >= MAX_ATTEMPTS) {
         throw err;
       }
-      await sleep(RETRY_BACKOFF_MS[attempt - 1] ?? RETRY_BACKOFF_MS[RETRY_BACKOFF_MS.length - 1], isCancelled);
+      const waitMs =
+        normalized.errorCode === 'RATE_LIMITED' || normalized.status === 429
+          ? RATE_LIMIT_WAIT_MS
+          : (RETRY_BACKOFF_MS[attempt - 1] ?? RETRY_BACKOFF_MS[RETRY_BACKOFF_MS.length - 1]);
+      await sleep(waitMs, isCancelled);
     }
   }
   throw lastError;
@@ -534,8 +545,10 @@ export function ImportWordsDrawer({
           maxAttempts: MAX_ATTEMPTS,
           ...counters,
         });
-        // Progressive upsert - batal/gagal parsial tetap punya jejak di riwayat.
-        await persistSession('running');
+        // Progressive upsert berkala - batal/gagal parsial tetap punya jejak.
+        if ((i + 1) % PERSIST_EVERY === 0 || i + 1 === payload.length) {
+          await persistSession('running');
+        }
         if (i + CHUNK < payload.length) {
           await sleep(WORD_GAP_MS, isCancelled);
         }
@@ -790,7 +803,7 @@ export function ImportWordsDrawer({
           : cancelling
             ? 'Menunggu kata yang sedang diproses selesai, lalu impor dihentikan.'
             : progress?.attempt && progress.attempt > 1
-              ? `Server sibuk atau kapasitas penuh. Percobaan ${progress.attempt} dari ${progress.maxAttempts ?? MAX_ATTEMPTS} untuk kata ini.`
+              ? `Server sibuk atau kena batas. Menunggu jendela rate limit lalu coba lagi (${progress.attempt}/${progress.maxAttempts ?? MAX_ATTEMPTS}).`
               : `Satu kata per permintaan, jeda ${WORD_GAP_MS / 1000}s antar kata. Bisa dibatalkan kapan saja.`;
 
   const stepStatus =

@@ -41,6 +41,7 @@ UserOutlined,
   KeyOutlined,
   ShopOutlined,
   CoffeeOutlined,
+  PlayCircleOutlined,
   ReadOutlined,
   WhatsAppOutlined,
   MailOutlined,
@@ -79,8 +80,6 @@ const KAMUS_ROUTES = {
   '/categories': { icon: <BookOutlined />, label: 'Kategori' },
   // PRD relasi-lemma: kelompok makna (lema bermakna sama/berdekatan).
   '/word-groups': { icon: <TeamOutlined />, label: 'Kelompok makna' },
-  // Pencapaian: katalog border/badge/stiker + evaluasi otomatis.
-  '/achievements': { icon: <TrophyOutlined />, label: 'Pencapaian' },
 } as const;
 
 /** Leaf routes di bawah grup Eksplorasi. */
@@ -97,6 +96,10 @@ const EKSPLORASI_ROUTES = {
   '/culinary-categories': { icon: <AppstoreOutlined />, label: 'Kategori kuliner' },
   '/culinary-claims': { icon: <KeyOutlined />, label: 'Klaim kuliner' },
   '/culinary-reports': { icon: <WarningOutlined />, label: 'Laporan kuliner' },
+} as const;
+
+/** Leaf routes di bawah grup Permainan. */
+const PERMAINAN_ROUTES = {
   '/pantun': { icon: <ReadOutlined />, label: 'Pantun' },
   '/pantun-reports': { icon: <WarningOutlined />, label: 'Laporan pantun' },
 } as const;
@@ -121,9 +124,11 @@ const SYSTEM_ROUTES = {
 type AnalyticsRoute = keyof typeof ANALYTICS_ROUTES;
 type KamusRoute = keyof typeof KAMUS_ROUTES;
 type EksplorasiRoute = keyof typeof EKSPLORASI_ROUTES;
+type PermainanRoute = keyof typeof PERMAINAN_ROUTES;
 type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
+  | '/achievements'
   | '/users'
   | '/audit-logs'
   | '/bug-reports'
@@ -134,6 +139,7 @@ type MenuRoute =
   | AnalyticsRoute
   | KamusRoute
   | EksplorasiRoute
+  | PermainanRoute
   | NotificationRoute
   | SystemRoute
   | TopRoute;
@@ -141,6 +147,7 @@ type MenuRoute =
 const ANALYTICS_GROUP_KEY = 'analitik';
 const KAMUS_GROUP_KEY = 'kamus';
 const EKSPLORASI_GROUP_KEY = 'eksplorasi';
+const PERMAINAN_GROUP_KEY = 'permainan';
 const NOTIFICATION_GROUP_KEY = 'notifikasi';
 const SYSTEM_GROUP_KEY = 'system';
 
@@ -197,6 +204,7 @@ function groupKeyForPath(pathname: string): string | null {
   if (top === '/dashboard' || pathname === '/places/views') return ANALYTICS_GROUP_KEY;
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
+  if (top in PERMAINAN_ROUTES) return PERMAINAN_GROUP_KEY;
   if (top in NOTIFICATION_ROUTES) return NOTIFICATION_GROUP_KEY;
   if (pathname.startsWith('/system')) return SYSTEM_GROUP_KEY;
   return null;
@@ -276,7 +284,20 @@ export function ConsoleLayout() {
           ][]
         ).map(([key, { icon, label }]) => ({ key, icon, label })),
       });
+      items.push({
+        key: PERMAINAN_GROUP_KEY,
+        icon: <PlayCircleOutlined />,
+        label: 'Permainan',
+        children: (
+          Object.entries(PERMAINAN_ROUTES) as [
+            PermainanRoute,
+            (typeof PERMAINAN_ROUTES)[PermainanRoute],
+          ][]
+        ).map(([key, { icon, label }]) => ({ key, icon, label })),
+      });
     }
+    // Pencapaian: katalog border/badge/stiker + evaluasi otomatis (root menu).
+    items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({
@@ -316,11 +337,13 @@ export function ConsoleLayout() {
     const label = BREADCRUMB_LABELS[segments[0]] ?? 'Halaman';
     const inNotificationGroup = groupKeyForPath(pathname) === NOTIFICATION_GROUP_KEY;
     const inEksplorasiGroup = groupKeyForPath(pathname) === EKSPLORASI_GROUP_KEY;
+    const inPermainanGroup = groupKeyForPath(pathname) === PERMAINAN_GROUP_KEY;
     const inSystemGroup = groupKeyForPath(pathname) === SYSTEM_GROUP_KEY;
     const items = [
       { title: 'Konsol' },
       ...(inNotificationGroup ? [{ title: 'Notifikasi' }] : []),
       ...(inEksplorasiGroup ? [{ title: 'Eksplorasi' }] : []),
+      ...(inPermainanGroup ? [{ title: 'Permainan' }] : []),
       ...(inSystemGroup
         ? [
             { title: 'System' },
