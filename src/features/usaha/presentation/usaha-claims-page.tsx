@@ -87,14 +87,37 @@ export function UsahaClaimsPage() {
         </Space>
       ),
     }),
-    columnHelper.accessor('contactEvidence', {
-      header: 'Bukti kontak',
+    columnHelper.display({
+      id: 'evidence',
+      header: 'Bukti',
       size: 280,
-      cell: (info) => (
-        <Typography.Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0 }}>
-          {info.getValue() ?? '-'}
-        </Typography.Paragraph>
-      ),
+      cell: (info) => {
+        const imgs = info.row.original.evidenceImages ?? [];
+        if (imgs.length > 0) {
+          return (
+            <Space size={4} wrap>
+              {imgs.slice(0, 3).map((img) => (
+                <img
+                  key={img.providerFileId}
+                  src={img.url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  style={{ objectFit: 'cover', borderRadius: 4 }}
+                />
+              ))}
+              {imgs.length > 3 ? (
+                <Typography.Text type="secondary">+{imgs.length - 3}</Typography.Text>
+              ) : null}
+            </Space>
+          );
+        }
+        return (
+          <Typography.Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0 }}>
+            {info.row.original.contactEvidence ?? '-'}
+          </Typography.Paragraph>
+        );
+      },
     }),
     columnHelper.accessor('status', {
       header: 'Status',
@@ -198,10 +221,31 @@ export function UsahaClaimsPage() {
             </Typography.Title>
             <Tag color={STATUS_COLOR[selected.status]}>{STATUS_LABEL[selected.status]}</Tag>
             <div>
-              <Typography.Text type="secondary">Bukti kontak (privat)</Typography.Text>
-              <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
-                {selected.contactEvidence ?? '-'}
-              </Typography.Paragraph>
+              <Typography.Text type="secondary">Bukti (privat)</Typography.Text>
+              {(selected.evidenceImages ?? []).length > 0 ? (
+                <Space size={8} wrap style={{ marginTop: 8 }}>
+                  {selected.evidenceImages!.map((img) => (
+                    <a
+                      key={img.providerFileId}
+                      href={img.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.altText ?? 'Bukti klaim'}
+                        width={120}
+                        height={120}
+                        style={{ objectFit: 'cover', borderRadius: 8 }}
+                      />
+                    </a>
+                  ))}
+                </Space>
+              ) : (
+                <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                  {selected.contactEvidence ?? '-'}
+                </Typography.Paragraph>
+              )}
             </div>
             <div>
               <Typography.Text type="secondary">Catatan pengaju</Typography.Text>
@@ -225,7 +269,9 @@ export function UsahaClaimsPage() {
                     </Typography.Text>
                     {competitors.map((c) => (
                       <Typography.Text key={c.id} type="secondary">
-                        {c.contactEvidence ?? '-'}
+                        {(c.evidenceImages?.length ?? 0) > 0
+                          ? `${c.evidenceImages!.length} gambar bukti`
+                          : (c.contactEvidence ?? '-')}
                       </Typography.Text>
                     ))}
                   </Space>

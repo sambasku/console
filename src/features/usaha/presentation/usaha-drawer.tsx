@@ -10,22 +10,57 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Tag,
+  Timeline,
   Typography,
   Upload,
 } from 'antd';
 import type { FormProps, UploadProps } from 'antd';
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
+import { formatDateTime } from '@/shared/utils/format-datetime';
 import { useAllRegions } from '@/features/regions/application/use-regions';
-import { useUsahaCategories } from '../application/use-usaha';
+import {
+  useUsahaCategories,
+  useUsahaContributionHistory,
+} from '../application/use-usaha';
 import type {
   Usaha,
+  UsahaContribution,
+  UsahaContributionStatus,
   UsahaKind,
   UsahaOperationalStatus,
   UsahaPublishStatus,
 } from '../domain/usaha';
 import { uploadUsahaImage, type UsahaInput } from '../infrastructure/usaha-api';
+import {
+  USAHA_CONTRIBUTION_KIND_LABEL,
+  USAHA_CONTRIBUTION_STATUS_LABEL,
+  USAHA_FIELD_LABEL,
+} from '../infrastructure/usaha-contribution-api';
+
+const HISTORY_STATUS_COLOR: Record<UsahaContributionStatus, string> = {
+  pending: 'gold',
+  needs_revision: 'orange',
+  approved: 'green',
+  rejected: 'red',
+};
+
+function historySummary(row: UsahaContribution): string {
+  const kindLabel = USAHA_CONTRIBUTION_KIND_LABEL[row.kind] ?? row.kind;
+  if (row.kind === 'profile' && row.fields.length > 0) {
+    const fields = row.fields
+      .map((f) => USAHA_FIELD_LABEL[f] ?? f)
+      .join(', ');
+    return `${kindLabel}: ${fields}`;
+  }
+  const name = row.payload.name;
+  if (typeof name === 'string' && name.trim()) {
+    return `${kindLabel} - ${name.trim()}`;
+  }
+  return kindLabel;
+}
 
 interface FormValues {
   name: string;
@@ -425,6 +460,90 @@ export function UsahaDrawer({
           </Col>
         </Row>
       </Form>
+
+      {editing ? <UsahaChangeHistory usahaId={editing.id} /> : null}
     </Drawer>
+  );
+}
+
+/** Riwayat pengajuan perubahan untuk usaha ini (admin saja). */
+function UsahaChangeHistory({ usahaId }: { usahaId: string }) {
+  const history = useUsahaContributionHistory(usahaId);
+  const rows = history.data ?? [];
+
+  return (
+    <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+      <Typography.Title level={5} style={{ marginTop: 0 }}>
+        Riwayat perubahan
+      </Typography.Title>
+      <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
+        Semua usulan warga dan pengelola untuk usaha ini (termasuk yang ditolak).
+      </Typography.Paragraph>
+      {history.isLoading ? <Spin size="small" /> : null}
+      {history.isError ? (
+        <Typography.Text type="danger">
+          Gagal memuat riwayat: {normalizeError(history.error).message}
+        </Typography.Text>
+      ) : null}
+      {!history.isLoading && !history.isError && rows.length === 0 ? (
+        <Typography.Text type="secondary">Belum ada pengajuan perubahan.</Typography.Text>
+      ) : null}
+      {rows.length > 0 ? (
+        <Timeline
+          items={rows.map((row) => ({
+            color:
+              row.status === 'approved'
+                ? 'green'
+                : row.status === 'rejected'
+                  ? 'red'
+                  : 'gray',
+            children: (
+              <Space direction="vertical" size={2} style={{ width: '100%' }}>
+                <Space wrap size={6}>
+                  <Typography.Text strong>{historySummary(row)}</Typography.Text>
+                  <Tag color={HISTORY_STATUS_COLOR[row.status]}>
+                    {USAHA_CONTRIBUTION_STATUS_LABEL[row.status]}
+                  </Tag>
+                </Space>
+                <Typography.Text type="secondary">
+                  Diajukan {formatDateTime(row.createdAt)}
+                  {row.reviewedAt
+                    ? ` · Ditinjau ${formatDateTime(row.reviewedAt)}`
+                    : ''}
+                </Typography.Text>
+                {row.rejectReasonCode ? (
+                  <Typography.Text type="secondary">
+                    Tolak: {row.rejectReasonCode}
+                    {row.rejectReasonText ? ` - ${row.rejectReasonText}` : ''}
+                  </Typography.Text>
+                ) : null}
+                {row.revisionNote ? (
+                  <Typography.Text type="secondary">
+                    Revisi: {row.revisionNote}
+                  </Typography.Text>
+                ) : null}
+                {row.kind === 'profile' && Object.keys(row.payload).length > 0 ? (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {Object.entries(row.payload)
+                      .filter(([k]) => row.fields.length === 0 || row.fields.includes(k))
+                      .map(([k, v]) => {
+                        const label = USAHA_FIELD_LABEL[k] ?? k;
+                        const text =
+                          v == null
+                            ? '-'
+                            : typeof v === 'object'
+                              ? JSON.stringify(v)
+                              : String(v);
+                        return `${label}: ${text}`;
+                      })
+                      .join(' · ')}
+                  </Typography.Text>
+                ) : null}
+              </Space>
+            ),
+          }))}
+        />
+      ) : null}
+    </div>
   );
 }

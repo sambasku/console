@@ -13,6 +13,11 @@ interface ClaimWire {
   created_at: string;
   reviewed_at: string | null;
   contact_evidence?: string;
+  evidence_images?: Array<{
+    url: string;
+    provider_file_id: string;
+    alt_text?: string | null;
+  }>;
   user_id?: string;
   reviewed_by?: string | null;
 }
@@ -52,6 +57,11 @@ export async function listUsahaClaimsRequest(
     createdAt: w.created_at,
     reviewedAt: w.reviewed_at,
     contactEvidence: w.contact_evidence,
+    evidenceImages: (w.evidence_images ?? []).map((img) => ({
+      url: img.url,
+      providerFileId: img.provider_file_id,
+      altText: img.alt_text ?? null,
+    })),
     userId: w.user_id,
     reviewedBy: w.reviewed_by,
   }));
@@ -69,7 +79,7 @@ export async function rejectUsahaClaimRequest(
 }
 
 export const USAHA_CLAIM_REJECT_OPTIONS: Array<{ code: string; label: string }> = [
-  { code: 'evidence_insufficient', label: 'Bukti kontak kurang kuat' },
+  { code: 'evidence_insufficient', label: 'Bukti gambar kurang kuat' },
   { code: 'claim_conflict', label: 'Usaha sudah dikelola pihak lain' },
   { code: 'not_owner', label: 'Bukan pemilik atau pengelola sah' },
   { code: 'other', label: 'Alasan lain' },

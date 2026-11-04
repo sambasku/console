@@ -90,6 +90,7 @@ export async function listUsahaContributionsRequest(
   params: {
     status?: UsahaContributionStatus;
     kind?: UsahaContributionKind;
+    usaha_id?: string;
   } = {},
   signal?: AbortSignal,
 ): Promise<UsahaContribution[]> {
