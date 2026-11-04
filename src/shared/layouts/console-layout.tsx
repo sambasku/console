@@ -84,6 +84,10 @@ const KAMUS_ROUTES = {
 
 /** Leaf routes di bawah grup Eksplorasi. */
 const EKSPLORASI_ROUTES = {
+  '/encyclopedia': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
+  '/encyclopedia/contributions': { icon: <InboxOutlined />, label: 'Usulan ensiklopedia' },
+  '/encyclopedia/categories': { icon: <TagsOutlined />, label: 'Kategori ensiklopedia' },
+  '/encyclopedia/reports': { icon: <WarningOutlined />, label: 'Laporan ensiklopedia' },
   '/place-categories': { icon: <TagsOutlined />, label: 'Kategori tempat' },
   '/regions': { icon: <CompassOutlined />, label: 'Wilayah' },
   '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
@@ -171,6 +175,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
+  encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
   places: 'Wisata',
