@@ -53,6 +53,10 @@ import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-r
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
+import { EncyclopediaPage } from '@/features/encyclopedia/presentation/encyclopedia-page';
+import { EncyclopediaContributionsPage } from '@/features/encyclopedia/presentation/encyclopedia-contributions-page';
+import { EncyclopediaCategoriesPage } from '@/features/encyclopedia/presentation/encyclopedia-categories-page';
+import { EncyclopediaReportsPage } from '@/features/encyclopedia/presentation/encyclopedia-reports-page';
 import { RegionsPage } from '@/features/regions/presentation/regions-page';
 import { PlaceCategoriesPage } from '@/features/place-categories/presentation/place-categories-page';
 import { WordGroupsPage } from '@/features/word-groups/presentation/word-groups-page';
@@ -454,6 +458,30 @@ const placeCategoriesRoute = createRoute({
   component: PlaceCategoriesPage,
 });
 
+const encyclopediaRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/encyclopedia',
+  component: EncyclopediaPage,
+});
+
+const encyclopediaContributionsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/encyclopedia/contributions',
+  component: EncyclopediaContributionsPage,
+});
+
+const encyclopediaCategoriesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/encyclopedia/categories',
+  component: EncyclopediaCategoriesPage,
+});
+
+const encyclopediaReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/encyclopedia/reports',
+  component: EncyclopediaReportsPage,
+});
+
 const wordGroupsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/word-groups',
@@ -590,6 +618,10 @@ const routeTree = rootRoute.addChildren([
   pantunModerationRoute,
   pantunReportsRoute,
     placeCategoriesRoute,
+    encyclopediaRoute,
+    encyclopediaContributionsRoute,
+    encyclopediaCategoriesRoute,
+    encyclopediaReportsRoute,
     wordGroupsRoute,
     profileRoute,
     legalRoute,
