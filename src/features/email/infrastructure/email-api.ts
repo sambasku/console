@@ -1,6 +1,6 @@
 import { client } from '@/shared/api/client';
 import type { ApiOkEnvelope } from '@/shared/api/types';
-import type { EmailLog, EmailLogStatus, EmailQuota } from '../domain/email';
+import type { EmailLog, EmailLogStatus, EmailQuota, EmailTestResult } from '../domain/email';
 
 export async function listEmailLogsRequest(
   params: { cursor?: string; limit?: number; status?: EmailLogStatus },
@@ -18,4 +18,12 @@ export async function listEmailQuotasRequest(signal?: AbortSignal): Promise<Emai
     signal,
   });
   return res.data.data.quotas;
+}
+
+export async function sendTestEmailRequest(body: {
+  to: string;
+  provider?: string;
+}): Promise<EmailTestResult> {
+  const res = await client.post<ApiOkEnvelope<EmailTestResult>>('/admin/email/test', body);
+  return res.data.data;
 }
