@@ -162,9 +162,28 @@ export function VerifierApplicationDetailPage() {
           <Descriptions.Item label="Username">
             <UserInfoLink username={detail.username} />
           </Descriptions.Item>
+          <Descriptions.Item label="Nama lengkap">
+            {detail.full_name?.trim() || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label="Nomor HP">{detail.phone}</Descriptions.Item>
           <Descriptions.Item label="Alamat">
             <Text style={{ whiteSpace: 'pre-wrap' }}>{detail.address}</Text>
+          </Descriptions.Item>
+          <Descriptions.Item label="Alasan">
+            <Text style={{ whiteSpace: 'pre-wrap' }}>{detail.reason?.trim() || '-'}</Text>
+          </Descriptions.Item>
+          <Descriptions.Item label="Foto diri">
+            {detail.photo?.url ? (
+              <Image
+                src={detail.photo.url}
+                width={72}
+                height={72}
+                style={{ objectFit: 'cover', borderRadius: 6 }}
+                alt="Foto diri pemohon"
+              />
+            ) : (
+              <Text type="secondary">Tidak dilampirkan</Text>
+            )}
           </Descriptions.Item>
           <Descriptions.Item label="Media sosial">
             <Image.PreviewGroup>
