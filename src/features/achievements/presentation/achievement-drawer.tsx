@@ -105,6 +105,12 @@ const SOURCE_OPTIONS: Array<{
     supportsThreshold: true,
     supportsWindow: true,
   },
+  {
+    value: 'articles_published',
+    label: 'Artikel terbit',
+    supportsThreshold: true,
+    supportsWindow: true,
+  },
 ];
 
 function sourceMeta(source: string | undefined) {
