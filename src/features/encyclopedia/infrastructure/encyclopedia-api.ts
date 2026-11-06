@@ -4,8 +4,9 @@
  * - /api/v1/encyclopedia/* (publik/autentikasi)
  *
  * Wire format: cursor page envelope { success: true, data: [...items...], meta: {next_cursor, has_more} }
- * Console internal: CursorPage<T> { data: T[], meta: {next_cursor, has_more} }
+ * Console internal: CursorPage<T> { items, next_cursor, has_more }
  */
+import type { AxiosResponse } from 'axios';
 import { client } from '@/shared/api/client';
 import type { ApiCursorPageEnvelope, ApiOkEnvelope } from '@/shared/api/types';
 import type {
@@ -25,9 +26,13 @@ import type {
   ReviewDecisionResult,
 } from '../domain/encyclopedia';
 
-/** Konversi envelope cursor page API → CursorPage console. */
-function toCursorPage<T>(res: ApiCursorPageEnvelope<T>): CursorPage<T> {
-  return { data: res.data, meta: res.meta };
+/** Konversi AxiosResponse envelope cursor page API → CursorPage console. */
+function toCursorPage<T>(res: AxiosResponse<ApiCursorPageEnvelope<T>>): CursorPage<T> {
+  return {
+    items: res.data.data,
+    next_cursor: res.data.meta.next_cursor,
+    has_more: res.data.meta.has_more,
+  };
 }
 
 // ---- Admin: Artikel ----

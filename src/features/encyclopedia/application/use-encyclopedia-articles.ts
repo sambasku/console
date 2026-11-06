@@ -36,7 +36,7 @@ export function useCreateAdminArticle() {
     mutationFn: (body: {
       slug?: string;
       title: string;
-      excerpt?: string;
+      excerpt: string;
       body_md: string;
       category_id: string;
       tags: string[];
