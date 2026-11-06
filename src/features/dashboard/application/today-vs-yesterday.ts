@@ -1,6 +1,11 @@
 import type { ActivityDailyPoint } from '../domain/dashboard-stats';
 
-export type TodayMetricKey = 'contributions' | 'votes' | 'comments' | 'newUsers';
+export type TodayMetricKey =
+  | 'contributions'
+  | 'votes'
+  | 'comments'
+  | 'newUsers'
+  | 'searches';
 
 export interface TodayVsYesterdayMetric {
   key: TodayMetricKey;
@@ -15,6 +20,7 @@ const METRICS: Array<{ key: TodayMetricKey; label: string }> = [
   { key: 'votes', label: 'Vote' },
   { key: 'comments', label: 'Komentar' },
   { key: 'newUsers', label: 'User baru' },
+  { key: 'searches', label: 'Pencarian' },
 ];
 
 /**

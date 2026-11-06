@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   DeleteOutlined,
   EditOutlined,
-  EyeOutlined,
   HistoryOutlined,
   PlusOutlined,
   ReloadOutlined,

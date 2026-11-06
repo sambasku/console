@@ -134,6 +134,7 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
   | '/users'
+  | '/sponsorships'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
@@ -305,6 +306,11 @@ export function ConsoleLayout() {
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
+      items.push({
+        key: '/sponsorships',
+        icon: <ShopOutlined />,
+        label: 'Sponsor & Mitra',
+      });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,

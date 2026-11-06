@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { tableFeatureSet } from '../../../shared/components/table-features';
-import { ReloadOutlined } from '@ant-design/icons';
-import { Alert, Button, Flex, Tabs, Tag, Typography } from 'antd';
+import { ExportOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Alert, Button, Flex, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { DataTable } from '@/shared/components/data-table';
@@ -16,6 +16,7 @@ import {
   type WordReportListItem,
   type WordReportStatus,
 } from '../domain/word-report';
+import { openWordDetail } from './open-word-detail';
 
 const columnHelper = createColumnHelper<typeof tableFeatureSet, WordReportListItem>();
 
@@ -91,6 +92,21 @@ export function WordReportsPage() {
             </Tag>
           );
         },
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: 'Aksi',
+        size: 90,
+        meta: { fixed: 'right' },
+        cell: (info) => (
+          <Tooltip title="Lihat isi entri">
+            <Button
+              type="link"
+              icon={<ExportOutlined />}
+              onClick={() => openWordDetail(info.row.original.word_id)}
+            />
+          </Tooltip>
+        ),
       }),
     ]),
     [navigate],

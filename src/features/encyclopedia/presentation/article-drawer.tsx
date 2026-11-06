@@ -8,7 +8,6 @@ import {
   Input,
   Select,
   Space,
-  Typography,
   Upload,
 } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';

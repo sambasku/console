@@ -38,6 +38,7 @@ import { WordVoteCount } from '@/features/votes/presentation/word-vote-count';
 import { WordComments } from '@/features/comments/presentation/word-comments';
 import type { WordDetail } from '../domain/word-detail';
 import { useState } from 'react';
+import { SafeAudioPlayer } from '@/shared/components/safe-audio-player';
 import {
   WordExampleAudiosSection,
   WordLemmaAudiosSection,
@@ -499,7 +500,18 @@ function WordDetailContent({
     {
       key: 'vote',
       label: 'Vote',
-      children: <WordVoteCount meaningIds={(detail.meanings ?? []).map((m) => m.id)} />,
+      children: (
+        <WordVoteCount
+          wordId={detail.id}
+          meaningIds={(detail.meanings ?? []).map((m) => m.id)}
+          meanings={(detail.meanings ?? []).map((m, i) => ({
+            id: m.id,
+            label: m.definition?.trim()
+              ? `Makna ${i + 1}: ${m.definition.trim().slice(0, 60)}${(m.definition.trim().length > 60 ? '…' : '')}`
+              : `Makna ${i + 1}`,
+          }))}
+        />
+      ),
     },
     {
       key: 'categories',
@@ -748,13 +760,8 @@ function WordDetailContent({
                               </Text>
                             ) : null}
                             {(e.audios ?? []).map((a) => (
-                              <Flex key={a.id} gap={8} align="center" wrap style={{ marginTop: 4 }}>
-                                <audio
-                                  controls
-                                  src={a.url}
-                                  preload="metadata"
-                                  style={{ height: 32, maxWidth: 360 }}
-                                />
+                              <Flex key={a.id} gap={8} align="flex-start" wrap style={{ marginTop: 4 }}>
+                                <SafeAudioPlayer url={a.url} maxWidth={360} />
                                 {a.speaker_name?.trim() ? (
                                   <Text type="secondary">{a.speaker_name}</Text>
                                 ) : null}

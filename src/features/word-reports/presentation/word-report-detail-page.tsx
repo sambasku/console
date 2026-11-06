@@ -20,13 +20,9 @@ import {
   WORD_REPORT_RESOLUTION_LABELS,
   noteRequired,
 } from '../domain/word-report';
+import { openWordDetail } from './open-word-detail';
 
 const { Link, Paragraph, Text } = Typography;
-
-/** Buka detail kata di tab baru supaya form laporan tetap terbuka. */
-function openWordDetail(wordId: string) {
-  window.open(`/words/${wordId}`, '_blank', 'noopener,noreferrer');
-}
 
 export function WordReportDetailPage() {
   const { message } = AntdApp.useApp();

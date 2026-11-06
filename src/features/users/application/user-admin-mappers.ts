@@ -17,6 +17,10 @@ export function normalizeAdminUserListItem(wire: AdminUserWire): AdminUserListIt
   emailVerified: wire.email_verified ?? false,
   emailVerifiedAt: wire.email_verified_at ?? null,
   otpExpiresAt: wire.otp?.expires_at ?? null,
+  isTeam: wire.is_team ?? false,
+  teamAs: wire.team_as ?? null,
+  teamNote: wire.team_note ?? null,
+  isSponsor: wire.is_sponsor ?? false,
   createdAt: wire.created_at,
     updatedAt: wire.updated_at,
   };

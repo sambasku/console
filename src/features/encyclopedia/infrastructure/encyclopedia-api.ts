@@ -24,7 +24,6 @@ import type {
   ListAdminReportsParams,
   ReviewDecisionResult,
 } from '../domain/encyclopedia';
-import { normalizeError } from '@/shared/api/error';
 
 /** Konversi envelope cursor page API → CursorPage console. */
 function toCursorPage<T>(res: ApiCursorPageEnvelope<T>): CursorPage<T> {
