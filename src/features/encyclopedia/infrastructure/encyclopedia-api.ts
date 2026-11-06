@@ -3,12 +3,13 @@
  * - /api/v1/admin/encyclopedia/* (admin)
  * - /api/v1/encyclopedia/* (publik/autentikasi)
  *
- * Wire format: cursor page envelope { success: true, data: [...items...], meta: {next_cursor, has_more} }
+ * Wire list: { success: true, data: { items, next_cursor, has_more } }
+ * (laporan admin masih camelCase: nextCursor / hasMore).
  * Console internal: CursorPage<T> { items, next_cursor, has_more }
  */
 import type { AxiosResponse } from 'axios';
 import { client } from '@/shared/api/client';
-import type { ApiCursorPageEnvelope, ApiOkEnvelope } from '@/shared/api/types';
+import type { ApiOkEnvelope } from '@/shared/api/types';
 import type {
   AdminArticleDetail,
   AdminArticleListItem,
@@ -26,12 +27,21 @@ import type {
   ReviewDecisionResult,
 } from '../domain/encyclopedia';
 
-/** Konversi AxiosResponse envelope cursor page API → CursorPage console. */
-function toCursorPage<T>(res: AxiosResponse<ApiCursorPageEnvelope<T>>): CursorPage<T> {
+type EncyclopediaPageWire<T> = {
+  items?: T[];
+  next_cursor?: string | null;
+  has_more?: boolean;
+  nextCursor?: string | null;
+  hasMore?: boolean;
+};
+
+/** Konversi envelope list ensiklopedia → CursorPage console. */
+function toCursorPage<T>(res: AxiosResponse<ApiOkEnvelope<EncyclopediaPageWire<T>>>): CursorPage<T> {
+  const page = res.data.data ?? {};
   return {
-    items: res.data.data,
-    next_cursor: res.data.meta.next_cursor,
-    has_more: res.data.meta.has_more,
+    items: Array.isArray(page.items) ? page.items : [],
+    next_cursor: page.next_cursor ?? page.nextCursor ?? null,
+    has_more: page.has_more ?? page.hasMore ?? false,
   };
 }
 
@@ -42,7 +52,7 @@ export async function listAdminArticlesRequest(
   params: ListAdminArticlesParams = {},
   signal?: AbortSignal,
 ): Promise<CursorPage<AdminArticleListItem>> {
-  const res = await client.get<ApiCursorPageEnvelope<AdminArticleListItem>>(
+  const res = await client.get<ApiOkEnvelope<EncyclopediaPageWire<AdminArticleListItem>>>(
     '/admin/encyclopedia/articles',
     {
       params: {
@@ -125,8 +135,11 @@ export async function restoreArticleRevisionRequest(
 
 /** GET /api/v1/encyclopedia/categories - dropdown form. */
 export async function listCategoriesRequest(signal?: AbortSignal): Promise<EncyclopediaCategoryItem[]> {
-  const res = await client.get<ApiOkEnvelope<EncyclopediaCategoryItem[]>>('/encyclopedia/categories', { signal });
-  return res.data.data;
+  const res = await client.get<ApiOkEnvelope<{ items: EncyclopediaCategoryItem[] }>>('/encyclopedia/categories', {
+    signal,
+  });
+  const items = res.data.data?.items;
+  return Array.isArray(items) ? items : [];
 }
 
 /** POST /api/v1/admin/encyclopedia/categories */
@@ -163,11 +176,12 @@ export async function listTagsRequest(
   params: { q?: string; limit?: number } = {},
   signal?: AbortSignal,
 ): Promise<EncyclopediaTagItem[]> {
-  const res = await client.get<ApiOkEnvelope<EncyclopediaTagItem[]>>('/encyclopedia/tags', {
+  const res = await client.get<ApiOkEnvelope<{ items: EncyclopediaTagItem[] }>>('/encyclopedia/tags', {
     params: { q: params.q, limit: params.limit ?? 20 },
     signal,
   });
-  return res.data.data;
+  const items = res.data.data?.items;
+  return Array.isArray(items) ? items : [];
 }
 
 /** PATCH /api/v1/admin/encyclopedia/tags/:id */
@@ -196,7 +210,7 @@ export async function listAdminContributionsRequest(
   params: ListAdminContributionsParams = {},
   signal?: AbortSignal,
 ): Promise<CursorPage<ArticleContribution>> {
-  const res = await client.get<ApiCursorPageEnvelope<ArticleContribution>>('/admin/encyclopedia/contributions', {
+  const res = await client.get<ApiOkEnvelope<EncyclopediaPageWire<ArticleContribution>>>('/admin/encyclopedia/contributions', {
     params: { status: params.status, cursor: params.cursor, limit: params.limit ?? 20 },
     signal,
   });
@@ -229,7 +243,7 @@ export async function listAdminReportsRequest(
   params: ListAdminReportsParams = {},
   signal?: AbortSignal,
 ): Promise<CursorPage<ArticleReportListItem>> {
-  const res = await client.get<ApiCursorPageEnvelope<ArticleReportListItem>>('/admin/encyclopedia/reports', {
+  const res = await client.get<ApiOkEnvelope<EncyclopediaPageWire<ArticleReportListItem>>>('/admin/encyclopedia/reports', {
     params: { status: params.status, cursor: params.cursor, limit: params.limit ?? 20 },
     signal,
   });

@@ -64,10 +64,10 @@ export function EncyclopediaPage() {
   const deleteMutation = useDeleteAdminArticle();
 
   const items = listQuery.data?.items ?? [];
-  const categoryOptions = useMemo(
-    () => (categoriesQuery.data ?? []).map((c) => ({ value: c.id, label: c.name })),
-    [categoriesQuery.data],
-  );
+  const categoryOptions = useMemo(() => {
+    const categories = Array.isArray(categoriesQuery.data) ? categoriesQuery.data : [];
+    return categories.map((c) => ({ value: c.id, label: c.name }));
+  }, [categoriesQuery.data]);
 
   const onDelete = async (item: AdminArticleListItem) => {
     try {
