@@ -19,6 +19,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Popconfirm,
   Row,
   Segmented,
   Select,
@@ -53,6 +54,7 @@ import {
   useAudioRecorder,
 } from '../application/use-audio-recorder';
 import { useUploadPronunciationAudio } from '../application/use-upload-pronunciation-audio';
+import { useDeletePronunciationAudio } from '../application/use-delete-pronunciation-audio';
 import { validatePronunciationAudioFile } from '../infrastructure/pronunciation-audio-api';
 import type { WordDetailAudio } from '../domain/word-detail';
 import { mergeAudiosForExamples } from '../application/example-audios';
@@ -1327,12 +1329,21 @@ export function formatAudioDurationMs(ms: number | null | undefined): string {
   return rem ? `${min} m ${rem} dtk` : `${min} m`;
 }
 
+/** Role yang boleh DELETE audio (selaras API 29-api-pronunciation-audio). */
+const CAN_DELETE_AUDIO_ROLES = new Set(['admin', 'editor', 'root', 'reviewer']);
+
+export function canDeletePronunciationAudio(role?: string | null): boolean {
+  return !!role && CAN_DELETE_AUDIO_ROLES.has(role);
+}
+
 export interface WordAudioPlayerRowProps {
   audio: WordDetailAudio;
   parentLemma: string;
   dialectLabel: string;
   /** true = audio contoh kalimat (bukan lemma) */
   isExample?: boolean;
+  wordId?: string;
+  onDeleted?: () => void;
 }
 
 export function WordAudioPlayerRow({
@@ -1340,7 +1351,14 @@ export function WordAudioPlayerRow({
   parentLemma,
   dialectLabel,
   isExample = false,
+  wordId,
+  onDeleted,
 }: WordAudioPlayerRowProps) {
+  const { message } = AntdApp.useApp();
+  const { user } = useAuth();
+  const deleteMutation = useDeletePronunciationAudio(wordId ?? '');
+  const showDelete = Boolean(wordId) && canDeletePronunciationAudio(user?.role);
+
   const statusTag = (() => {
     if (audio.status === 'pending_review') {
       return <Tag color="orange">{WORD_STATUS_LABELS.pending_review}</Tag>;
@@ -1379,6 +1397,36 @@ export function WordAudioPlayerRow({
           {' · '}
           Ukuran: {formatAudioFileSize(audio.file_size ?? null)}
         </Text>
+        {showDelete ? (
+          <Popconfirm
+            title="Hapus rekaman ini?"
+            description="Rekaman hilang dari kamus. Kalau salah hapus, harus unggah ulang."
+            okText="Hapus"
+            cancelText="Batal"
+            okButtonProps={{ danger: true, loading: deleteMutation.isPending }}
+            onConfirm={async () => {
+              if (!wordId) return;
+              try {
+                await deleteMutation.mutateAsync(audio.id);
+                message.success('Rekaman dihapus');
+                onDeleted?.();
+              } catch (e) {
+                message.error(e instanceof Error ? e.message : 'Gagal menghapus rekaman');
+              }
+            }}
+          >
+            <Button
+              type="link"
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              loading={deleteMutation.isPending}
+              style={{ paddingInline: 0, alignSelf: 'flex-start' }}
+            >
+              Hapus rekaman
+            </Button>
+          </Popconfirm>
+        ) : null}
       </Space>
     </Flex>
   );
@@ -1743,6 +1791,8 @@ export function WordLemmaAudiosSection({
               audio={a}
               parentLemma={lemma}
               dialectLabel={dialectLabel(a.dialect_id)}
+              wordId={wordId}
+              onDeleted={onUploaded}
             />
           ))}
         </Space>
@@ -1803,6 +1853,8 @@ export function ExampleAudiosInline({
               parentLemma={lemma}
               dialectLabel={dialectLabel(a.dialect_id)}
               isExample
+              wordId={wordId}
+              onDeleted={onUploaded}
             />
           ))}
         </Space>

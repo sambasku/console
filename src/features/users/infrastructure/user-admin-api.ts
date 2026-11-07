@@ -19,6 +19,10 @@ export interface AdminUserWire {
   contribute_muted_until: string | null;
   email_verified?: boolean;
   email_verified_at?: string | null;
+  is_team?: boolean;
+  team_as?: string | null;
+  team_note?: string | null;
+  is_sponsor?: boolean;
   /** OTP verifikasi terakhir; null = tidak ada OTP tertunda. */
   otp?: { created_at: string; expires_at: string } | null;
   created_at: string;
@@ -94,4 +98,26 @@ export async function createAdminUserRequest(input: CreateAdminUserInput): Promi
 
 export async function setUserActiveRequest(id: string, isActive: boolean): Promise<void> {
   await client.patch(`/admin/users/${id}/active`, { is_active: isActive });
+}
+
+export async function updateUserTeamRequest(
+  id: string,
+  body: { is_team?: boolean; team_as?: string | null; team_note?: string | null },
+): Promise<AdminUserWire> {
+  const res = await client.patch<{ success: true; data: AdminUserWire }>(
+    `/admin/users/${id}/team`,
+    body,
+  );
+  return res.data.data;
+}
+
+export async function setUserSponsorRequest(
+  id: string,
+  isSponsor: boolean,
+): Promise<{ id: string; is_sponsor: boolean; sponsorship_id: string | null }> {
+  const res = await client.patch<{
+    success: true;
+    data: { id: string; is_sponsor: boolean; sponsorship_id: string | null };
+  }>(`/admin/users/${id}/sponsor`, { is_sponsor: isSponsor });
+  return res.data.data;
 }

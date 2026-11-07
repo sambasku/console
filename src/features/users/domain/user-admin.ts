@@ -23,6 +23,10 @@ export interface AdminUserListItem {
   emailVerifiedAt: string | null;
   /** Kadaluarsa OTP terakhir (ISO); null = tidak ada OTP tertunda. */
   otpExpiresAt: string | null;
+  isTeam: boolean;
+  teamAs: string | null;
+  teamNote: string | null;
+  isSponsor: boolean;
   createdAt: string;
   updatedAt: string | null;
 }

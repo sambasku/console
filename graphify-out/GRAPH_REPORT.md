@@ -1,17 +1,17 @@
-# Graph Report - console  (2026-10-21)
+# Graph Report - console  (2026-11-04)
 
 ## Corpus Check
-- 396 files · ~176,132 words
+- 465 files · ~216,608 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 16 file(s) not represented in the graph (top: (none) 5, .example 4, .mdc 3)
+- Unclassified: 17 file(s) not represented in the graph (top: (none) 5, .example 4, .mdc 3)
 
 ## Summary
-- 2267 nodes · 7036 edges · 101 communities (98 shown, 3 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 134 edges (avg confidence: 0.85)
+- 2832 nodes · 8969 edges · 98 communities (94 shown, 4 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 178 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `757a8728`
+- Built from commit: `7c2b4c80`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,301 +22,298 @@
 - create-word.ts
 - word-form-blocks.tsx
 - router.tsx
-- PageHeader
+- DataTable
 - use-campaigns.ts
 - create-word-page.tsx
 - word-suggestion-detail-page.tsx
 - abuse-page.tsx
-- search-miss-api.ts
+- search-misses-page.tsx
 - normalizeError
 - places-page.tsx
-- search-tab.tsx
-- antd
+- web-analytics-page.tsx
+- formatDateTime
 - web-analytics.ts
 - play-analytics-page.tsx
-- types.ts
+- pronunciation-audio-api.ts
 - contribution-review-panel.tsx
-- user-admin-api.ts
-- vote-admin-api.ts
+- users-page.tsx
+- vote-moderation-page.tsx
 - import-words-drawer.tsx
-- audit-logs-page.tsx
+- audit-changes-cell.tsx
 - audio-capture-ui.tsx
 - application/correct-contribution.ts
-- discussion-api.ts
+- discussion-detail-page.tsx
 - system-whatsapp-page.tsx
 - contribution.ts
-- use-word-groups.ts
+- word-groups-page.tsx
 - vitest
 - word-api.ts
 - compilerOptions
-- react
-- word-comments.tsx
+- useDebouncedValue
+- @tanstack/react-query
 - package.json
-- announcement-api.ts
-- review-submit-queue.ts
-- play-analytics.ts
-- word-reports-page.tsx
+- announcements-page.tsx
+- client
+- usaha-page.tsx
+- @tanstack/react-router
 - map-picker.tsx
 - place-categories-page.tsx
-- web-analytics-page.tsx
+- date-range.ts
 - parse-import-csv.ts
 - compilerOptions
 - console-layout.tsx
 - comment-blocklist-page.tsx
 - use-legal.ts
-- useCursorList
-- user.ts
+- error.ts
+- session.ts
 - contribution-entity-view.tsx
-- region-api.ts
-- verifier-application.ts
+- use-regions.ts
+- verifier-application-detail-page.tsx
 - word-comma-splits-panel.tsx
-- word-images-field.tsx
+- encyclopedia-api.ts
 - devDependencies
 - contribution-mappers.ts
 - use-api-clients.ts
 - place-drawer.tsx
-- session.ts
-- bug-report.ts
+- events-page.tsx
+- bug-report-api.ts
 - import-sheet.tsx
 - ColdHostGate
 - system-email-page.tsx
-- compressImageForUpload
-- audio-trim-editor.tsx
-- web-analytics/presentation/components/trend-chart.tsx
+- ApiOkEnvelope
+- achievements-page.tsx
+- TrendChart
 - use-category-crud.ts
 - top-pending-contributions-panel.tsx
-- database-backup-api.ts
-- supabase-health-api.ts
+- system-database-page.tsx
+- use-culinary.ts
 - use-vote-counts.ts
-- word-report-detail-page.tsx
-- use-public-profile.ts
+- culinary.ts
+- user-info-modal.tsx
 - dependencies
 - scripts
 - SambasKu Admin
-- try-restore-session.ts
+- culinary-api.ts
 - use-word-of-day.ts
-- words-page.tsx
-- ApiError
-- word.ts
-- vote-moderation-page.tsx
-- word-groups-page.tsx
-- WordClassOption
+- culinary-drawer.tsx
+- culinary-proposal-drawer.tsx
+- word-detail-page.tsx
+- pantun-reports-page.tsx
+- culinary-categories-page.tsx
+- pantun-moderation-page.tsx
 - import-attribution-fields.tsx
-- @tanstack/react-query
-- system-database-page.tsx
-- system-supabase-page.tsx
-- use-review-verifier-application.ts
-- lemma-definition-api.ts
+- mobile-release-page.tsx
+- place-views-page.tsx
+- provider-section.tsx
+- refreshAccessTokenSingleFlight
 - safe-audio-player.tsx
 - MemoryStorage
 - jwt.test.ts
 - vite.config.ts
-- image-censor-editor.tsx
-- use-blocklist-mutations.ts
-- use-word-publish.ts
+- blocklist-api.ts
 - use-change-password.ts
 - tsconfig.json
 
 ## God Nodes (most connected - your core abstractions)
-1. `antd` - 119 edges
-2. `normalizeError()` - 112 edges
-3. `react` - 91 edges
-4. `PageHeader()` - 89 edges
-5. `@tanstack/react-query` - 83 edges
-6. `useAuth()` - 81 edges
-7. `formatDateTime()` - 74 edges
-8. `@ant-design/icons` - 66 edges
-9. `client` - 47 edges
-10. `ApiOkEnvelope` - 41 edges
+1. `normalizeError()` - 171 edges
+2. `antd` - 146 edges
+3. `PageHeader()` - 125 edges
+4. `react` - 118 edges
+5. `formatDateTime()` - 109 edges
+6. `useAuth()` - 104 edges
+7. `@tanstack/react-query` - 101 edges
+8. `@ant-design/icons` - 89 edges
+9. `client` - 64 edges
+10. `DataTable()` - 54 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `useCreateRegion()` --indirect_call--> `createRegionRequest()`  [INFERRED]
-  src/features/regions/application/use-regions.ts → src/features/regions/infrastructure/region-api.ts
-- `useCreateWordGroup()` --indirect_call--> `createWordGroupRequest()`  [INFERRED]
-  src/features/word-groups/application/use-word-groups.ts → src/features/word-groups/infrastructure/word-group-api.ts
+- `GrowthTab()` --calls--> `TrendChart()`  [EXTRACTED]
+  console/src/features/play-analytics/presentation/components/growth-tab.tsx → src/features/play-analytics/presentation/components/trend-chart.tsx
+- `OverviewTab()` --calls--> `TrendChart()`  [EXTRACTED]
+  console/src/features/play-analytics/presentation/components/overview-tab.tsx → src/features/play-analytics/presentation/components/trend-chart.tsx
+- `FcmTrendChart()` --calls--> `formatYmd()`  [EXTRACTED]
+  src/features/fcm-analytics/presentation/components/fcm-trend-chart.tsx → console/src/features/web-analytics/domain/date-range.ts
 - `rootRoute` --calls--> `tryRestoreSession()`  [EXTRACTED]
-  src/app/router.tsx → src/features/auth/application/try-restore-session.ts
-- `useUserAbuseEvents()` --calls--> `useCursorList()`  [EXTRACTED]
-  src/features/abuse/application/use-abuse.ts → src/shared/hooks/use-cursor-list.ts
-- `useAnonAbuseEvents()` --calls--> `useCursorList()`  [EXTRACTED]
-  src/features/abuse/application/use-abuse.ts → src/shared/hooks/use-cursor-list.ts
+  console/src/app/router.tsx → console/src/features/auth/application/try-restore-session.ts
+- `useRestoreCuisine()` --indirect_call--> `restoreCuisineRequest()`  [INFERRED]
+  console/src/features/culinary/application/use-culinary.ts → console/src/features/culinary/infrastructure/culinary-api.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (101 total, 3 thin omitted)
+## Communities (98 total, 4 thin omitted)
 
 ### Community 0 - "notifications-page.tsx"
 Cohesion: 0.07
 Nodes (66): describeFcmRequestError(), FcmView, resolveFcmView(), useFcmAnalytics(), DateRangeWire, FCM_SECTION_LABELS, FCM_SECTIONS, FcmDelivery (+58 more)
 
 ### Community 1 - "dashboard-page.tsx"
-Cohesion: 0.06
-Nodes (53): ensureDailyActivityLast30Days(), normalizeDashboardStats(), shiftCalendarDate(), wibDateString(), buildTodayVsYesterday(), formatDelta(), METRICS, TodayMetricKey (+45 more)
+Cohesion: 0.05
+Nodes (59): ensureDailyActivityLast30Days(), normalizeDashboardStats(), shiftCalendarDate(), wibDateString(), buildTodayVsYesterday(), formatDelta(), METRICS, TodayMetricKey (+51 more)
 
 ### Community 2 - "client.ts"
-Cohesion: 0.07
-Nodes (52): axios, applyActiveTier(), BASE_CONFIG, OnAuthExpiredHandler, RefreshTokenResult, releaseCold(), RetryableRequestConfig, retryOnNextTier() (+44 more)
+Cohesion: 0.09
+Nodes (39): applyActiveTier(), authClient, BASE_CONFIG, OnAuthExpiredHandler, RefreshTokenResult, releaseCold(), RetryableRequestConfig, retryOnNextTier() (+31 more)
 
 ### Community 3 - "create-word.ts"
-Cohesion: 0.07
-Nodes (54): buildCreateWordBody(), buildExample(), buildImages(), buildInlineWord(), buildMeaningOverride(), buildMeanings(), buildPronunciation(), buildVariants() (+46 more)
+Cohesion: 0.09
+Nodes (40): buildCreateWordBody(), buildExample(), buildImages(), buildInlineWord(), buildMeaningOverride(), buildMeanings(), buildPronunciation(), buildVariants() (+32 more)
 
 ### Community 4 - "word-form-blocks.tsx"
-Cohesion: 0.06
-Nodes (53): mergeAudiosForExamples(), isPlaceholder(), swapMeaningTexts(), AFFIX_TYPE_LABELS, AFFIX_TYPES, EXAMPLE_SOURCE_LABELS, EXAMPLE_SOURCE_TYPES, RELATION_TYPE_LABELS (+45 more)
+Cohesion: 0.05
+Nodes (53): DefaultLanguageIds, mergeAudiosForExamples(), matchWordClassId(), isPlaceholder(), swapMeaningTexts(), AFFIX_TYPE_LABELS, AFFIX_TYPES, EXAMPLE_SOURCE_LABELS (+45 more)
 
 ### Community 5 - "router.tsx"
-Cohesion: 0.04
-Nodes (55): abuseLegacyRoute, abuseRoute, announcementsRoute, auditLogsRoute, baseLayoutRoute, bugReportsRoute, categoriesRoute, commentBlocklistRoute (+47 more)
+Cohesion: 0.03
+Nodes (74): abuseLegacyRoute, abuseRoute, achievementsRoute, announcementsRoute, auditLogsRoute, baseLayoutRoute, bugReportsRoute, categoriesRoute (+66 more)
 
-### Community 6 - "PageHeader"
+### Community 6 - "DataTable"
 Cohesion: 0.08
-Nodes (47): @tanstack/react-router, @tanstack/react-table, platformLabel(), BugReportsPage(), columnHelper, STATUS_TABS, StatusTab, columnHelper (+39 more)
+Nodes (39): @tanstack/react-table, useCulinaryClaims(), useCulinaryReports(), useResolveCulinaryReport(), columnHelper, CulinaryClaimsPage(), STATUS_COLOR, STATUS_LABEL (+31 more)
 
 ### Community 7 - "use-campaigns.ts"
-Cohesion: 0.11
-Nodes (46): useCampaignDetail(), useCampaignList(), useCancelCampaign(), useCreateCampaign(), useCreateTemplate(), useDeleteTemplate(), useEstimateAudience(), useRetryCampaign() (+38 more)
+Cohesion: 0.07
+Nodes (60): useCampaignDetail(), useCampaignList(), useCancelCampaign(), useCreateCampaign(), useCreateTemplate(), useDeleteTemplate(), useEstimateAudience(), useRetryCampaign() (+52 more)
 
 ### Community 8 - "create-word-page.tsx"
-Cohesion: 0.12
-Nodes (46): wordEntityToFormValues(), useDialectLabel(), CorrectContributionDrawer(), CorrectExampleForm(), CorrectMeaningForm(), CorrectPronunciationForm(), CorrectWordAudioForm(), CorrectWordForm() (+38 more)
+Cohesion: 0.14
+Nodes (43): wordEntityToFormValues(), useDialectLabel(), CorrectContributionDrawer(), CorrectExampleForm(), CorrectMeaningForm(), CorrectPronunciationForm(), CorrectWordAudioForm(), CorrectWordForm() (+35 more)
 
 ### Community 9 - "word-suggestion-detail-page.tsx"
-Cohesion: 0.09
-Nodes (43): useApproveWordSuggestion(), useRejectWordSuggestion(), useWordSuggestionDetail(), useWordSuggestionList(), asRecord(), describeMeaning(), describeSuggestionChanges(), DescribeSuggestionInput (+35 more)
+Cohesion: 0.07
+Nodes (54): react-dom, BrushCursorOverlay(), CensorBrushMode, ImageCensorEditor(), ImageCensorEditorProps, isTypingTarget(), loadSourceCanvas(), useApproveWordSuggestion() (+46 more)
 
 ### Community 10 - "abuse-page.tsx"
 Cohesion: 0.12
 Nodes (42): AnonAbuseFilters, useAnonAbuseEvents(), useAnonMutes(), useLiftAnonMute(), useLiftUserMute(), UserAbuseFilters, useUserAbuseEvents(), useUserAbuseHistory() (+34 more)
 
-### Community 11 - "search-miss-api.ts"
+### Community 11 - "search-misses-page.tsx"
 Cohesion: 0.09
-Nodes (36): TopSearchMissesPanelProps, normalizeSearchMissListItem(), useBulkDismissSearchMiss(), useDismissSearchMiss(), ResolveSearchMissVariables, useResolveSearchMiss(), useSearchMissList(), UseSearchMissListArgs (+28 more)
+Nodes (40): TopSearchMissesPanelProps, normalizeSearchMissListItem(), useBulkDismissSearchMiss(), useDismissSearchMiss(), ResolveSearchMissVariables, useResolveSearchMiss(), useSearchMissList(), UseSearchMissListArgs (+32 more)
 
 ### Community 12 - "normalizeError"
-Cohesion: 0.14
-Nodes (28): @ant-design/icons, AnnouncementDrawer(), AnnouncementsPage(), formatEpoch(), FormValues, useLegalSettings(), LegalPage(), STATUS_COLOR (+20 more)
+Cohesion: 0.11
+Nodes (44): @ant-design/icons, antd, react, AuditFilters, AuditLogsPage(), columnHelper, shortUlid(), BugReportsPage() (+36 more)
 
 ### Community 13 - "places-page.tsx"
-Cohesion: 0.13
-Nodes (33): useCreatePlace(), useDeletePlace(), usePlaceList(), useUpdatePlace(), Place, PlaceCategory, PlaceImage, PlaceImageAttribution (+25 more)
+Cohesion: 0.14
+Nodes (30): useCreatePlace(), useDeletePlace(), usePlaceList(), usePlaceViews(), usePlaceViewsReport(), useUpdatePlace(), Place, createPlaceRequest() (+22 more)
 
-### Community 14 - "search-tab.tsx"
-Cohesion: 0.23
-Nodes (26): resolveProviderView(), useWebAnalytics(), PageRow, QueryRow, RangeQuery, getWebAnalyticsRequest(), KpiGrid(), ProviderSection() (+18 more)
+### Community 14 - "web-analytics-page.tsx"
+Cohesion: 0.24
+Nodes (25): describeRequestError(), resolveProviderView(), useWebAnalytics(), PageRow, QueryRow, KpiGrid(), ProviderSection(), RequestErrorAlert() (+17 more)
 
-### Community 15 - "antd"
+### Community 15 - "formatDateTime"
 Cohesion: 0.11
-Nodes (23): antd, contributionsRouteApi, STATUS_TABS, StatusTab, LatestCommentsPanel(), LatestCommentsPanelProps, REJECT_REASONS, TYPE_LABEL (+15 more)
+Nodes (28): useContributionList(), ContributionsPage(), contributionsRouteApi, isTypingTarget(), STATUS_TABS, StatusTab, LatestCommentsPanel(), LatestCommentsPanelProps (+20 more)
 
 ### Community 16 - "web-analytics.ts"
-Cohesion: 0.08
-Nodes (30): describeRequestError(), ProviderView, BreakdownRow, CHANNEL_LABELS, ChannelRow, DateRangeWire, EventRow, Ga4Behavior (+22 more)
+Cohesion: 0.09
+Nodes (27): BreakdownRow, CHANNEL_LABELS, ChannelRow, EventRow, Ga4Behavior, Ga4Overview, Ga4Sources, Ga4Totals (+19 more)
 
 ### Community 17 - "play-analytics-page.tsx"
-Cohesion: 0.19
-Nodes (23): describePlayRequestError(), PlayView, resolvePlayView(), usePlayAnalytics(), DateRangeWire, RangeQuery, COUNTRY_LABELS, fmtInt() (+15 more)
+Cohesion: 0.11
+Nodes (40): describePlayRequestError(), PlayView, resolvePlayView(), usePlayAnalytics(), DateRangeWire, PLAY_SECTION_LABELS, PLAY_SECTIONS, PlayCountryRow (+32 more)
 
-### Community 18 - "types.ts"
-Cohesion: 0.17
-Nodes (15): approveContributionRequest(), useUpdateVerifierScreenshot(), updateVerifierScreenshotRequest(), WordOfDayMeaningWire, approveWordSuggestionRequest(), ACCEPTED_AUDIO, UploadedPronunciationAudio, buildCensoredApproveFormData() (+7 more)
+### Community 18 - "pronunciation-audio-api.ts"
+Cohesion: 0.16
+Nodes (15): PendingExampleAudioDraft, uploadPendingAudiosAfterCreate(), UploadPendingAudiosResult, useDeletePronunciationAudio(), useUploadPronunciationAudio(), useWordDetail(), ACCEPTED_AUDIO, deletePronunciationAudioRequest() (+7 more)
 
 ### Community 19 - "contribution-review-panel.tsx"
-Cohesion: 0.12
-Nodes (24): adjacentPendingId(), nextPendingId(), ReviewCommitInput, useContributionDetail(), useReopenContribution(), CONTRIBUTION_STATUS_LABELS, WordImageView, DEFAULT_REJECT_REASON_PRESET (+16 more)
+Cohesion: 0.19
+Nodes (14): adjacentPendingId(), nextPendingId(), ReviewCommitInput, useReopenContribution(), DEFAULT_REJECT_REASON_PRESET, REJECT_REASON_PRESET_IDS, REJECT_REASON_PRESETS, RejectReasonPresetId (+6 more)
 
-### Community 20 - "user-admin-api.ts"
+### Community 20 - "users-page.tsx"
 Cohesion: 0.13
-Nodes (25): UpdateRoleVariables, useCreateAdminUser(), useSetCanContribute(), useUserAdminList(), UseUserAdminListArgs, normalizeAdminUserListItem(), AdminUserListItem, AdminUserRole (+17 more)
+Nodes (32): UpdateRoleVariables, useCreateAdminUser(), useSetCanContribute(), useSetUserActive(), useUpdateUserRole(), useVerifyUserEmail(), useUserAdminList(), UseUserAdminListArgs (+24 more)
 
-### Community 21 - "vote-admin-api.ts"
-Cohesion: 0.14
-Nodes (24): useAdminVoteList(), UseAdminVoteListArgs, useDeleteAdminVote(), ResetTargetVotesArgs, useResetTargetVotes(), useTopTargetVotes(), normalizeAdminTopTarget(), normalizeAdminVoteListItem() (+16 more)
+### Community 21 - "vote-moderation-page.tsx"
+Cohesion: 0.13
+Nodes (32): useAdminVoteList(), UseAdminVoteListArgs, useDeleteAdminVote(), ResetTargetVotesArgs, useResetTargetVotes(), useTopTargetVotes(), normalizeAdminTopTarget(), normalizeAdminVoteListItem() (+24 more)
 
 ### Community 22 - "import-words-drawer.tsx"
 Cohesion: 0.12
 Nodes (28): ImportWordPayload, ImportWordResultItem, importWordsRequest(), saveWordImportSessionRequest(), activeMeanings(), applyResultCounters(), blankRows(), clearImportMarks() (+20 more)
 
-### Community 23 - "audit-logs-page.tsx"
-Cohesion: 0.15
-Nodes (22): useAuditLogList(), AuditChange, diffChanges(), formatValue(), stableStringify(), AUDIT_ACTION_TAG_COLOR, AUDIT_ACTIONS, AuditLogListItem (+14 more)
+### Community 23 - "audit-changes-cell.tsx"
+Cohesion: 0.18
+Nodes (16): useAuditLogList(), AuditChange, diffChanges(), formatValue(), stableStringify(), AUDIT_ACTION_TAG_COLOR, AUDIT_ACTIONS, AuditLogListItem (+8 more)
 
 ### Community 24 - "audio-capture-ui.tsx"
-Cohesion: 0.12
-Nodes (27): AudioRecorderState, blobToAudioFile(), extensionForAudioMime(), formatRecordingClock(), MAX_RECORDING_SECONDS, MIME_CANDIDATES, normalizeAudioMime(), pickSupportedMime() (+19 more)
+Cohesion: 0.11
+Nodes (33): audioBufferToWavBlob(), decodeAudioBlob(), detectSpeechBounds(), extractWaveformPeaks(), sliceAudioBuffer(), SpeechBounds, trimAudioBlob(), TrimAudioResult (+25 more)
 
 ### Community 25 - "application/correct-contribution.ts"
-Cohesion: 0.14
-Nodes (25): buildCorrectContribution(), buildCorrectExampleBody(), buildCorrectMeaningBody(), buildCorrectPronunciationBody(), buildCorrectWordAudioBody(), buildCorrectWordBody(), buildCorrectWordImageBody(), CorrectDecisionExtra (+17 more)
+Cohesion: 0.12
+Nodes (28): buildCorrectContribution(), buildCorrectExampleBody(), buildCorrectMeaningBody(), buildCorrectPronunciationBody(), buildCorrectWordAudioBody(), buildCorrectWordBody(), buildCorrectWordImageBody(), CorrectDecisionExtra (+20 more)
 
-### Community 26 - "discussion-api.ts"
-Cohesion: 0.15
-Nodes (24): useDiscussionDetail(), useDiscussionList(), invalidateAll(), useApproveDiscussion(), usePinDiscussionReply(), useRejectDiscussion(), useTakedownDiscussion(), useTakedownDiscussionReply() (+16 more)
+### Community 26 - "discussion-detail-page.tsx"
+Cohesion: 0.13
+Nodes (33): useDiscussionDetail(), useDiscussionList(), invalidateAll(), useApproveDiscussion(), usePinDiscussionReply(), useRejectDiscussion(), useTakedownDiscussion(), useTakedownDiscussionReply() (+25 more)
 
 ### Community 27 - "system-whatsapp-page.tsx"
 Cohesion: 0.18
 Nodes (23): useWaLogs(), useWaMutations(), useWaTemplates(), useWaUsage(), WaLog, WaTemplate, WaTemplateParam, WaTestSendResult (+15 more)
 
 ### Community 28 - "contribution.ts"
-Cohesion: 0.10
-Nodes (21): ChildEntityLike, ChildEntityView, CONTRIBUTION_STATUSES, ContributionDetailPayload, ContributionDetailView, ContributionReview, ENTITY_TYPES, ExampleChildData (+13 more)
+Cohesion: 0.11
+Nodes (18): ChildEntityLike, ChildEntityView, CONTRIBUTION_STATUS_LABELS, CONTRIBUTION_STATUSES, ContributionDetailPayload, ContributionDetailView, ContributionReview, ENTITY_TYPES (+10 more)
 
-### Community 29 - "use-word-groups.ts"
-Cohesion: 0.15
-Nodes (23): KEY, useDeleteWordGroup(), useRemoveWordGroupMember(), WORD_GROUP_STATUS_LABELS, WordGroupInput, WordGroupItem, WordGroupMember, WordGroupStatus (+15 more)
+### Community 29 - "word-groups-page.tsx"
+Cohesion: 0.13
+Nodes (32): KEY, useAddWordGroupMember(), useAllWordGroups(), useCreateWordGroup(), useDeleteWordGroup(), usePickWords(), useRemoveWordGroupMember(), useUpdateWordGroup() (+24 more)
 
 ### Community 30 - "vitest"
-Cohesion: 0.17
-Nodes (19): vitest, audio(), enumOr(), example(), intOr(), intOrNull(), meaning(), normalizeWordDetail() (+11 more)
+Cohesion: 0.11
+Nodes (29): vitest, audio(), enumOr(), example(), intOr(), intOrNull(), meaning(), normalizeWordDetail() (+21 more)
 
 ### Community 31 - "word-api.ts"
-Cohesion: 0.13
-Nodes (19): useBulkWordsAction(), useDeleteWord(), useMergeDuplicateWords(), useImportSession(), WordListItem, BulkWordsAction, bulkWordsActionRequest(), BulkWordsItemResult (+11 more)
+Cohesion: 0.09
+Nodes (42): useBulkWordsAction(), useDeleteWord(), useDuplicateWordGroups(), useMergeDuplicateWords(), useWordList(), UseWordListArgs, usePublishWord(), useUnpublishWord() (+34 more)
 
 ### Community 32 - "compilerOptions"
 Cohesion: 0.08
 Nodes (23): compilerOptions, allowImportingTsExtensions, erasableSyntaxOnly, jsx, lib, module, moduleDetection, moduleResolution (+15 more)
 
-### Community 33 - "react"
-Cohesion: 0.15
-Nodes (18): react, useImportSessionList(), LemmaDefinitionSuggestion, claimWordImportSessionRequest(), rollbackWordImportSessionRequest(), WordImportSessionStatus, SUPPORT_TYPE_LABEL, ImportHistoryDetailPage() (+10 more)
+### Community 33 - "useDebouncedValue"
+Cohesion: 0.18
+Nodes (13): useLookupLemmaDefinition(), useWordSearch(), UseWordSearchArgs, LemmaDefinitionEntry, LemmaDefinitionLookupResult, LemmaDefinitionSense, LemmaDefinitionSuggestion, lookupLemmaDefinitionRequest() (+5 more)
 
-### Community 34 - "word-comments.tsx"
-Cohesion: 0.23
-Nodes (15): useLatestComments(), useTakedownComment(), useUncensorComment(), useWordComments(), AdminCommentItem, COMMENT_STATUS_LABELS, COMMENT_STATUS_TAG_COLOR, COMMENT_STATUSES (+7 more)
+### Community 34 - "@tanstack/react-query"
+Cohesion: 0.08
+Nodes (37): @tanstack/react-query, queryClient, router, useApproveCommentImage(), UseCommentListArgs, useLatestComments(), useRejectCommentImage(), useTakedownComment() (+29 more)
 
 ### Community 35 - "package.json"
-Cohesion: 0.11
-Nodes (20): description, engines, node, name, private, type, version, eslint (+12 more)
+Cohesion: 0.12
+Nodes (19): description, engines, node, name, private, type, version, eslint (+11 more)
 
-### Community 36 - "announcement-api.ts"
+### Community 36 - "announcements-page.tsx"
 Cohesion: 0.19
-Nodes (17): dayjs, useAnnouncementList(), useCreateAnnouncement(), useDeleteAnnouncement(), useUpdateAnnouncement(), ACTION_URL_ALLOWED_HOSTS, Announcement, AnnouncementBodyType (+9 more)
+Nodes (20): dayjs, useAnnouncementList(), useCreateAnnouncement(), useDeleteAnnouncement(), useUpdateAnnouncement(), ACTION_URL_ALLOWED_HOSTS, Announcement, AnnouncementBodyType (+12 more)
 
-### Community 37 - "review-submit-queue.ts"
-Cohesion: 0.20
-Nodes (16): ContributionListData, dropContributionFromListCaches(), invalidateContributionLists(), isContributionListQuery(), listAcceptsItem(), ListFilter, restoreContributionToListFront(), ALREADY_REVIEWED_CODE (+8 more)
+### Community 37 - "client"
+Cohesion: 0.15
+Nodes (22): ContributionListData, dropContributionFromListCaches(), invalidateContributionLists(), isContributionListQuery(), listAcceptsItem(), ListFilter, restoreContributionToListFront(), ALREADY_REVIEWED_CODE (+14 more)
 
-### Community 38 - "play-analytics.ts"
-Cohesion: 0.17
-Nodes (18): PLAY_SECTION_LABELS, PLAY_SECTIONS, PlayCountryRow, PlayGrowth, PlayOverview, PlayProviderResult, PlayRatingBucket, PlayRatings (+10 more)
+### Community 38 - "usaha-page.tsx"
+Cohesion: 0.05
+Nodes (92): createUsahaCategoryItemRequest(), deleteUsahaCategoryItemRequest(), listUsahaCategoryItemsRequest(), mapItem(), updateUsahaCategoryItemRequest(), UsahaCategoryInput, useAllUsahaCategoryItems(), useCreateUsahaCategoryItem() (+84 more)
 
-### Community 39 - "word-reports-page.tsx"
-Cohesion: 0.18
-Nodes (16): useWordReportList(), WORD_REPORT_RESOLUTION_LABELS, WORD_REPORT_RESOLUTIONS, WORD_REPORT_STATUS_LABELS, WORD_REPORT_STATUSES, WordReportListItem, WordReportResolution, WordReportStatus (+8 more)
+### Community 39 - "@tanstack/react-router"
+Cohesion: 0.11
+Nodes (32): @tanstack/react-router, useDismissWordReport(), useInvalidateReports(), useMarkWordReportCorrected(), useTakedownFromReport(), useWordReport(), useWordReportList(), noteRequired() (+24 more)
 
 ### Community 40 - "map-picker.tsx"
-Cohesion: 0.21
-Nodes (16): OPENFREEMAP_STYLE_BRIGHT, createPin(), DEFAULT_CENTER, MapPicker(), MapPickerProps, FieldProps, getJson(), MapBias (+8 more)
+Cohesion: 0.18
+Nodes (19): maplibre-gl, OPENFREEMAP_STYLE_BRIGHT, createPin(), DEFAULT_CENTER, MapPicker(), MapPickerProps, FieldProps, MapPointField() (+11 more)
 
 ### Community 41 - "place-categories-page.tsx"
 Cohesion: 0.23
-Nodes (16): useCreatePlaceCategory(), useDeletePlaceCategory(), useUpdatePlaceCategory(), PlaceCategoryItem, PlaceCategoryStatus, createPlaceCategoryRequest(), deletePlaceCategoryRequest(), listAllPlaceCategoriesRequest() (+8 more)
+Nodes (17): useAllPlaceCategories(), useCreatePlaceCategory(), useDeletePlaceCategory(), useUpdatePlaceCategory(), PlaceCategoryItem, PlaceCategoryStatus, createPlaceCategoryRequest(), deletePlaceCategoryRequest() (+9 more)
 
-### Community 42 - "web-analytics-page.tsx"
-Cohesion: 0.20
-Nodes (15): PlayKpiItem, deltaTone, formatPercentChange(), parseTrafficSearch(), percentChange(), RANGE_PRESET_LABELS, toRangeQuery(), TrafficSearch (+7 more)
+### Community 42 - "date-range.ts"
+Cohesion: 0.27
+Nodes (10): PlayKpiItem, deltaTone, formatPercentChange(), parseTrafficSearch(), percentChange(), RANGE_PRESET_LABELS, toRangeQuery(), TrafficSearch (+2 more)
 
 ### Community 43 - "parse-import-csv.ts"
 Cohesion: 0.15
@@ -327,68 +324,68 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, erasableSyntaxOnly, lib, module, moduleDetection, moduleResolution, noEmit (+11 more)
 
 ### Community 45 - "console-layout.tsx"
-Cohesion: 0.12
-Nodes (18): ROLE_LABELS, UserRole, ANALYTICS_ROUTES, AnalyticsRoute, BREADCRUMB_LABELS, ConsoleLayout(), EKSPLORASI_ROUTES, EksplorasiRoute (+10 more)
+Cohesion: 0.11
+Nodes (28): activeTierSnapshot(), getForcedTierIndex(), setForcedTier(), subscribeTier(), tiers, ApiHostSwitcher(), forcedSnapshot(), hostnameOf() (+20 more)
 
 ### Community 46 - "comment-blocklist-page.tsx"
-Cohesion: 0.25
-Nodes (13): bulkResultTone(), formatBulkResultMessage(), detectDelimiter(), HEADER_LABELS, parseDelimited(), splitBlocklistText(), wordsFromWordlist(), useBlocklistList() (+5 more)
+Cohesion: 0.35
+Nodes (9): bulkResultTone(), formatBulkResultMessage(), detectDelimiter(), HEADER_LABELS, parseDelimited(), splitBlocklistText(), wordsFromWordlist(), columnHelper (+1 more)
 
 ### Community 47 - "use-legal.ts"
 Cohesion: 0.22
 Nodes (16): docsKey(), settingsKey, useLegalDocuments(), useLegalMutations(), AppSettingItem, AppSettingType, LegalDocument, LegalDocumentStatus (+8 more)
 
-### Community 48 - "useCursorList"
-Cohesion: 0.20
-Nodes (12): useCommentList(), UseCommentListArgs, CommentStatus, useWordList(), useWordSearch(), UseWordSearchArgs, listWordsRequest(), CursorMeta (+4 more)
+### Community 48 - "error.ts"
+Cohesion: 0.17
+Nodes (12): axios, base, ApiError, AuthExpiredError, isAuthExpiredError(), ApiErrorEnvelope, ApiFieldError, CursorMeta (+4 more)
 
-### Community 49 - "user.ts"
-Cohesion: 0.20
-Nodes (10): AuthSessionResult, CONSOLE_ACCESS_DENIED_MESSAGE, CONSOLE_ALLOWED_ROLES, ConsoleAllowedRole, LoginCredentials, ROLES, User, loginRequest() (+2 more)
+### Community 49 - "session.ts"
+Cohesion: 0.09
+Nodes (33): consoleLayoutRoute, loginRoute, revokeUnauthorizedConsoleSession(), cachedUser, contributorUser, ensureConsoleRoleAllowed(), tryRestoreSession(), useLogin() (+25 more)
 
 ### Community 50 - "contribution-entity-view.tsx"
-Cohesion: 0.24
-Nodes (16): ContributionEntityView(), DialectLabel, ENTITY_STATUS_TAG_COLOR, ExampleDetail(), MeaningDetail(), PairGrid(), PronunciationDetail(), ReadPane() (+8 more)
+Cohesion: 0.21
+Nodes (18): WordEntityView, ContributionEntityView(), DialectLabel, ENTITY_STATUS_TAG_COLOR, ExampleDetail(), MeaningDetail(), PairGrid(), PronunciationDetail() (+10 more)
 
-### Community 51 - "region-api.ts"
-Cohesion: 0.24
-Nodes (14): useDeleteRegion(), Region, RegionStatus, RegionType, createRegionRequest(), deleteRegionRequest(), listAllRegionsRequest(), listRegionsRequest() (+6 more)
+### Community 51 - "use-regions.ts"
+Cohesion: 0.20
+Nodes (17): useAllRegions(), useCreateRegion(), useDeleteRegion(), useUpdateRegion(), Region, RegionStatus, RegionType, createRegionRequest() (+9 more)
 
-### Community 52 - "verifier-application.ts"
-Cohesion: 0.17
-Nodes (13): useVerifierApplicationDetail(), useVerifierApplicationList(), ListVerifierApplicationsParams, SOCIAL_PLATFORM_LABELS, VERIFIER_APPLICATION_STATUSES, VerifierApplicationDetail, VerifierApplicationListItem, VerifierApplicationSocialLink (+5 more)
+### Community 52 - "verifier-application-detail-page.tsx"
+Cohesion: 0.13
+Nodes (26): ReviewVerifierApplicationResult, useReviewVerifierApplication(), VerifierApplicationDecision, useUpdateVerifierScreenshot(), useVerifierApplicationDetail(), useVerifierApplicationList(), ApproveVerifierApplicationResult, ListVerifierApplicationsParams (+18 more)
 
 ### Community 53 - "word-comma-splits-panel.tsx"
-Cohesion: 0.24
-Nodes (15): useApplyCommaSplit(), useCommaSplits(), useMarkCommaLiteral(), applyCommaSplitRequest(), CommaSplitTranslationDto, LemmaSplitMeaningOverride, listCommaSplitsRequest(), markCommaLiteralRequest() (+7 more)
+Cohesion: 0.29
+Nodes (13): useApplyCommaSplit(), useCommaSplits(), useMarkCommaLiteral(), applyCommaSplitRequest(), listCommaSplitsRequest(), markCommaLiteralRequest(), blankExtra(), ExtraMeaning (+5 more)
 
-### Community 54 - "word-images-field.tsx"
-Cohesion: 0.21
-Nodes (14): WordImageFormValue, listShareBackgrounds(), ListShareBackgroundsResult, ShareBackgroundItem, STOCK_PHOTO_PROVIDERS, STOCK_PROVIDER_LABELS, StockPhotoProvider, MediaExplorerModal() (+6 more)
+### Community 54 - "encyclopedia-api.ts"
+Cohesion: 0.06
+Nodes (61): useAdminArticleList(), useArticleRevisions(), useCategoryOptions(), useCreateAdminArticle(), useDeleteAdminArticle(), useRestoreArticleRevision(), useUpdateAdminArticle(), AdminArticleDetail (+53 more)
 
 ### Community 55 - "devDependencies"
 Cohesion: 0.12
 Nodes (16): devDependencies, eslint, eslint-config-prettier, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, prettier (+8 more)
 
 ### Community 56 - "contribution-mappers.ts"
-Cohesion: 0.37
-Nodes (15): AnyRecord, asString(), CHILD_FIELD_KEYS, fieldKeysFor(), normalizeChildEntity(), normalizeContributionDetail(), normalizeContributionMeta(), normalizeExample() (+7 more)
+Cohesion: 0.21
+Nodes (22): AnyRecord, asString(), CHILD_FIELD_KEYS, fieldKeysFor(), isWordEntityPayload(), normalizeChildEntity(), normalizeContributionDetail(), normalizeContributionMeta() (+14 more)
 
 ### Community 57 - "use-api-clients.ts"
 Cohesion: 0.24
 Nodes (13): listKey, useApiClientMutations(), useApiClients(), ALL_SCOPES, ApiClient, ApiClientChannel, ApiClientScope, ApiClientStatus (+5 more)
 
 ### Community 58 - "place-drawer.tsx"
-Cohesion: 0.21
-Nodes (13): useAllPlaceCategories(), uploadPlaceImage(), draftsFromPlace(), PlaceDrawer(), slugify(), STEPS, ACCEPTED, PlaceImagesField() (+5 more)
+Cohesion: 0.18
+Nodes (16): PlaceCategory, PlaceImage, PlaceImageAttribution, PlaceRelation, PlaceSource, PlaceStatus, PlaceType, PlaceWire (+8 more)
 
-### Community 59 - "session.ts"
-Cohesion: 0.21
-Nodes (9): useLogout(), logoutRequest(), derivePrimaryRole(), EMPTY_SESSION, listeners, ROLE_RANK, SessionState, sessionStore (+1 more)
+### Community 59 - "events-page.tsx"
+Cohesion: 0.08
+Nodes (55): useCreateEvent(), useDeleteEvent(), useEventCategories(), useEventList(), usePendingEventContributions(), useReviewEventContribution(), useSetEventCancelled(), useUpdateEvent() (+47 more)
 
-### Community 60 - "bug-report.ts"
-Cohesion: 0.20
-Nodes (11): useBugReportList(), useResolveBugReport(), BUG_REPORT_STATUS_LABELS, BUG_REPORT_STATUS_TAG_COLOR, BUG_REPORT_STATUSES, BugReportImage, BugReportListItem, BugReportStatus (+3 more)
+### Community 60 - "bug-report-api.ts"
+Cohesion: 0.23
+Nodes (12): useBugReportList(), useResolveBugReport(), BUG_REPORT_STATUS_LABELS, BUG_REPORT_STATUS_TAG_COLOR, BUG_REPORT_STATUSES, BugReportImage, BugReportListItem, BugReportStatus (+4 more)
 
 ### Community 61 - "import-sheet.tsx"
 Cohesion: 0.20
@@ -402,45 +399,45 @@ Nodes (5): abortError(), AbortLike, COLD_HOST_MAX_IN_FLIGHT, ColdHostGate, Waite
 Cohesion: 0.34
 Nodes (10): useEmailLogs(), useEmailQuotas(), EmailLog, EmailLogStatus, EmailQuota, listEmailLogsRequest(), listEmailQuotasRequest(), CATEGORY_LABELS (+2 more)
 
-### Community 64 - "compressImageForUpload"
-Cohesion: 0.26
-Nodes (9): uploadCampaignImage(), uploadVerifierScreenshot(), useUploadWordImage(), UploadedImage, uploadWordImage(), compressImageForUpload(), PHOTO_UPLOAD_MAX_HEIGHT, PHOTO_UPLOAD_MAX_WIDTH (+1 more)
+### Community 64 - "ApiOkEnvelope"
+Cohesion: 0.19
+Nodes (13): uploadCampaignImage(), uploadPlaceImage(), ACCEPTED, PlaceImagesField(), useUploadWordImage(), UploadedImage, uploadWordImage(), ApiCursorPageEnvelope (+5 more)
 
-### Community 65 - "audio-trim-editor.tsx"
-Cohesion: 0.30
-Nodes (11): audioBufferToWavBlob(), decodeAudioBlob(), detectSpeechBounds(), extractWaveformPeaks(), sliceAudioBuffer(), SpeechBounds, trimAudioBlob(), TrimAudioResult (+3 more)
+### Community 65 - "achievements-page.tsx"
+Cohesion: 0.11
+Nodes (41): useAchievementList(), useCreateAchievement(), useDeleteAchievement(), useGrantAchievement(), usePreviewAchievement(), useRecipients(), useRevokeAward(), useScanAchievement() (+33 more)
 
-### Community 66 - "web-analytics/presentation/components/trend-chart.tsx"
-Cohesion: 0.17
-Nodes (11): @ant-design/plots, ChartRow, dayLabel(), PlayTrendChartProps, PlayTrendSeries, formatRangeLabel(), formatYmd(), ChartRow (+3 more)
+### Community 66 - "TrendChart"
+Cohesion: 0.22
+Nodes (12): @ant-design/plots, ChartRow, dayLabel(), PlayTrendChartProps, PlayTrendSeries, TrendChart(), formatYmd(), ChartRow (+4 more)
 
 ### Community 67 - "use-category-crud.ts"
-Cohesion: 0.26
-Nodes (11): CategoryInput, createCategoryRequest(), deleteCategoryRequest(), listCategoriesRequest(), updateCategoryRequest(), useCategoryList(), useCreateCategory(), useDeleteCategory() (+3 more)
+Cohesion: 0.24
+Nodes (10): CategoryInput, createCategoryRequest(), deleteCategoryRequest(), listCategoriesRequest(), updateCategoryRequest(), useCategoryList(), useCreateCategory(), useDeleteCategory() (+2 more)
 
 ### Community 68 - "top-pending-contributions-panel.tsx"
-Cohesion: 0.24
-Nodes (10): useContributionList(), UseContributionListArgs, useTopPendingContributions(), ContributionStatus, ENTITY_TYPE_LABELS, EntityType, listContributionsRequest(), titleFor() (+2 more)
+Cohesion: 0.27
+Nodes (8): UseContributionListArgs, useTopPendingContributions(), ContributionStatus, ENTITY_TYPE_LABELS, listContributionsRequest(), titleFor(), TopPendingContributionsPanel(), TopPendingContributionsPanelProps
 
-### Community 69 - "database-backup-api.ts"
-Cohesion: 0.26
-Nodes (10): listKey, useTriggerDatabaseBackup(), BackupLogListResult, DatabaseBackupLog, DatabaseBackupLogStatus, TriggerBackupResult, listDatabaseBackupLogsRequest(), mapLog() (+2 more)
-
-### Community 70 - "supabase-health-api.ts"
+### Community 69 - "system-database-page.tsx"
 Cohesion: 0.23
-Nodes (10): listKey, useTriggerSupabasePing(), SupabaseHealthCheck, SupabaseHealthCheckListResult, SupabaseHealthEnv, listSupabaseHealthChecksRequest(), mapHealthCheck(), SupabasePingResult (+2 more)
+Nodes (17): listKey, useDatabaseBackupLogs(), useTriggerDatabaseBackup(), BackupLogListResult, DatabaseBackupLog, DatabaseBackupLogStatus, isBackupActive(), TriggerBackupResult (+9 more)
+
+### Community 70 - "use-culinary.ts"
+Cohesion: 0.12
+Nodes (32): useCreateCuisine(), useCreatePlace(), useCuisines(), useCulinaryPlaces(), useDeleteCuisine(), useDeletePlace(), usePendingCulinaryContributions(), useRestoreCuisine() (+24 more)
 
 ### Community 71 - "use-vote-counts.ts"
-Cohesion: 0.33
-Nodes (9): isVoteCountsReader(), toVoteCountMap(), useVoteCounts(), VoteCountsMap, buildTargetsQuery(), MAX_VOTE_TARGETS, VoteCountsItem, getVoteCountsRequest() (+1 more)
+Cohesion: 0.34
+Nodes (10): isVoteCountsReader(), sumVoteCounts(), toVoteCountMap(), useVoteCounts(), VoteCountsMap, buildTargetsQuery(), MAX_VOTE_TARGETS, VoteCountsItem (+2 more)
 
-### Community 72 - "word-report-detail-page.tsx"
-Cohesion: 0.33
-Nodes (10): useDismissWordReport(), useInvalidateReports(), useMarkWordReportCorrected(), useTakedownFromReport(), useWordReport(), noteRequired(), dismissWordReportRequest(), markWordReportCorrectedRequest() (+2 more)
+### Community 72 - "culinary.ts"
+Cohesion: 0.11
+Nodes (22): useReviewCulinaryClaim(), Cuisine, CuisinePlaceLink, CulinaryAvailability, CulinaryClaim, CulinaryClaimStatus, CulinaryDuplicateCandidate, CulinaryImageAttribution (+14 more)
 
-### Community 73 - "use-public-profile.ts"
-Cohesion: 0.29
-Nodes (10): getPublicActivityRequest(), getPublicProfileRequest(), usePublicActivity(), usePublicProfile(), normalizePublicActivity(), normalizePublicProfile(), PublicActivityItem, PublicActivityWire (+2 more)
+### Community 73 - "user-info-modal.tsx"
+Cohesion: 0.19
+Nodes (16): kindLabel(), ROLE_LABELS, roleLabel(), UserInfoLinkProps, UserInfoModal(), UserInfoModalProps, getPublicActivityRequest(), getPublicProfileRequest() (+8 more)
 
 ### Community 74 - "dependencies"
 Cohesion: 0.17
@@ -451,68 +448,60 @@ Cohesion: 0.17
 Nodes (12): scripts, build, build:staging, dev, format, lint, lint:fix, preview (+4 more)
 
 ### Community 76 - "SambasKu Admin"
-Cohesion: 0.17
-Nodes (11): Aset media, Deploy Production, Deploy Staging, Fitur utama, Kenapa custom domain wajib, Routing SPA, SambasKu Admin, Scripts (+3 more)
+Cohesion: 0.15
+Nodes (12): Aset media, Deploy Production, Deploy Staging, Dikerjakan dengan AI, Fitur utama, Kenapa custom domain wajib, Routing SPA, SambasKu Admin (+4 more)
 
-### Community 77 - "try-restore-session.ts"
-Cohesion: 0.31
-Nodes (10): consoleLayoutRoute, loginRoute, rootRoute, revokeUnauthorizedConsoleSession(), ensureConsoleRoleAllowed(), tryRestoreSession(), useLogin(), isConsoleAllowedRole() (+2 more)
+### Community 77 - "culinary-api.ts"
+Cohesion: 0.19
+Nodes (18): CulinaryCategoryRef, CulinaryImage, createCuisineRequest(), createPlaceRequest(), CuisineWire, CulinaryKind, listCuisinesRequest(), listPlacesRequest() (+10 more)
 
 ### Community 78 - "use-word-of-day.ts"
-Cohesion: 0.31
-Nodes (8): firstSense(), normalize(), useWordOfDay(), WordOfDay, getWordOfDayRequest(), WordOfDayWire, WordOfDayCard(), formatDate()
+Cohesion: 0.27
+Nodes (9): firstSense(), normalize(), useWordOfDay(), WordOfDay, getWordOfDayRequest(), WordOfDayMeaningWire, WordOfDayWire, WordOfDayCard() (+1 more)
 
-### Community 79 - "words-page.tsx"
-Cohesion: 0.31
-Nodes (9): useDuplicateWordGroups(), GroupCard(), statusColor(), WordDuplicatesPanel(), columnHelper, LIST_TABS, WordsPage(), WordsTab (+1 more)
-
-### Community 80 - "ApiError"
+### Community 79 - "culinary-drawer.tsx"
 Cohesion: 0.24
-Nodes (7): cachedUser, contributorUser, performRefresh(), refreshTokenRequest(), ApiError, ApiFieldError, restoreSessionUser()
+Nodes (17): useCulinaryCategories(), CulinaryPlace, CulinaryPlaceType, CulinaryPublishStatus, CuisineInput, CulinaryListParams, listCulinaryCategoriesRequest(), PlaceInput (+9 more)
 
-### Community 81 - "word.ts"
-Cohesion: 0.24
-Nodes (8): useRestoreWord(), useTakedownWord(), ListWordsParams, REGISTER_LABELS, WARNING_LABELS, WORD_STATUS_LABELS, restoreWordRequest(), takedownWordRequest()
+### Community 80 - "culinary-proposal-drawer.tsx"
+Cohesion: 0.19
+Nodes (16): useCulinaryContributions(), CulinaryContribution, CulinaryContributionKind, CulinaryContributionStatus, ContributionWire, CULINARY_CONTRIBUTION_KIND_LABEL, CULINARY_CONTRIBUTION_REJECT_REASON_OPTIONS, CULINARY_CONTRIBUTION_STATUS_LABEL (+8 more)
 
-### Community 82 - "vote-moderation-page.tsx"
-Cohesion: 0.39
-Nodes (8): DeleteVoteAction(), ResetTargetAction(), TargetPreviewCell(), topColumnHelper, TopTargetsTab(), voteColumnHelper, VoteListTab(), VoteModerationPage()
+### Community 81 - "word-detail-page.tsx"
+Cohesion: 0.22
+Nodes (15): AuditTimeline(), WordComments(), useRestoreWord(), useTakedownWord(), restoreWordRequest(), takedownWordRequest(), STATUS_TAG_COLOR, StatusTag() (+7 more)
 
-### Community 83 - "word-groups-page.tsx"
-Cohesion: 0.39
-Nodes (8): useAddWordGroupMember(), useAllWordGroups(), useCreateWordGroup(), usePickWords(), useUpdateWordGroup(), MembersDrawer(), STATUS_COLORS, WordGroupsPage()
+### Community 82 - "pantun-reports-page.tsx"
+Cohesion: 0.22
+Nodes (15): usePantunReports(), useResolvePantunReport(), listPantunReportsRequest(), PANTUN_REPORT_REASON_LABEL, PANTUN_REPORT_TARGET_LABEL, PantunReport, PantunReportResolution, PantunReportStatus (+7 more)
 
-### Community 84 - "WordClassOption"
-Cohesion: 0.33
-Nodes (7): DefaultLanguageIds, matchWordClassId(), WordClassOption, InlineWordEditorProps, MeaningFieldsProps, RelatedWordItemProps, classes
+### Community 83 - "culinary-categories-page.tsx"
+Cohesion: 0.26
+Nodes (15): createCulinaryCategoryItemRequest(), CulinaryCategoryInput, deleteCulinaryCategoryItemRequest(), listCulinaryCategoryItemsRequest(), mapItem(), updateCulinaryCategoryItemRequest(), useAllCulinaryCategoryItems(), useCreateCulinaryCategoryItem() (+7 more)
+
+### Community 84 - "pantun-moderation-page.tsx"
+Cohesion: 0.23
+Nodes (11): usePantuns(), useTakedownPantun(), listPantunsRequest(), PantunRow, PantunWire, takedownPantunRequest(), columnHelper, PantunModerationPage() (+3 more)
 
 ### Community 85 - "import-attribution-fields.tsx"
-Cohesion: 0.25
-Nodes (8): listWordImportSessionsRequest(), WordImportSupportType, EMPTY_IMPORT_SUPPORT, HistoryOption, ImportAttributionFields(), ImportSupportDraft, SUPPORT_TYPE_OPTIONS, UserOption
+Cohesion: 0.22
+Nodes (10): listAdminUsersRequest(), listWordImportSessionsRequest(), WordImportSupportType, EMPTY_IMPORT_SUPPORT, HistoryOption, ImportAttributionFields(), ImportSupportDraft, SUPPORT_TYPE_LABEL (+2 more)
 
-### Community 86 - "@tanstack/react-query"
-Cohesion: 0.32
-Nodes (5): react-dom, @tanstack/react-query, queryClient, router, setOnAuthExpired()
+### Community 86 - "mobile-release-page.tsx"
+Cohesion: 0.33
+Nodes (10): listKey, useMobileReleases(), useUpsertMobileRelease(), MobileRelease, MobileReleasePlatform, listMobileReleasesRequest(), mapRelease(), upsertMobileReleaseRequest() (+2 more)
 
-### Community 87 - "system-database-page.tsx"
-Cohesion: 0.68
-Nodes (7): useDatabaseBackupLogs(), isBackupActive(), BackupStatusBadge(), formatBytes(), formatDuration(), LatestBackupStatus(), SystemDatabasePage()
-
-### Community 88 - "system-supabase-page.tsx"
+### Community 87 - "place-views-page.tsx"
 Cohesion: 0.36
-Nodes (7): useSupabaseHealthChecks(), ENV_TAG_COLOR, EnvFilter, formatDuration(), LAST_7D_CUTOFF, StatusBadge(), SystemSupabasePage()
+Nodes (7): fillTrendDays(), PlaceViewsKpis, toPlaceViewsKpis(), PlaceViewsReport, PERIODS, PlaceViewsPage(), report
 
-### Community 89 - "use-review-verifier-application.ts"
+### Community 88 - "provider-section.tsx"
 Cohesion: 0.32
-Nodes (7): ReviewVerifierApplicationResult, useReviewVerifierApplication(), VerifierApplicationDecision, ApproveVerifierApplicationResult, RejectVerifierApplicationResult, approveVerifierApplicationRequest(), rejectVerifierApplicationRequest()
-
-### Community 90 - "lemma-definition-api.ts"
-Cohesion: 0.43
-Nodes (5): useLookupLemmaDefinition(), LemmaDefinitionEntry, LemmaDefinitionLookupResult, LemmaDefinitionSense, lookupLemmaDefinitionRequest()
+Nodes (7): ProviderView, DateRangeWire, DefaultSkeleton(), ProviderSectionProps, SetupModal(), Source, SOURCE_COPY
 
 ### Community 91 - "safe-audio-player.tsx"
-Cohesion: 0.43
-Nodes (5): SafeAudioPlayerProps, SafeAudioPlayerSession(), LEGACY_JSDELIVR_HOSTS, publicAudioUrlCandidates(), resolvePublicAudioUrl()
+Cohesion: 0.36
+Nodes (6): FailKind, SafeAudioPlayerProps, SafeAudioPlayerSession(), LEGACY_JSDELIVR_HOSTS, publicAudioUrlCandidates(), resolvePublicAudioUrl()
 
 ### Community 93 - "jwt.test.ts"
 Cohesion: 0.38
@@ -522,41 +511,33 @@ Nodes (4): RFC-4648, base64UrlDecode(), decodeJwtClaims(), JwtClaims
 Cohesion: 0.33
 Nodes (4): vite, @vitejs/plugin-react, consoleRoot, repoRoot
 
-### Community 95 - "image-censor-editor.tsx"
-Cohesion: 0.43
-Nodes (6): BrushCursorOverlay(), CensorBrushMode, ImageCensorEditor(), ImageCensorEditorProps, isTypingTarget(), loadSourceCanvas()
-
-### Community 96 - "use-blocklist-mutations.ts"
-Cohesion: 0.60
-Nodes (4): useBulkCreateBlocklistWords(), useDeleteBlocklistWord(), bulkCreateBlocklistRequest(), deleteBlocklistRequest()
-
-### Community 97 - "use-word-publish.ts"
-Cohesion: 0.60
-Nodes (4): usePublishWord(), useUnpublishWord(), publishWordRequest(), unpublishWordRequest()
+### Community 96 - "blocklist-api.ts"
+Cohesion: 0.32
+Nodes (8): useBlocklistList(), useBulkCreateBlocklistWords(), useDeleteBlocklistWord(), BlocklistWordItem, BulkBlocklistResult, bulkCreateBlocklistRequest(), deleteBlocklistRequest(), listBlocklistRequest()
 
 ### Community 98 - "use-change-password.ts"
-Cohesion: 0.67
+Cohesion: 0.70
 Nodes (3): useChangePassword(), ChangePasswordInput, changePasswordRequest()
 
 ## Knowledge Gaps
-- **491 isolated node(s):** `name`, `version`, `description`, `type`, `private` (+486 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 533 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **577 isolated node(s):** `name`, `version`, `description`, `type`, `private` (+572 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 626 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `antd` connect `antd` to `notifications-page.tsx`, `dashboard-page.tsx`, `client.ts`, `word-form-blocks.tsx`, `router.tsx`, `PageHeader`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-miss-api.ts`, `normalizeError`, `places-page.tsx`, `search-tab.tsx`, `web-analytics.ts`, `play-analytics-page.tsx`, `contribution-review-panel.tsx`, `user-admin-api.ts`, `import-words-drawer.tsx`, `audit-logs-page.tsx`, `audio-capture-ui.tsx`, `system-whatsapp-page.tsx`, `react`, `word-comments.tsx`, `package.json`, `announcement-api.ts`, `review-submit-queue.ts`, `word-reports-page.tsx`, `map-picker.tsx`, `place-categories-page.tsx`, `web-analytics-page.tsx`, `console-layout.tsx`, `comment-blocklist-page.tsx`, `user.ts`, `contribution-entity-view.tsx`, `word-comma-splits-panel.tsx`, `word-images-field.tsx`, `place-drawer.tsx`, `import-sheet.tsx`, `system-email-page.tsx`, `audio-trim-editor.tsx`, `web-analytics/presentation/components/trend-chart.tsx`, `top-pending-contributions-panel.tsx`, `use-vote-counts.ts`, `word-report-detail-page.tsx`, `use-word-of-day.ts`, `words-page.tsx`, `vote-moderation-page.tsx`, `word-groups-page.tsx`, `import-attribution-fields.tsx`, `@tanstack/react-query`, `system-database-page.tsx`, `system-supabase-page.tsx`, `safe-audio-player.tsx`, `image-censor-editor.tsx`?**
-  _High betweenness centrality (0.174) - this node is a cross-community bridge._
-- **Why does `react` connect `react` to `notifications-page.tsx`, `dashboard-page.tsx`, `client.ts`, `word-form-blocks.tsx`, `PageHeader`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-miss-api.ts`, `normalizeError`, `places-page.tsx`, `antd`, `web-analytics.ts`, `play-analytics-page.tsx`, `contribution-review-panel.tsx`, `user-admin-api.ts`, `import-words-drawer.tsx`, `audit-logs-page.tsx`, `audio-capture-ui.tsx`, `system-whatsapp-page.tsx`, `package.json`, `announcement-api.ts`, `review-submit-queue.ts`, `word-reports-page.tsx`, `map-picker.tsx`, `place-categories-page.tsx`, `web-analytics-page.tsx`, `console-layout.tsx`, `comment-blocklist-page.tsx`, `useCursorList`, `contribution-entity-view.tsx`, `word-comma-splits-panel.tsx`, `word-images-field.tsx`, `place-drawer.tsx`, `import-sheet.tsx`, `system-email-page.tsx`, `compressImageForUpload`, `audio-trim-editor.tsx`, `web-analytics/presentation/components/trend-chart.tsx`, `word-report-detail-page.tsx`, `words-page.tsx`, `vote-moderation-page.tsx`, `word-groups-page.tsx`, `import-attribution-fields.tsx`, `@tanstack/react-query`, `system-database-page.tsx`, `system-supabase-page.tsx`, `safe-audio-player.tsx`, `image-censor-editor.tsx`?**
-  _High betweenness centrality (0.095) - this node is a cross-community bridge._
-- **Why does `@tanstack/react-query` connect `@tanstack/react-query` to `notifications-page.tsx`, `dashboard-page.tsx`, `create-word.ts`, `word-form-blocks.tsx`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-miss-api.ts`, `places-page.tsx`, `search-tab.tsx`, `antd`, `play-analytics-page.tsx`, `types.ts`, `contribution-review-panel.tsx`, `user-admin-api.ts`, `vote-admin-api.ts`, `import-words-drawer.tsx`, `audio-capture-ui.tsx`, `discussion-api.ts`, `system-whatsapp-page.tsx`, `use-word-groups.ts`, `vitest`, `word-api.ts`, `react`, `word-comments.tsx`, `package.json`, `announcement-api.ts`, `review-submit-queue.ts`, `play-analytics.ts`, `word-reports-page.tsx`, `place-categories-page.tsx`, `web-analytics-page.tsx`, `use-legal.ts`, `useCursorList`, `user.ts`, `region-api.ts`, `verifier-application.ts`, `word-comma-splits-panel.tsx`, `use-api-clients.ts`, `session.ts`, `bug-report.ts`, `system-email-page.tsx`, `use-category-crud.ts`, `top-pending-contributions-panel.tsx`, `database-backup-api.ts`, `supabase-health-api.ts`, `use-vote-counts.ts`, `word-report-detail-page.tsx`, `use-public-profile.ts`, `use-word-of-day.ts`, `word.ts`, `use-review-verifier-application.ts`, `lemma-definition-api.ts`, `use-blocklist-mutations.ts`, `use-word-publish.ts`, `use-change-password.ts`?**
+- **Why does `antd` connect `normalizeError` to `notifications-page.tsx`, `dashboard-page.tsx`, `client.ts`, `word-form-blocks.tsx`, `router.tsx`, `DataTable`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-misses-page.tsx`, `places-page.tsx`, `web-analytics-page.tsx`, `formatDateTime`, `play-analytics-page.tsx`, `contribution-review-panel.tsx`, `users-page.tsx`, `vote-moderation-page.tsx`, `import-words-drawer.tsx`, `audit-changes-cell.tsx`, `audio-capture-ui.tsx`, `discussion-detail-page.tsx`, `system-whatsapp-page.tsx`, `word-groups-page.tsx`, `word-api.ts`, `useDebouncedValue`, `@tanstack/react-query`, `package.json`, `announcements-page.tsx`, `client`, `usaha-page.tsx`, `@tanstack/react-router`, `map-picker.tsx`, `place-categories-page.tsx`, `console-layout.tsx`, `comment-blocklist-page.tsx`, `session.ts`, `contribution-entity-view.tsx`, `verifier-application-detail-page.tsx`, `word-comma-splits-panel.tsx`, `encyclopedia-api.ts`, `place-drawer.tsx`, `events-page.tsx`, `import-sheet.tsx`, `system-email-page.tsx`, `ApiOkEnvelope`, `achievements-page.tsx`, `TrendChart`, `top-pending-contributions-panel.tsx`, `system-database-page.tsx`, `use-culinary.ts`, `use-vote-counts.ts`, `user-info-modal.tsx`, `use-word-of-day.ts`, `culinary-drawer.tsx`, `culinary-proposal-drawer.tsx`, `word-detail-page.tsx`, `pantun-reports-page.tsx`, `culinary-categories-page.tsx`, `pantun-moderation-page.tsx`, `import-attribution-fields.tsx`, `mobile-release-page.tsx`, `place-views-page.tsx`, `provider-section.tsx`, `safe-audio-player.tsx`?**
+  _High betweenness centrality (0.147) - this node is a cross-community bridge._
+- **Why does `@tanstack/react-query` connect `@tanstack/react-query` to `notifications-page.tsx`, `dashboard-page.tsx`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-misses-page.tsx`, `normalizeError`, `places-page.tsx`, `web-analytics-page.tsx`, `formatDateTime`, `web-analytics.ts`, `play-analytics-page.tsx`, `pronunciation-audio-api.ts`, `contribution-review-panel.tsx`, `users-page.tsx`, `vote-moderation-page.tsx`, `import-words-drawer.tsx`, `discussion-detail-page.tsx`, `system-whatsapp-page.tsx`, `word-groups-page.tsx`, `vitest`, `word-api.ts`, `useDebouncedValue`, `package.json`, `announcements-page.tsx`, `client`, `usaha-page.tsx`, `@tanstack/react-router`, `place-categories-page.tsx`, `use-legal.ts`, `error.ts`, `session.ts`, `use-regions.ts`, `verifier-application-detail-page.tsx`, `word-comma-splits-panel.tsx`, `encyclopedia-api.ts`, `contribution-mappers.ts`, `use-api-clients.ts`, `events-page.tsx`, `bug-report-api.ts`, `system-email-page.tsx`, `achievements-page.tsx`, `use-category-crud.ts`, `top-pending-contributions-panel.tsx`, `system-database-page.tsx`, `use-culinary.ts`, `use-vote-counts.ts`, `user-info-modal.tsx`, `use-word-of-day.ts`, `word-detail-page.tsx`, `pantun-reports-page.tsx`, `culinary-categories-page.tsx`, `pantun-moderation-page.tsx`, `mobile-release-page.tsx`, `blocklist-api.ts`, `use-change-password.ts`?**
+  _High betweenness centrality (0.106) - this node is a cross-community bridge._
+- **Why does `react` connect `normalizeError` to `notifications-page.tsx`, `dashboard-page.tsx`, `word-form-blocks.tsx`, `DataTable`, `use-campaigns.ts`, `create-word-page.tsx`, `word-suggestion-detail-page.tsx`, `abuse-page.tsx`, `search-misses-page.tsx`, `places-page.tsx`, `web-analytics-page.tsx`, `formatDateTime`, `play-analytics-page.tsx`, `contribution-review-panel.tsx`, `users-page.tsx`, `vote-moderation-page.tsx`, `import-words-drawer.tsx`, `audit-changes-cell.tsx`, `audio-capture-ui.tsx`, `discussion-detail-page.tsx`, `system-whatsapp-page.tsx`, `word-groups-page.tsx`, `word-api.ts`, `useDebouncedValue`, `@tanstack/react-query`, `package.json`, `announcements-page.tsx`, `client`, `usaha-page.tsx`, `@tanstack/react-router`, `map-picker.tsx`, `place-categories-page.tsx`, `console-layout.tsx`, `comment-blocklist-page.tsx`, `error.ts`, `contribution-entity-view.tsx`, `verifier-application-detail-page.tsx`, `word-comma-splits-panel.tsx`, `encyclopedia-api.ts`, `place-drawer.tsx`, `events-page.tsx`, `import-sheet.tsx`, `system-email-page.tsx`, `ApiOkEnvelope`, `achievements-page.tsx`, `TrendChart`, `system-database-page.tsx`, `use-culinary.ts`, `user-info-modal.tsx`, `culinary-drawer.tsx`, `culinary-proposal-drawer.tsx`, `word-detail-page.tsx`, `pantun-reports-page.tsx`, `culinary-categories-page.tsx`, `pantun-moderation-page.tsx`, `import-attribution-fields.tsx`, `mobile-release-page.tsx`, `place-views-page.tsx`, `provider-section.tsx`, `safe-audio-player.tsx`?**
   _High betweenness centrality (0.083) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `description` to the rest of the system?**
-  _491 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _577 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `notifications-page.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.0653417645287564 - nodes in this community are weakly interconnected._
 - **Should `dashboard-page.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05962732919254658 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05379746835443038 - nodes in this community are weakly interconnected._
 - **Should `client.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06649616368286446 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0851063829787234 - nodes in this community are weakly interconnected._

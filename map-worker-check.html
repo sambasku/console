@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Map worker check</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import { createElement } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { MapPicker } from './src/shared/map/map-picker.tsx';
+
+      const root = document.getElementById('root');
+      if (root) createRoot(root).render(createElement(MapPicker, { height: 360 }));
+    </script>
+  </body>
+</html>

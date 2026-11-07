@@ -137,6 +137,17 @@ export function usePendingUsahaContributions(enabled = true) {
   });
 }
 
+/** Riwayat pengajuan per usaha (admin drawer). */
+export function useUsahaContributionHistory(usahaId: string | null) {
+  return useQuery({
+    queryKey: ['usaha-contributions', 'history', usahaId],
+    queryFn: ({ signal }) =>
+      listUsahaContributionsRequest({ usaha_id: usahaId! }, signal),
+    enabled: !!usahaId,
+    staleTime: 15_000,
+  });
+}
+
 export function useReviewUsahaContribution() {
   const qc = useQueryClient();
   return useMutation({

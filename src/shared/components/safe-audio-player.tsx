@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Space, Typography } from 'antd';
 import { publicAudioUrlCandidates } from '@/shared/utils/public-audio-url';
 
@@ -11,10 +11,12 @@ export interface SafeAudioPlayerProps {
   style?: React.CSSProperties;
 }
 
+type FailKind = 'empty' | 'csp' | 'load';
+
 /**
  * `<audio controls>` dengan fallback URL + pesan jelas saat gagal load.
- * Native control abu-abu/tidak bisa diklik biasanya karena src 404 - tanpa
- * onError user mengira tombolnya rusak.
+ * Native control abu-abu/tidak bisa diklik biasanya karena src 404 atau CSP
+ * media-src - tanpa onError user mengira tombolnya rusak.
  */
 export function SafeAudioPlayer(props: SafeAudioPlayerProps) {
   return <SafeAudioPlayerSession key={props.url ?? ''} {...props} />;
@@ -23,11 +25,24 @@ export function SafeAudioPlayer(props: SafeAudioPlayerProps) {
 function SafeAudioPlayerSession({ url, maxWidth = 420, style }: SafeAudioPlayerProps) {
   const candidates = useMemo(() => publicAudioUrlCandidates(url), [url]);
   const [index, setIndex] = useState(0);
-  const [failed, setFailed] = useState(candidates.length === 0);
+  const [failKind, setFailKind] = useState<FailKind | null>(
+    candidates.length === 0 ? 'empty' : null,
+  );
 
   const src = candidates[index] ?? '';
 
-  if (!src || failed) {
+  useEffect(() => {
+    const onViolation = (ev: SecurityPolicyViolationEvent) => {
+      if (ev.violatedDirective === 'media-src' || ev.effectiveDirective === 'media-src') {
+        setFailKind('csp');
+      }
+    };
+    document.addEventListener('securitypolicyviolation', onViolation);
+    return () => document.removeEventListener('securitypolicyviolation', onViolation);
+  }, []);
+
+  if (!src || failKind) {
+    const isCsp = failKind === 'csp';
     return (
       <Alert
         type="warning"
@@ -36,15 +51,17 @@ function SafeAudioPlayerSession({ url, maxWidth = 420, style }: SafeAudioPlayerP
         description={
           <Space direction="vertical" size={4}>
             <Text type="secondary">
-              File tidak ditemukan di CDN (sering karena URL repo lama atau upload gagal).
+              {isCsp
+                ? 'Browser memblokir pemutaran di halaman (CSP media-src). Coba buka pranala di tab baru, atau pastikan header console mengizinkan media CDN/blob.'
+                : failKind === 'empty'
+                  ? 'URL audio kosong.'
+                  : 'File tidak ditemukan di CDN (sering karena URL repo lama atau upload gagal).'}
             </Text>
             {url ? (
               <Link href={url} target="_blank" rel="noreferrer">
                 Buka pranala tersimpan
               </Link>
-            ) : (
-              <Text type="secondary">URL audio kosong.</Text>
-            )}
+            ) : null}
           </Space>
         }
       />
@@ -64,7 +81,7 @@ function SafeAudioPlayerSession({ url, maxWidth = 420, style }: SafeAudioPlayerP
             setIndex((i) => i + 1);
             return;
           }
-          setFailed(true);
+          setFailKind('load');
         }}
       />
       {index > 0 ? (

@@ -16,8 +16,22 @@ function point(overrides: Partial<ActivityDailyPoint> & { date: string }): Activ
 describe('buildTodayVsYesterday', () => {
   it('menghitung delta vs hari sebelumnya', () => {
     const metrics = buildTodayVsYesterday([
-      point({ date: '2026-09-25', contributions: 2, votes: 10, comments: 1, newUsers: 0 }),
-      point({ date: '2026-09-26', contributions: 5, votes: 8, comments: 1, newUsers: 2 }),
+      point({
+        date: '2026-09-25',
+        contributions: 2,
+        votes: 10,
+        comments: 1,
+        newUsers: 0,
+        searches: 4,
+      }),
+      point({
+        date: '2026-09-26',
+        contributions: 5,
+        votes: 8,
+        comments: 1,
+        newUsers: 2,
+        searches: 9,
+      }),
     ]);
     expect(metrics.find((m) => m.key === 'contributions')).toMatchObject({
       today: 5,
@@ -31,6 +45,12 @@ describe('buildTodayVsYesterday', () => {
     });
     expect(metrics.find((m) => m.key === 'comments')).toMatchObject({ delta: 0 });
     expect(metrics.find((m) => m.key === 'newUsers')).toMatchObject({ delta: 2 });
+    expect(metrics.find((m) => m.key === 'searches')).toMatchObject({
+      label: 'Pencarian',
+      today: 9,
+      yesterday: 4,
+      delta: 5,
+    });
   });
 
   it('sembunyikan delta jika hanya satu titik', () => {

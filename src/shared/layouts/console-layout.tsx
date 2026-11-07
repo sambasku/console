@@ -84,6 +84,10 @@ const KAMUS_ROUTES = {
 
 /** Leaf routes di bawah grup Eksplorasi. */
 const EKSPLORASI_ROUTES = {
+  '/encyclopedia': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
+  '/encyclopedia/contributions': { icon: <InboxOutlined />, label: 'Usulan ensiklopedia' },
+  '/encyclopedia/categories': { icon: <TagsOutlined />, label: 'Kategori ensiklopedia' },
+  '/encyclopedia/reports': { icon: <WarningOutlined />, label: 'Laporan ensiklopedia' },
   '/place-categories': { icon: <TagsOutlined />, label: 'Kategori tempat' },
   '/regions': { icon: <CompassOutlined />, label: 'Wilayah' },
   '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
@@ -130,6 +134,7 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
   | '/users'
+  | '/sponsorships'
   | '/audit-logs'
   | '/bug-reports'
   | '/verifier-applications'
@@ -171,6 +176,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
+  encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
   places: 'Wisata',
@@ -300,6 +306,11 @@ export function ConsoleLayout() {
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
+      items.push({
+        key: '/sponsorships',
+        icon: <ShopOutlined />,
+        label: 'Sponsor & Mitra',
+      });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,

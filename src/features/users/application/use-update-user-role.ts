@@ -5,7 +5,9 @@ import {
   createAdminUserRequest,
   setCanContributeRequest,
   setUserActiveRequest,
+  setUserSponsorRequest,
   updateUserRoleRequest,
+  updateUserTeamRequest,
   verifyUserEmailRequest,
   type CreateAdminUserInput,
 } from '../infrastructure/user-admin-api';
@@ -116,6 +118,59 @@ export function useVerifyUserEmail() {
       message.warning(
         `Gagal verifikasi email "${vars.username}": ${normalizeError(err).message || 'Kesalahan tidak diketahui'}`,
       );
+    },
+  });
+}
+
+export function useUpdateUserTeam() {
+  const queryClient = useQueryClient();
+  const { message } = App.useApp();
+  return useMutation({
+    mutationFn: (vars: {
+      id: string;
+      username: string;
+      is_team?: boolean;
+      team_as?: string | null;
+      team_note?: string | null;
+    }) =>
+      updateUserTeamRequest(vars.id, {
+        is_team: vars.is_team,
+        team_as: vars.team_as,
+        team_note: vars.team_note,
+      }),
+    onSuccess: async (_, vars) => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      message.success(
+        vars.is_team === false
+          ? `${vars.username} dikeluarkan dari Tim Kami.`
+          : `Tim Kami ${vars.username} diperbarui.`,
+      );
+    },
+    onError: (err) => {
+      message.warning(normalizeError(err).message || 'Gagal memperbarui Tim Kami');
+    },
+  });
+}
+
+export function useSetUserSponsor() {
+  const queryClient = useQueryClient();
+  const { message } = App.useApp();
+  return useMutation({
+    mutationFn: (vars: { id: string; username: string; isSponsor: boolean }) =>
+      setUserSponsorRequest(vars.id, vars.isSponsor),
+    onSuccess: async (_, vars) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-sponsorships'] }),
+      ]);
+      message.success(
+        vars.isSponsor
+          ? `${vars.username} ditandai sebagai sponsor.`
+          : `${vars.username} dihapus dari daftar sponsor.`,
+      );
+    },
+    onError: (err) => {
+      message.warning(normalizeError(err).message || 'Gagal mengubah status sponsor');
     },
   });
 }

@@ -71,3 +71,14 @@ export async function uploadPronunciationAudioRequest(
   );
   return res.data.data;
 }
+
+/**
+ * Soft-delete audio pelafalan - DELETE /api/v1/words/:wordId/pronunciations/audio/:audioId.
+ * Role API: admin, editor, root. Sukses 204.
+ */
+export async function deletePronunciationAudioRequest(
+  wordId: string,
+  audioId: string,
+): Promise<void> {
+  await client.delete(`/words/${wordId}/pronunciations/audio/${audioId}`);
+}

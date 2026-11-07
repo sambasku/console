@@ -107,6 +107,12 @@ export interface UsahaContribution {
 
 export type UsahaClaimStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
+export interface UsahaClaimEvidenceImage {
+  url: string;
+  providerFileId: string;
+  altText?: string | null;
+}
+
 export interface UsahaClaim {
   id: string;
   usahaId: string;
@@ -120,6 +126,7 @@ export interface UsahaClaim {
   reviewedAt: string | null;
   /** Hanya ada di wire admin - bukti privat, jangan pernah dirender di publik. */
   contactEvidence?: string;
+  evidenceImages?: UsahaClaimEvidenceImage[];
   userId?: string;
   reviewedBy?: string | null;
 }

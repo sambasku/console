@@ -28,7 +28,14 @@ import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
 import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { useUserAdminList, type UseUserAdminListArgs } from '../application/use-user-admin-list';
-import { useSetCanContribute, useSetUserActive, useUpdateUserRole, useVerifyUserEmail } from '../application/use-update-user-role';
+import {
+  useSetCanContribute,
+  useSetUserActive,
+  useSetUserSponsor,
+  useUpdateUserRole,
+  useUpdateUserTeam,
+  useVerifyUserEmail,
+} from '../application/use-update-user-role';
 import { CreateUserDrawer } from './create-user-drawer';
 import { UserAbuseDrawer } from '@/features/abuse/presentation/user-abuse-drawer';
 import { isMutedNow } from '@/features/abuse/domain/abuse';
@@ -66,6 +73,8 @@ export function UsersPage() {
   const setContribute = useSetCanContribute();
   const setActive = useSetUserActive();
   const verifyEmail = useVerifyUserEmail();
+  const updateTeam = useUpdateUserTeam();
+  const setSponsor = useSetUserSponsor();
   const listArgs: UseUserAdminListArgs = {
     q,
     role: filterRole,
@@ -281,6 +290,53 @@ export function UsersPage() {
           return reason ? <Tooltip title={reason}>{control}</Tooltip> : control;
         },
       }),
+      columnHelper.accessor('isTeam', {
+        header: 'Tim Kami',
+        size: 110,
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <Tooltip title={row.teamAs || row.teamNote || 'Tampilkan di halaman Tentang → Tim Kami'}>
+              <Switch
+                checked={row.isTeam}
+                size="small"
+                loading={updateTeam.isPending && updateTeam.variables?.id === row.id}
+                onChange={(next) =>
+                  updateTeam.mutate({
+                    id: row.id,
+                    username: row.username,
+                    is_team: next,
+                    team_as: next ? row.teamAs ?? row.role : row.teamAs,
+                  })
+                }
+              />
+            </Tooltip>
+          );
+        },
+      }),
+      columnHelper.accessor('isSponsor', {
+        header: 'Sponsor',
+        size: 100,
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <Tooltip title="Checkbox: masuk/keluar tabel sponsorships">
+              <Switch
+                checked={row.isSponsor}
+                size="small"
+                loading={setSponsor.isPending && setSponsor.variables?.id === row.id}
+                onChange={(next) =>
+                  setSponsor.mutate({
+                    id: row.id,
+                    username: row.username,
+                    isSponsor: next,
+                  })
+                }
+              />
+            </Tooltip>
+          );
+        },
+      }),
       columnHelper.accessor('createdAt', {
         header: 'Bergabung',
         size: 180,
@@ -361,7 +417,18 @@ export function UsersPage() {
         },
       }),
     ]),
-      [pendingRoles, updateRole.variables, updateRole.isPending, onSaveRole, setContribute, setActive, verifyEmail, user?.id],
+      [
+        pendingRoles,
+        updateRole.variables,
+        updateRole.isPending,
+        onSaveRole,
+        setContribute,
+        setActive,
+        verifyEmail,
+        updateTeam,
+        setSponsor,
+        user?.id,
+      ],
   );
 
   const table = useTable({

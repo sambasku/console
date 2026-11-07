@@ -383,7 +383,7 @@ function QuotaTab() {
         )}
       </Card>
 
-      <Card title="Koreksi manual (sinkron kirim dari dashboard Kapso)">
+      <Card title="Koreksi manual">
         <Form form={form} layout="inline" initialValues={{ limit_count: u?.limit_count, warn_threshold_percent: u?.warn_threshold_percent }}>
           <Form.Item name="used_count" label="Terpakai">
             <InputNumber min={0} placeholder={String(u?.used_count ?? '')} />
@@ -399,7 +399,7 @@ function QuotaTab() {
           </Button>
         </Form>
         <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-          Kosongkan kolom yang tidak mau diubah. Kirim dari dashboard Kapso tidak otomatis tercatat di sini.
+          Kosongkan kolom yang tidak mau diubah. Angka ini catatan pemakaian lewat API.
         </Typography.Text>
       </Card>
 

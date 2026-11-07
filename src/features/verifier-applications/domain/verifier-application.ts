@@ -43,7 +43,12 @@ export interface VerifierApplicationListItem {
 }
 
 export interface VerifierApplicationDetail extends VerifierApplicationListItem {
+  full_name: string | null;
   address: string;
+  dialect: string | null;
+  dialect_note: string | null;
+  reason: string | null;
+  photo: VerifierApplicationSocialScreenshot | null;
   social_links: VerifierApplicationSocialLink[];
   admin_comment: string | null;
   reviewed_by: string | null;

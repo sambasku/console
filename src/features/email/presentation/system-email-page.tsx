@@ -1,20 +1,25 @@
 import {
+  Alert,
   App as AntdApp,
   Badge,
   Button,
   Card,
+  Form,
+  Input,
   Segmented,
+  Select,
   Space,
   Table,
   Tag,
   Typography,
 } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SendOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { PageHeader } from '@/shared/components/page-header';
 import { formatDateTime } from '@/shared/utils/format-datetime';
-import { useEmailLogs, useEmailQuotas } from '../application/use-email';
-import type { EmailLog, EmailLogStatus, EmailQuota } from '../domain/email';
+import { normalizeError } from '@/shared/api/error';
+import { useEmailLogs, useEmailQuotas, useSendTestEmail } from '../application/use-email';
+import type { EmailLog, EmailLogStatus, EmailQuota, EmailTestResult } from '../domain/email';
 
 const CATEGORY_LABELS: Record<string, string> = {
   otp: 'OTP verifikasi',
@@ -29,6 +34,89 @@ function statusBadge(s: EmailLogStatus) {
   if (s === 'failed') return <Badge status="error" text="Gagal" />;
   if (s === 'skipped_quota') return <Badge status="warning" text="Skip kuota" />;
   return <Badge status="default" text="Skip env" />;
+}
+
+function EmailTestCard({ providers }: { providers: string[] }) {
+  const { message } = AntdApp.useApp();
+  const [form] = Form.useForm<{ to: string; provider?: string }>();
+  const sendTest = useSendTestEmail();
+  const [result, setResult] = useState<EmailTestResult | null>(null);
+
+  const onFinish = async (values: { to: string; provider?: string }) => {
+    setResult(null);
+    try {
+      const data = await sendTest.mutateAsync({
+        to: values.to.trim(),
+        ...(values.provider ? { provider: values.provider } : {}),
+      });
+      setResult(data);
+      if (data.sent) {
+        message.success(data.provider ? `Email test terkirim lewat ${data.provider}.` : 'Email test terkirim.');
+      }
+    } catch (err) {
+      const normalized = normalizeError(err);
+      setResult({
+        sent: false,
+        provider: null,
+        message_id: null,
+        error_code: normalized.errorCode,
+        error_message: normalized.message,
+      });
+    }
+  };
+
+  const notConfigured = result?.error_code === 'EMAIL_NOT_CONFIGURED';
+
+  return (
+    <Card title="Kirim email test" style={{ marginBottom: 16, maxWidth: 640 }}>
+      <Typography.Paragraph type="secondary" style={{ marginTop: 0 }}>
+        Jalur yang sama dengan OTP. Hasilnya masuk log di bawah, kategori Test kirim.
+      </Typography.Paragraph>
+      <Form form={form} layout="vertical" onFinish={(v) => void onFinish(v)}>
+        <Form.Item
+          name="to"
+          label="Email tujuan"
+          rules={[
+            { required: true, message: 'Email wajib diisi' },
+            { type: 'email', message: 'Email tidak valid' },
+          ]}
+        >
+          <Input placeholder="nama@email.com" inputMode="email" autoComplete="off" />
+        </Form.Item>
+        <Form.Item name="provider" label="Provider">
+          <Select
+            allowClear
+            placeholder="Auto (urut prioritas)"
+            options={providers.map((p) => ({ value: p, label: p }))}
+          />
+        </Form.Item>
+        <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={sendTest.isPending}>
+          Kirim test
+        </Button>
+      </Form>
+      {result && !result.sent ? (
+        <Alert
+          style={{ marginTop: 16 }}
+          type="error"
+          showIcon
+          message={result.error_message ?? 'Email test gagal dikirim.'}
+          description={
+            notConfigured
+              ? `Provider di log: ${result.provider ?? 'none'}. Set RESEND_API_KEY di environment proses API yang sedang melayani console ini, simpan, restart prosesnya, lalu kirim test lagi.`
+              : `Provider: ${result.provider ?? 'none'}${result.error_code ? ` (${result.error_code})` : ''}`
+          }
+        />
+      ) : null}
+      {result?.sent ? (
+        <Alert
+          style={{ marginTop: 16 }}
+          type="success"
+          showIcon
+          message={result.provider ? `Terkirim lewat ${result.provider}.` : 'Terkirim.'}
+        />
+      ) : null}
+    </Card>
+  );
 }
 
 export function SystemEmailPage() {
@@ -79,7 +167,7 @@ export function SystemEmailPage() {
 
   return (
     <>
-      <PageHeader title="Email" subtitle="Log kirim email OTP/reset dan kuota provider." />
+      <PageHeader title="Email" subtitle="Kuota provider, kirim email test, dan log OTP/reset." />
       <Card
         title="Kuota provider"
         extra={
@@ -91,6 +179,7 @@ export function SystemEmailPage() {
       >
         <Table rowKey="provider" size="small" loading={quotas.isLoading} dataSource={quotas.data ?? []} columns={quotaColumns} pagination={false} />
       </Card>
+      <EmailTestCard providers={(quotas.data ?? []).map((q) => q.provider)} />
       <Card
         title="Log kirim (50 terakhir)"
         extra={

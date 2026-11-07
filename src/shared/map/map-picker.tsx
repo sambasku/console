@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AutoComplete, InputNumber, Skeleton, Space, Typography } from 'antd';
-import { Map as MapLibreMap, Marker, NavigationControl } from 'maplibre-gl';
+import maplibreWorkerSource from 'maplibre-gl/dist/maplibre-gl-worker.mjs?raw';
+import { Map as MapLibreMap, Marker, NavigationControl, setWorkerUrl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   reverseNominatim,
@@ -13,6 +14,20 @@ import { OPENFREEMAP_STYLE_BRIGHT } from './basemap';
 
 const DEFAULT_CENTER: MapPoint = { lat: -2.5, lng: 118 };
 const PIN = '#1677ff';
+
+let mapWorkerReady = false;
+
+/**
+ * Vite menggabungkan maplibre-gl ke chunk aplikasi, jadi URL worker bawaan
+ * (`./maplibre-gl-worker.mjs` di sebelah chunk) 404. Sama seperti peta web:
+ * muat sumber worker sebagai blob same-origin sebelum Map dibuat.
+ */
+function ensureMapWorker(): void {
+  if (mapWorkerReady) return;
+  const blob = new Blob([maplibreWorkerSource], { type: 'text/javascript' });
+  setWorkerUrl(URL.createObjectURL(blob));
+  mapWorkerReady = true;
+}
 
 function createPin(): HTMLDivElement {
   const el = document.createElement('div');
@@ -133,6 +148,7 @@ export function MapPicker({
     if (!node) return;
     let map: MapLibreMap;
     try {
+      ensureMapWorker();
       map = new MapLibreMap({
         container: node,
         style: OPENFREEMAP_STYLE_BRIGHT,

@@ -24,3 +24,11 @@ export interface EmailQuota {
   today_used: number;
   updated_at: string | null;
 }
+
+export interface EmailTestResult {
+  sent: boolean;
+  provider: string | null;
+  message_id: string | null;
+  error_code: string | null;
+  error_message: string | null;
+}
