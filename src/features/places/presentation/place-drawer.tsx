@@ -351,9 +351,11 @@ export function PlaceDrawer({
                   options={[
                     { value: 'sejarah', label: 'Sejarah' },
                     { value: 'alam', label: 'Alam' },
+                    { value: 'religi', label: 'Religi' },
+                    { value: 'tirta', label: 'Tirta' },
+                    { value: 'agro', label: 'Agro' },
+                    { value: 'bahari', label: 'Bahari' },
                     { value: 'budaya', label: 'Budaya' },
-                    { value: 'pantai', label: 'Pantai' },
-                    { value: 'belanja', label: 'Belanja' },
                   ]}
                 />
               </Form.Item>
