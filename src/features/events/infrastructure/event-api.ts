@@ -2,6 +2,7 @@ import { client } from '@/shared/api/client';
 import type {
   Event,
   EventCategoryRef,
+  EventGoingUser,
   EventOccurrenceStatus,
   EventPlaceRef,
   EventSourceType,
@@ -37,6 +38,7 @@ export interface EventWire {
   published_at: string | null;
   created_at: string;
   updated_at: string | null;
+  going_count?: number;
 }
 
 export function mapEvent(w: EventWire): Event {
@@ -68,6 +70,7 @@ export function mapEvent(w: EventWire): Event {
     publishedAt: w.published_at,
     createdAt: w.created_at,
     updatedAt: w.updated_at,
+    goingCount: w.going_count ?? 0,
   };
 }
 
@@ -164,4 +167,49 @@ export async function setEventCancelledRequest(
 
 export async function deleteEventRequest(id: string): Promise<void> {
   await client.delete(`/admin/events/${id}`);
+}
+
+export interface EventGoingsResult {
+  items: EventGoingUser[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  total: number;
+}
+
+/** Daftar orang yang berencana datang (admin). */
+export async function listEventGoingsRequest(
+  eventId: string,
+  params: { limit?: number; cursor?: string } = {},
+  signal?: AbortSignal,
+): Promise<EventGoingsResult> {
+  const res = await client.get<{
+    success: true;
+    data: Array<{
+      id: string;
+      user_id: string;
+      username: string;
+      display_name: string | null;
+      avatar_url: string | null;
+      created_at: string;
+    }>;
+    meta: {
+      limit: number;
+      next_cursor: string | null;
+      has_more: boolean;
+      total: number;
+    };
+  }>(`/admin/events/${eventId}/goings`, { params, signal });
+  return {
+    items: res.data.data.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      username: row.username,
+      displayName: row.display_name,
+      avatarUrl: row.avatar_url,
+      createdAt: row.created_at,
+    })),
+    nextCursor: res.data.meta.next_cursor,
+    hasMore: res.data.meta.has_more,
+    total: res.data.meta.total,
+  };
 }

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { tableFeatureSet } from '../../../shared/components/table-features';
-import { AlertOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
+import { AlertOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import {
   Alert,
   App as AntdApp,
@@ -9,7 +9,9 @@ import {
   Button,
   Col,
   Flex,
+  Form,
   Input,
+  Modal,
   Popconfirm,
   Result,
   Row,
@@ -68,6 +70,8 @@ export function UsersPage() {
   const [userTab, setUserTab] = useState<'all' | 'blocked'>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [pendingRoles, setPendingRoles] = useState<PendingRoleMap>({});
+  const [teamModalUser, setTeamModalUser] = useState<AdminUserListItem | null>(null);
+  const [teamForm] = Form.useForm<{ team_note: string }>();
   const q = useDebouncedValue(searchInput, 300);
   const updateRole = useUpdateUserRole();
   const setContribute = useSetCanContribute();
@@ -75,6 +79,24 @@ export function UsersPage() {
   const verifyEmail = useVerifyUserEmail();
   const updateTeam = useUpdateUserTeam();
   const setSponsor = useSetUserSponsor();
+
+  const openTeamModal = useCallback((row: AdminUserListItem) => {
+    setTeamModalUser(row);
+    teamForm.setFieldsValue({ team_note: row.teamNote ?? '' });
+  }, [teamForm]);
+
+  const saveTeamModal = useCallback(async () => {
+    if (!teamModalUser) return;
+    const values = await teamForm.validateFields();
+    const note = values.team_note.trim();
+    await updateTeam.mutateAsync({
+      id: teamModalUser.id,
+      username: teamModalUser.username,
+      is_team: true,
+      team_note: note.length > 0 ? note : null,
+    });
+    setTeamModalUser(null);
+  }, [teamForm, teamModalUser, updateTeam]);
   const listArgs: UseUserAdminListArgs = {
     q,
     role: filterRole,
@@ -292,25 +314,41 @@ export function UsersPage() {
       }),
       columnHelper.accessor('isTeam', {
         header: 'Tim Kami',
-        size: 110,
+        size: 140,
         cell: (info) => {
           const row = info.row.original;
+          const tip = row.teamNote || 'Subtitle Tim Inti (bukan role)';
           return (
-            <Tooltip title={row.teamAs || row.teamNote || 'Tampilkan di halaman Tentang → Tim Kami'}>
-              <Switch
-                checked={row.isTeam}
-                size="small"
-                loading={updateTeam.isPending && updateTeam.variables?.id === row.id}
-                onChange={(next) =>
-                  updateTeam.mutate({
-                    id: row.id,
-                    username: row.username,
-                    is_team: next,
-                    team_as: next ? row.teamAs ?? row.role : row.teamAs,
-                  })
-                }
-              />
-            </Tooltip>
+            <Space size={4}>
+              <Tooltip title={tip}>
+                <Switch
+                  checked={row.isTeam}
+                  size="small"
+                  loading={updateTeam.isPending && updateTeam.variables?.id === row.id}
+                  onChange={(next) => {
+                    if (next) {
+                      openTeamModal(row);
+                      return;
+                    }
+                    updateTeam.mutate({
+                      id: row.id,
+                      username: row.username,
+                      is_team: false,
+                    });
+                  }}
+                />
+              </Tooltip>
+              {row.isTeam ? (
+                <Tooltip title={row.teamNote ? `Edit: ${row.teamNote}` : 'Isi keterangan Tim Inti'}>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => openTeamModal(row)}
+                  />
+                </Tooltip>
+              ) : null}
+            </Space>
           );
         },
       }),
@@ -427,6 +465,7 @@ export function UsersPage() {
         verifyEmail,
         updateTeam,
         setSponsor,
+        openTeamModal,
         user?.id,
       ],
   );
@@ -540,6 +579,28 @@ export function UsersPage() {
         }
         onClose={() => setAbuseUserId(null)}
       />
+
+      <Modal
+        open={teamModalUser != null}
+        title={teamModalUser ? `Tim Kami · ${teamModalUser.username}` : 'Tim Kami'}
+        onCancel={() => setTeamModalUser(null)}
+        onOk={() => void saveTeamModal()}
+        confirmLoading={updateTeam.isPending}
+        okText="Simpan"
+        cancelText="Batal"
+        destroyOnHidden
+      >
+        <Form form={teamForm} layout="vertical">
+          <Form.Item
+            name="team_note"
+            label="Keterangan"
+            extra="Tampil sebagai subtitle di Tim Inti, mis. Main developer. Bukan role akun."
+            rules={[{ max: 2000, message: 'Maksimal 2000 karakter' }]}
+          >
+            <Input placeholder="Main developer" maxLength={2000} autoFocus />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       <Flex justify="center" align="center" gap={16} style={{ marginTop: 16 }}>
         {hasMore ? (

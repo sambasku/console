@@ -21,8 +21,10 @@ import { useAllRegions } from '@/features/regions/application/use-regions';
 import { useEventCategories } from '../application/use-events';
 import type { Event, EventSourceType, EventStatus } from '../domain/event';
 import type { EventInput } from '../infrastructure/event-api';
+import { listEventGoingsRequest } from '../infrastructure/event-api';
 import { EVENT_SOURCE_TYPE_OPTIONS } from '../infrastructure/event-contribution-api';
 import { uploadEventPoster } from '../infrastructure/event-image-api';
+import type { EventGoingUser } from '../domain/event';
 
 interface FormValues {
   name: string;
@@ -179,12 +181,42 @@ export function EventDrawer({
   const { message } = AntdApp.useApp();
   const [form] = Form.useForm<FormValues>();
   const [saving, setSaving] = useState(false);
+  const [goings, setGoings] = useState<EventGoingUser[]>([]);
+  const [goingsTotal, setGoingsTotal] = useState(0);
+  const [goingsLoading, setGoingsLoading] = useState(false);
   const regionId = Form.useWatch('region_id', form);
   const regions = useAllRegions(open);
   const categories = useEventCategories(open);
 
   const kecamatanList = (regions.data ?? []).filter((r) => r.type === 'kecamatan');
   const desaList = (regions.data ?? []).filter((r) => r.type === 'desa');
+
+  useEffect(() => {
+    if (!open || !editing) {
+      setGoings([]);
+      setGoingsTotal(0);
+      return;
+    }
+    let cancelled = false;
+    setGoingsLoading(true);
+    void listEventGoingsRequest(editing.id, { limit: 50 })
+      .then((res) => {
+        if (cancelled) return;
+        setGoings(res.items);
+        setGoingsTotal(res.total);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setGoings([]);
+        setGoingsTotal(0);
+      })
+      .finally(() => {
+        if (!cancelled) setGoingsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, editing]);
 
   useEffect(() => {
     if (!open) return;
@@ -308,6 +340,46 @@ export function EventDrawer({
         </div>
       }
     >
+      {editing ? (
+        <Space direction="vertical" size={4} style={{ width: '100%', marginBottom: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 0 }}>
+            Berencana datang ({goingsTotal || editing.goingCount})
+          </Typography.Title>
+          {goingsLoading ? (
+            <Typography.Text type="secondary">Memuat daftar...</Typography.Text>
+          ) : goings.length === 0 ? (
+            <Typography.Text type="secondary">
+              Belum ada yang menandai berencana datang.
+            </Typography.Text>
+          ) : (
+            <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              {goings.map((g) => (
+                <Space
+                  key={g.id}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    padding: '6px 10px',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8,
+                  }}
+                >
+                  <Space direction="vertical" size={0}>
+                    <Typography.Text>
+                      {g.displayName || g.username}
+                    </Typography.Text>
+                    <Typography.Text type="secondary">@{g.username}</Typography.Text>
+                  </Space>
+                  <Typography.Text type="secondary">
+                    {new Date(g.createdAt).toLocaleString('id-ID')}
+                  </Typography.Text>
+                </Space>
+              ))}
+            </Space>
+          )}
+        </Space>
+      ) : null}
+
       <Form
         form={form}
         layout="vertical"

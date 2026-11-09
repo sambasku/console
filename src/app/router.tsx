@@ -45,6 +45,7 @@ import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
 import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
+import { LayananPage } from '@/features/layanan/presentation/layanan-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
 import { UsahaReportsPage } from '@/features/usaha/presentation/usaha-reports-page';
 import { UsahaCategoriesPage } from '@/features/usaha/presentation/usaha-categories-page';
@@ -405,6 +406,12 @@ const usahaRoute = createRoute({
   component: UsahaPage,
 });
 
+const layananRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/layanan',
+  component: LayananPage,
+});
+
 const usahaClaimsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/usaha-claims',
@@ -616,6 +623,7 @@ const routeTree = rootRoute.addChildren([
     placeViewsRoute,
     eventsRoute,
   usahaRoute,
+  layananRoute,
   usahaClaimsRoute,
   usahaReportsRoute,
   usahaCategoriesRoute,

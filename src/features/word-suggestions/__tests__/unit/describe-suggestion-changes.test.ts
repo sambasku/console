@@ -80,6 +80,43 @@ describe('describeSuggestionChanges', () => {
     expect(view.categories).toEqual({ added: ['Makanan'], removed: ['Hewan'] });
     expect(view.relations.added).toEqual(['Tambah sinonim: bebek']);
     expect(view.meanings).toEqual([]);
+    expect(view.examples).toEqual([]);
+  });
+
+  it('#244 ubah contoh: tampilkan kalimat dan arti', () => {
+    const view = describeSuggestionChanges({
+      proposed: {
+        examples: [
+          {
+            action: 'update',
+            example_id: 'e1',
+            source_sentence: 'Kami makan kalintiak.',
+            target_sentence: 'Kami makan kue.',
+          },
+        ],
+      },
+      current: {
+        ...current,
+        examples: [
+          {
+            id: 'e1',
+            meaning_id: 'm1',
+            source_sentence: 'Kami makatn kalintiak.',
+            target_sentence: 'Kami makan kue.',
+          },
+        ],
+      },
+      categoryName: (id) => id,
+      wordClassName: (id) => id,
+      relationLemma: () => undefined,
+    });
+    expect(view.examples[0]?.lines).toEqual([
+      {
+        label: 'Kalimat contoh',
+        before: 'Kami makatn kalintiak.',
+        after: 'Kami makan kalintiak.',
+      },
+    ]);
   });
 
   it('menandai relasi ke lemma baru sebagai kata baru', () => {

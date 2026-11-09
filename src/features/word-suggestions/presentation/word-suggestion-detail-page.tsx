@@ -404,6 +404,21 @@ function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
           ))}
         </div>
       ))}
+      {view.examples.map((example, index) => (
+        <div
+          key={`example-${example.heading}-${index}`}
+          style={{
+            border: '1px solid var(--ant-color-border-secondary, rgba(0,0,0,0.06))',
+            borderRadius: 8,
+            padding: 12,
+          }}
+        >
+          <Typography.Text strong>{example.heading}</Typography.Text>
+          {example.lines.map((line) => (
+            <ReplaceLineView key={line.label} line={line} />
+          ))}
+        </div>
+      ))}
       {hasCategories ? (
         <div>
           <Typography.Text strong>Kategori</Typography.Text>
