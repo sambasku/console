@@ -47,14 +47,24 @@ export function PantunModerationPage() {
           id: 'lines',
           header: 'Pantun',
           size: 420,
-          cell: (info) => (
-            <Typography.Paragraph
-              ellipsis={{ rows: 4, expandable: true }}
-              style={{ margin: 0, whiteSpace: 'pre-line' }}
-            >
-              {info.row.original.lines.join('\n')}
-            </Typography.Paragraph>
-          ),
+          cell: (info) => {
+            const row = info.row.original;
+            return (
+              <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                <Typography.Paragraph
+                  ellipsis={{ rows: 4, expandable: true }}
+                  style={{ margin: 0, whiteSpace: 'pre-line' }}
+                >
+                  {row.lines.join('\n')}
+                </Typography.Paragraph>
+                {row.audioUrl ? (
+                  <audio controls preload="none" src={row.audioUrl} style={{ width: '100%' }}>
+                    <track kind="captions" />
+                  </audio>
+                ) : null}
+              </Space>
+            );
+          },
         }),
         columnHelper.display({
           id: 'author',
