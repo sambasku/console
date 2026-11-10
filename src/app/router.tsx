@@ -56,6 +56,7 @@ import { PantunModerationPage } from '@/features/pantun/presentation/pantun-mode
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
 import { JinyeModerationPage } from '@/features/jinye/presentation/jinye-moderation-page';
 import { JinyeReportsPage } from '@/features/jinye-reports/presentation/jinye-reports-page';
+import { TranslationsPage } from '@/features/translations/presentation/translations-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { EncyclopediaPage } from '@/features/encyclopedia/presentation/encyclopedia-page';
 import { EncyclopediaContributionsPage } from '@/features/encyclopedia/presentation/encyclopedia-contributions-page';
@@ -480,6 +481,12 @@ const jinyeReportsRoute = createRoute({
   component: JinyeReportsPage,
 });
 
+const translationsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/translations',
+  component: TranslationsPage,
+});
+
 const placeCategoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/place-categories',
@@ -649,6 +656,7 @@ const routeTree = rootRoute.addChildren([
   pantunReportsRoute,
   jinyeModerationRoute,
   jinyeReportsRoute,
+  translationsRoute,
     placeCategoriesRoute,
     encyclopediaRoute,
     encyclopediaContributionsRoute,

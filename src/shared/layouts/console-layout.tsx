@@ -74,6 +74,7 @@ const KAMUS_ROUTES = {
   '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
   '/jinye': { icon: <MessageOutlined />, label: 'Jinye' },
   '/jinye-reports': { icon: <WarningOutlined />, label: 'Laporan Jinye' },
+  '/translations': { icon: <TranslationOutlined />, label: 'Usulan terjemahan' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
@@ -167,6 +168,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'discussions': 'Ruang Diskusi',
   jinye: 'Jinye',
   'jinye-reports': 'Laporan Jinye',
+  translations: 'Usulan terjemahan',
   'word-suggestions': 'Usul Edit',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
@@ -253,7 +255,8 @@ export function ConsoleLayout() {
           : key === '/vote-moderation' ||
               key === '/word-suggestions' ||
               key === '/jinye' ||
-              key === '/jinye-reports'
+              key === '/jinye-reports' ||
+              key === '/translations'
             ? canModerateContent
             : key === '/comment-blocklist'
               ? canManageUsers
