@@ -54,6 +54,8 @@ import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-cl
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
+import { JinyeModerationPage } from '@/features/jinye/presentation/jinye-moderation-page';
+import { JinyeReportsPage } from '@/features/jinye-reports/presentation/jinye-reports-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { EncyclopediaPage } from '@/features/encyclopedia/presentation/encyclopedia-page';
 import { EncyclopediaContributionsPage } from '@/features/encyclopedia/presentation/encyclopedia-contributions-page';
@@ -466,6 +468,18 @@ const pantunReportsRoute = createRoute({
   component: PantunReportsPage,
 });
 
+const jinyeModerationRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/jinye',
+  component: JinyeModerationPage,
+});
+
+const jinyeReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/jinye-reports',
+  component: JinyeReportsPage,
+});
+
 const placeCategoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/place-categories',
@@ -633,6 +647,8 @@ const routeTree = rootRoute.addChildren([
   culinaryCategoriesRoute,
   pantunModerationRoute,
   pantunReportsRoute,
+  jinyeModerationRoute,
+  jinyeReportsRoute,
     placeCategoriesRoute,
     encyclopediaRoute,
     encyclopediaContributionsRoute,

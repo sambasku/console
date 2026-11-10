@@ -72,6 +72,8 @@ const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
   '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
+  '/jinye': { icon: <MessageOutlined />, label: 'Jinye' },
+  '/jinye-reports': { icon: <WarningOutlined />, label: 'Laporan Jinye' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
@@ -163,6 +165,8 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   words: 'Kata',
   contributions: 'Review',
   'discussions': 'Ruang Diskusi',
+  jinye: 'Jinye',
+  'jinye-reports': 'Laporan Jinye',
   'word-suggestions': 'Usul Edit',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
@@ -246,7 +250,10 @@ export function ConsoleLayout() {
       .filter(([key]) =>
         key === '/word-reports' || key === '/discussions'
           ? canModerateContent || user?.role === 'editor'
-          : key === '/vote-moderation' || key === '/word-suggestions'
+          : key === '/vote-moderation' ||
+              key === '/word-suggestions' ||
+              key === '/jinye' ||
+              key === '/jinye-reports'
             ? canModerateContent
             : key === '/comment-blocklist'
               ? canManageUsers
