@@ -89,6 +89,7 @@ export async function resolvePantunReportRequest(
 
 export const PANTUN_REPORT_REASON_LABEL: Record<string, string> = {
   inappropriate: 'Tidak pantas',
+  not_a_pantun: 'Bukan pantun / rekaman acak',
   sexual: 'Konten seksual',
   harassment: 'Pelecehan atau perundungan',
   hate_speech: 'Ujaran kebencian',

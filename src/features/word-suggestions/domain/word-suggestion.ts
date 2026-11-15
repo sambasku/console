@@ -8,6 +8,7 @@ export type SuggestionReasonCode =
   | 'add_meaning'
   | 'add_photo'
   | 'change_photo'
+  | 'change_example'
   | 'synonym'
   | 'antonym'
   | 'variant_of'
@@ -38,6 +39,7 @@ export interface SuggestionListItem {
     lemma: string | null;
     notes: string | null;
     meanings_count: number;
+    examples_count?: number;
     categories_added: number;
     categories_removed: number;
     relations_count: number;
@@ -71,6 +73,12 @@ export interface SuggestionDetail {
       definition: string;
       translations: Array<{ translation_text: string }>;
     }>;
+    examples?: Array<{
+      id: string;
+      meaning_id: string;
+      source_sentence: string;
+      target_sentence: string | null;
+    }>;
     category_ids: string[];
     relations: Array<{ relation_type: string; word_id: string; lemma: string }>;
     variants: Array<{ form: string; variant_type: string; dialect_id: string | null }>;
@@ -84,6 +92,15 @@ export interface SuggestionDetail {
     meanings: Array<{
       meaning_id: string | null;
       changes: Array<{ current: string | null; proposed: string | null; changed: boolean }>;
+    }>;
+    examples?: Array<{
+      example_id: string;
+      changes: Array<{
+        label?: string;
+        current: string | null;
+        proposed: string | null;
+        changed: boolean;
+      }>;
     }>;
     categories: { added: string[]; removed: string[] };
     relations: {
@@ -131,6 +148,7 @@ export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
   add_meaning: 'Tambah makna',
   add_photo: 'Tambah foto',
   change_photo: 'Ubah foto',
+  change_example: 'Ubah contoh',
   synonym: 'Sinonim',
   antonym: 'Antonim',
   variant_of: 'Variasi bentuk',

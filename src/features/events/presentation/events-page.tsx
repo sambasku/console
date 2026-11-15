@@ -195,6 +195,11 @@ export function EventsPage() {
             );
           },
         }),
+        columnHelper.accessor('goingCount', {
+          header: 'Berencana datang',
+          size: 120,
+          cell: (info) => info.getValue(),
+        }),
         columnHelper.display({
           id: 'lokasi',
           header: 'Lokasi',

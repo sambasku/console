@@ -66,6 +66,17 @@ export interface Event {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string | null;
+  /** Jumlah orang yang berencana datang. */
+  goingCount: number;
+}
+
+export interface EventGoingUser {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
 }
 
 export type EventContributionStatus = 'pending' | 'needs_revision' | 'approved' | 'rejected';

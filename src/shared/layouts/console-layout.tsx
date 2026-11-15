@@ -40,6 +40,7 @@ UserOutlined,
   DatabaseOutlined,
   KeyOutlined,
   ShopOutlined,
+  PhoneOutlined,
   CoffeeOutlined,
   PlayCircleOutlined,
   ReadOutlined,
@@ -71,6 +72,9 @@ const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
   '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
+  '/jinye': { icon: <MessageOutlined />, label: 'Jinye' },
+  '/jinye-reports': { icon: <WarningOutlined />, label: 'Laporan Jinye' },
+  '/translations': { icon: <TranslationOutlined />, label: 'Usulan terjemahan' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
@@ -93,6 +97,7 @@ const EKSPLORASI_ROUTES = {
   '/places': { icon: <EnvironmentOutlined />, label: 'Wisata' },
   '/events': { icon: <CalendarOutlined />, label: 'Acara' },
   '/usaha': { icon: <ShopOutlined />, label: 'Usaha' },
+  '/layanan': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
   '/usaha-categories': { icon: <AppstoreOutlined />, label: 'Kategori usaha' },
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
@@ -161,6 +166,9 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   words: 'Kata',
   contributions: 'Review',
   'discussions': 'Ruang Diskusi',
+  jinye: 'Jinye',
+  'jinye-reports': 'Laporan Jinye',
+  translations: 'Usulan terjemahan',
   'word-suggestions': 'Usul Edit',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
@@ -185,6 +193,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'usaha-claims': 'Klaim usaha',
   'usaha-reports': 'Laporan usaha',
   usaha: 'Usaha',
+  layanan: 'Layanan Publik',
   culinary: 'Kuliner',
   'culinary-categories': 'Kategori kuliner',
   'culinary-claims': 'Klaim kuliner',
@@ -243,7 +252,11 @@ export function ConsoleLayout() {
       .filter(([key]) =>
         key === '/word-reports' || key === '/discussions'
           ? canModerateContent || user?.role === 'editor'
-          : key === '/vote-moderation' || key === '/word-suggestions'
+          : key === '/vote-moderation' ||
+              key === '/word-suggestions' ||
+              key === '/jinye' ||
+              key === '/jinye-reports' ||
+              key === '/translations'
             ? canModerateContent
             : key === '/comment-blocklist'
               ? canManageUsers

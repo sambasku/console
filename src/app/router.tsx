@@ -45,6 +45,7 @@ import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
 import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
+import { LayananPage } from '@/features/layanan/presentation/layanan-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
 import { UsahaReportsPage } from '@/features/usaha/presentation/usaha-reports-page';
 import { UsahaCategoriesPage } from '@/features/usaha/presentation/usaha-categories-page';
@@ -53,6 +54,9 @@ import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-cl
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
+import { JinyeModerationPage } from '@/features/jinye/presentation/jinye-moderation-page';
+import { JinyeReportsPage } from '@/features/jinye-reports/presentation/jinye-reports-page';
+import { TranslationsPage } from '@/features/translations/presentation/translations-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { EncyclopediaPage } from '@/features/encyclopedia/presentation/encyclopedia-page';
 import { EncyclopediaContributionsPage } from '@/features/encyclopedia/presentation/encyclopedia-contributions-page';
@@ -405,6 +409,12 @@ const usahaRoute = createRoute({
   component: UsahaPage,
 });
 
+const layananRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/layanan',
+  component: LayananPage,
+});
+
 const usahaClaimsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/usaha-claims',
@@ -457,6 +467,24 @@ const pantunReportsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/pantun-reports',
   component: PantunReportsPage,
+});
+
+const jinyeModerationRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/jinye',
+  component: JinyeModerationPage,
+});
+
+const jinyeReportsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/jinye-reports',
+  component: JinyeReportsPage,
+});
+
+const translationsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/translations',
+  component: TranslationsPage,
 });
 
 const placeCategoriesRoute = createRoute({
@@ -616,6 +644,7 @@ const routeTree = rootRoute.addChildren([
     placeViewsRoute,
     eventsRoute,
   usahaRoute,
+  layananRoute,
   usahaClaimsRoute,
   usahaReportsRoute,
   usahaCategoriesRoute,
@@ -625,6 +654,9 @@ const routeTree = rootRoute.addChildren([
   culinaryCategoriesRoute,
   pantunModerationRoute,
   pantunReportsRoute,
+  jinyeModerationRoute,
+  jinyeReportsRoute,
+  translationsRoute,
     placeCategoriesRoute,
     encyclopediaRoute,
     encyclopediaContributionsRoute,

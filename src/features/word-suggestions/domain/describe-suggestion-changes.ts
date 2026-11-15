@@ -21,6 +21,8 @@ export interface MeaningChangeBlock {
 export interface SuggestionChangeView {
   texts: ReplaceLine[];
   meanings: MeaningChangeBlock[];
+  /** #244: ubah contoh kalimat. */
+  examples: MeaningChangeBlock[];
   categories: { added: string[]; removed: string[] };
   relations: { added: string[]; removed: string[] };
   variants: { added: string[]; removed: string[] };
@@ -65,6 +67,10 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
 
   const meanings = parseMeanings(proposed.meanings ?? proposed['meanings']).map((change) =>
     describeMeaning(change, current, input.wordClassName),
+  );
+
+  const examples = parseExamples(proposed.examples ?? proposed['examples']).map((change) =>
+    describeExample(change, current),
   );
 
   const currentCategories = new Set(current.category_ids);
@@ -125,13 +131,22 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
     }
   }
 
-  return { texts, meanings: meanings.filter((block) => block.lines.length > 0 || block.heading === 'Makna dihapus'), categories, relations, variants, groups };
+  return {
+    texts,
+    meanings: meanings.filter((block) => block.lines.length > 0 || block.heading === 'Makna dihapus'),
+    examples: examples.filter((block) => block.lines.length > 0),
+    categories,
+    relations,
+    variants,
+    groups,
+  };
 }
 
 export function suggestionChangesAreEmpty(view: SuggestionChangeView): boolean {
   return (
     view.texts.length === 0 &&
     view.meanings.length === 0 &&
+    view.examples.length === 0 &&
     view.categories.added.length === 0 &&
     view.categories.removed.length === 0 &&
     view.relations.added.length === 0 &&
@@ -150,6 +165,9 @@ export function summarizeSuggestionChanges(summary: SuggestionListItem['summary_
   if (summary.notes) parts.push('ubah catatan');
   if (summary.meanings_count === 1) parts.push('1 makna');
   else if (summary.meanings_count > 1) parts.push(`${summary.meanings_count} makna`);
+  const examplesCount = summary.examples_count ?? 0;
+  if (examplesCount === 1) parts.push('1 contoh');
+  else if (examplesCount > 1) parts.push(`${examplesCount} contoh`);
   if (summary.categories_added || summary.categories_removed) parts.push('kategori');
   if (summary.relations_count) parts.push('relasi');
   if (summary.variants_count) parts.push('varian');
@@ -251,6 +269,59 @@ interface ParsedMeaning {
   wordClassId?: string;
   definition?: string;
   translations: Array<{ translationText: string }>;
+}
+
+interface ParsedExample {
+  exampleId: string;
+  sourceSentence?: string;
+  targetSentence?: string | null;
+}
+
+function describeExample(
+  change: ParsedExample,
+  current: SuggestionDetail['current_word'],
+): MeaningChangeBlock {
+  const cur = (current.examples ?? []).find((ex) => ex.id === change.exampleId);
+  const lines: ReplaceLine[] = [];
+  if (change.sourceSentence !== undefined) {
+    const before = cur?.source_sentence ?? null;
+    if (change.sourceSentence !== before) {
+      lines.push({ label: 'Kalimat contoh', before, after: change.sourceSentence });
+    }
+  }
+  if (change.targetSentence !== undefined) {
+    const before = cur?.target_sentence ?? null;
+    const after = change.targetSentence;
+    if ((after ?? '') !== (before ?? '')) {
+      lines.push({ label: 'Arti contoh', before, after });
+    }
+  }
+  return {
+    heading: cur?.source_sentence
+      ? `Contoh: ${cur.source_sentence}`
+      : 'Contoh kalimat',
+    lines,
+  };
+}
+
+function parseExamples(raw: unknown): ParsedExample[] {
+  if (!Array.isArray(raw)) return [];
+  const parsed: ParsedExample[] = [];
+  for (const item of raw) {
+    const row = asRecord(item);
+    if (!row) continue;
+    const exampleId = pickString(row, 'exampleId', 'example_id');
+    if (!exampleId) continue;
+    const hasTarget = 'targetSentence' in row || 'target_sentence' in row;
+    parsed.push({
+      exampleId,
+      sourceSentence: pickString(row, 'sourceSentence', 'source_sentence'),
+      targetSentence: hasTarget
+        ? (pickString(row, 'targetSentence', 'target_sentence') ?? null)
+        : undefined,
+    });
+  }
+  return parsed;
 }
 
 function parseMeanings(raw: unknown): ParsedMeaning[] {

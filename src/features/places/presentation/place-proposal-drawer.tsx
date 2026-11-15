@@ -8,9 +8,11 @@ import { reviewProposal } from '../infrastructure/place-api';
 const TYPE_LABEL: Record<string, string> = {
   sejarah: 'Sejarah',
   alam: 'Alam',
+  religi: 'Religi',
+  tirta: 'Tirta',
+  agro: 'Agro',
+  bahari: 'Bahari',
   budaya: 'Budaya',
-  pantai: 'Pantai',
-  belanja: 'Belanja',
 };
 
 const REJECT_REASONS: Array<{ code: string; label: string }> = [
