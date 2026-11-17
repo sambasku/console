@@ -19,6 +19,7 @@ export interface BalehoPlacementWire {
   advertiser_user_id: string;
   advertiser_username: string | null;
   referral_username: string | null;
+  payment_proof_url: string | null;
   created_at: string;
   impressions?: number;
   taps?: number;
@@ -43,8 +44,14 @@ export async function rejectBaleho(id: string, reason?: string): Promise<void> {
   await client.post(`/admin/baleho/placements/${id}/reject`, { reason });
 }
 
-export async function markPaidBaleho(id: string): Promise<void> {
-  await client.post(`/admin/baleho/placements/${id}/mark-paid`);
+export async function markPaidBaleho(
+  id: string,
+  proof: { paymentProofUrl: string; paymentProofFileId: string },
+): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/mark-paid`, {
+    payment_proof_url: proof.paymentProofUrl,
+    payment_proof_file_id: proof.paymentProofFileId,
+  });
 }
 
 export async function pauseBaleho(id: string, reason?: string): Promise<void> {

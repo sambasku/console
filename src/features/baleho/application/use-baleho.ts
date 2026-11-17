@@ -30,7 +30,15 @@ export function useBalehoMutations() {
       onSuccess: invalidate,
     }),
     markPaid: useMutation({
-      mutationFn: (id: string) => markPaidBaleho(id),
+      mutationFn: ({
+        id,
+        paymentProofUrl,
+        paymentProofFileId,
+      }: {
+        id: string;
+        paymentProofUrl: string;
+        paymentProofFileId: string;
+      }) => markPaidBaleho(id, { paymentProofUrl, paymentProofFileId }),
       onSuccess: invalidate,
     }),
     pause: useMutation({
