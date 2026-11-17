@@ -20,6 +20,9 @@ export interface BalehoPlacementWire {
   advertiser_username: string | null;
   referral_username: string | null;
   created_at: string;
+  impressions?: number;
+  taps?: number;
+  ctr_percent?: number;
 }
 
 export async function listAdminBaleho(

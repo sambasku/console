@@ -53,6 +53,24 @@ export function BalehoPage() {
       render: (v: string | null) => v ?? '-',
     },
     {
+      title: 'Impresi',
+      dataIndex: 'impressions',
+      width: 90,
+      render: (v: number | undefined) => v ?? 0,
+    },
+    {
+      title: 'Tap',
+      dataIndex: 'taps',
+      width: 70,
+      render: (v: number | undefined) => v ?? 0,
+    },
+    {
+      title: 'CTR',
+      dataIndex: 'ctr_percent',
+      width: 80,
+      render: (v: number | undefined) => `${v ?? 0}%`,
+    },
+    {
       title: 'Dibuat',
       dataIndex: 'created_at',
       width: 180,
