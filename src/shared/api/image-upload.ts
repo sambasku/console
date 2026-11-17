@@ -44,8 +44,21 @@ export async function uploadImageToCdn(
   form.append('signature', creds.signature);
 
   const up = await fetch(creds.upload_endpoint, { method: 'POST', body: form });
-  if (!up.ok) throw new Error(`Unggah gambar gagal (HTTP ${up.status})`);
-  const data = (await up.json()) as { url?: string; fileId?: string };
+  const rawText = await up.text();
+  let data: { url?: string; fileId?: string; message?: string; help?: string } = {};
+  try {
+    data = JSON.parse(rawText) as typeof data;
+  } catch {
+    // body non-JSON
+  }
+  if (!up.ok) {
+    const detail = data.message || data.help || rawText.slice(0, 200);
+    throw new Error(
+      detail
+        ? `Unggah gambar gagal (HTTP ${up.status}): ${detail}`
+        : `Unggah gambar gagal (HTTP ${up.status})`,
+    );
+  }
   if (!data.url || !data.fileId) throw new Error('Respons penyedia gambar tidak lengkap');
   return { url: data.url, fileId: data.fileId };
 }
