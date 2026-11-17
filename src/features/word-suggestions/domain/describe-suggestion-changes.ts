@@ -23,6 +23,8 @@ export interface SuggestionChangeView {
   meanings: MeaningChangeBlock[];
   /** #244: ubah contoh kalimat. */
   examples: MeaningChangeBlock[];
+  /** Ubah notasi pelafalan. */
+  pronunciations: MeaningChangeBlock[];
   categories: { added: string[]; removed: string[] };
   relations: { added: string[]; removed: string[] };
   variants: { added: string[]; removed: string[] };
@@ -72,6 +74,10 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
   const examples = parseExamples(proposed.examples ?? proposed['examples']).map((change) =>
     describeExample(change, current),
   );
+
+  const pronunciations = parsePronunciations(
+    proposed.pronunciations ?? proposed['pronunciations'],
+  ).map((change) => describePronunciation(change, current));
 
   const currentCategories = new Set(current.category_ids);
   const categories = {
@@ -135,6 +141,7 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
     texts,
     meanings: meanings.filter((block) => block.lines.length > 0 || block.heading === 'Makna dihapus'),
     examples: examples.filter((block) => block.lines.length > 0),
+    pronunciations: pronunciations.filter((block) => block.lines.length > 0),
     categories,
     relations,
     variants,
@@ -147,6 +154,7 @@ export function suggestionChangesAreEmpty(view: SuggestionChangeView): boolean {
     view.texts.length === 0 &&
     view.meanings.length === 0 &&
     view.examples.length === 0 &&
+    view.pronunciations.length === 0 &&
     view.categories.added.length === 0 &&
     view.categories.removed.length === 0 &&
     view.relations.added.length === 0 &&
@@ -168,6 +176,9 @@ export function summarizeSuggestionChanges(summary: SuggestionListItem['summary_
   const examplesCount = summary.examples_count ?? 0;
   if (examplesCount === 1) parts.push('1 contoh');
   else if (examplesCount > 1) parts.push(`${examplesCount} contoh`);
+  const pronunciationsCount = summary.pronunciations_count ?? 0;
+  if (pronunciationsCount === 1) parts.push('1 pelafalan');
+  else if (pronunciationsCount > 1) parts.push(`${pronunciationsCount} pelafalan`);
   if (summary.categories_added || summary.categories_removed) parts.push('kategori');
   if (summary.relations_count) parts.push('relasi');
   if (summary.variants_count) parts.push('varian');
@@ -320,6 +331,41 @@ function parseExamples(raw: unknown): ParsedExample[] {
         ? (pickString(row, 'targetSentence', 'target_sentence') ?? null)
         : undefined,
     });
+  }
+  return parsed;
+}
+
+interface ParsedPronunciation {
+  pronunciationId: string;
+  value: string;
+}
+
+function describePronunciation(
+  change: ParsedPronunciation,
+  current: SuggestionDetail['current_word'],
+): MeaningChangeBlock {
+  const cur = (current.pronunciations ?? []).find((p) => p.id === change.pronunciationId);
+  const before = cur?.value ?? null;
+  const lines: ReplaceLine[] = [];
+  if (change.value !== before) {
+    lines.push({ label: 'Pelafalan', before, after: change.value });
+  }
+  return {
+    heading: before ? `Pelafalan: /${before}/` : 'Pelafalan',
+    lines,
+  };
+}
+
+function parsePronunciations(raw: unknown): ParsedPronunciation[] {
+  if (!Array.isArray(raw)) return [];
+  const parsed: ParsedPronunciation[] = [];
+  for (const item of raw) {
+    const row = asRecord(item);
+    if (!row) continue;
+    const pronunciationId = pickString(row, 'pronunciationId', 'pronunciation_id');
+    const value = pickString(row, 'value');
+    if (!pronunciationId || value === undefined) continue;
+    parsed.push({ pronunciationId, value });
   }
   return parsed;
 }

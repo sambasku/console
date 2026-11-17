@@ -9,6 +9,7 @@ export type SuggestionReasonCode =
   | 'add_photo'
   | 'change_photo'
   | 'change_example'
+  | 'change_pronunciation'
   | 'synonym'
   | 'antonym'
   | 'variant_of'
@@ -40,6 +41,7 @@ export interface SuggestionListItem {
     notes: string | null;
     meanings_count: number;
     examples_count?: number;
+    pronunciations_count?: number;
     categories_added: number;
     categories_removed: number;
     relations_count: number;
@@ -78,6 +80,12 @@ export interface SuggestionDetail {
       meaning_id: string;
       source_sentence: string;
       target_sentence: string | null;
+    }>;
+    pronunciations?: Array<{
+      id: string;
+      notation: string;
+      value: string;
+      dialect_id: string | null;
     }>;
     category_ids: string[];
     relations: Array<{ relation_type: string; word_id: string; lemma: string }>;
@@ -149,6 +157,7 @@ export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
   add_photo: 'Tambah foto',
   change_photo: 'Ubah foto',
   change_example: 'Ubah contoh',
+  change_pronunciation: 'Ubah pelafalan',
   synonym: 'Sinonim',
   antonym: 'Antonim',
   variant_of: 'Variasi bentuk',

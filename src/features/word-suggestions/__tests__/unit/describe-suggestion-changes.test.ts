@@ -81,6 +81,42 @@ describe('describeSuggestionChanges', () => {
     expect(view.relations.added).toEqual(['Tambah sinonim: bebek']);
     expect(view.meanings).toEqual([]);
     expect(view.examples).toEqual([]);
+    expect(view.pronunciations).toEqual([]);
+  });
+
+  it('ubah pelafalan: tampilkan value lama dan baru', () => {
+    const view = describeSuggestionChanges({
+      proposed: {
+        pronunciations: [
+          {
+            action: 'update',
+            pronunciation_id: 'p1',
+            value: 'sa.dapʰ',
+          },
+        ],
+      },
+      current: {
+        ...current,
+        pronunciations: [
+          {
+            id: 'p1',
+            notation: 'ipa',
+            value: 'sa.dap',
+            dialect_id: null,
+          },
+        ],
+      },
+      categoryName: (id) => id,
+      wordClassName: (id) => id,
+      relationLemma: () => undefined,
+    });
+    expect(view.pronunciations[0]?.lines).toEqual([
+      {
+        label: 'Pelafalan',
+        before: 'sa.dap',
+        after: 'sa.dapʰ',
+      },
+    ]);
   });
 
   it('#244 ubah contoh: tampilkan kalimat dan arti', () => {

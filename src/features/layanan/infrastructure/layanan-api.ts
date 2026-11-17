@@ -20,6 +20,8 @@ export interface LayananWire {
   region_name: string | null;
   note: string | null;
   publish_status: 'published' | 'unpublished';
+  author_id?: string | null;
+  author_username?: string | null;
   updated_at: string;
 }
 
