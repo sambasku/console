@@ -20,6 +20,9 @@ export interface BalehoPlacementWire {
   advertiser_username: string | null;
   referral_username: string | null;
   payment_proof_url: string | null;
+  quoted_amount: number | null;
+  price_per_cell_per_day: number | null;
+  days: number | null;
   created_at: string;
   impressions?: number;
   taps?: number;

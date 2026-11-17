@@ -93,6 +93,14 @@ export function BalehoPage() {
       render: (v: string | null) => v ?? '-',
     },
     {
+      title: 'Tarif',
+      width: 120,
+      render: (_: unknown, row: BalehoPlacementWire) => {
+        if (row.quoted_amount == null) return '-';
+        return `Rp ${row.quoted_amount.toLocaleString('id-ID')}`;
+      },
+    },
+    {
       title: 'Bukti bayar',
       dataIndex: 'payment_proof_url',
       width: 110,
