@@ -24,6 +24,7 @@ const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
 export async function uploadImageToCdn(
   file: File,
   folder = '/uploads',
+  opts?: { isPrivateFile?: boolean },
 ): Promise<{ url: string; fileId: string }> {
   if (!file.type.startsWith('image/')) throw new Error('File harus gambar');
   if (file.size > MAX_UPLOAD_BYTES) throw new Error('Ukuran gambar maksimal 2 MB');
@@ -42,6 +43,10 @@ export async function uploadImageToCdn(
   form.append('token', creds.token);
   form.append('expire', String(creds.expire));
   form.append('signature', creds.signature);
+  // Bukti bayar Baleho: private file - CDN URL mentah tidak bisa dibuka publik.
+  if (opts?.isPrivateFile) {
+    form.append('isPrivateFile', 'true');
+  }
 
   const up = await fetch(creds.upload_endpoint, { method: 'POST', body: form });
   const rawText = await up.text();

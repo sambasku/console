@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   App as AntdApp,
   Button,
@@ -13,10 +13,15 @@ import {
 } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { PageHeader } from '@/shared/components/page-header';
+import { useAuth } from '@/shared/auth/use-auth';
 import { normalizeError } from '@/shared/api/error';
 import { uploadImageToCdn } from '@/shared/api/image-upload';
 import { useAdminBaleho, useBalehoMutations } from '../application/use-baleho';
-import type { BalehoPlacementStatus, BalehoPlacementWire } from '../infrastructure/baleho-api';
+import {
+  fetchPaymentProofBlob,
+  type BalehoPlacementStatus,
+  type BalehoPlacementWire,
+} from '../infrastructure/baleho-api';
 
 const STATUS_COLOR: Record<BalehoPlacementStatus, string> = {
   pending_review: 'gold',
@@ -27,10 +32,21 @@ const STATUS_COLOR: Record<BalehoPlacementStatus, string> = {
   expired: 'default',
 };
 
-type PaymentProof = { url: string; fileId: string };
+type PaymentProof = {
+  /** URL ImageKit (disimpan ke API saat mark-paid; mungkin privat). */
+  url: string;
+  fileId: string;
+  /** Preview lokal dari File - jangan andalkan URL CDN privat. */
+  previewUrl: string;
+};
+
+function canViewPaymentProof(roles: string[]): boolean {
+  return roles.some((r) => r === 'root' || r === 'admin');
+}
 
 export function BalehoPage() {
   const { message, modal } = AntdApp.useApp();
+  const { user } = useAuth();
   const list = useAdminBaleho();
   const actions = useBalehoMutations();
   const [markPaidRow, setMarkPaidRow] = useState<BalehoPlacementWire | null>(
@@ -38,6 +54,21 @@ export function BalehoPage() {
   );
   const [proof, setProof] = useState<PaymentProof | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [proofPreview, setProofPreview] = useState<{
+    placementId: string;
+    blobUrl: string;
+  } | null>(null);
+  const [proofLoadingId, setProofLoadingId] = useState<string | null>(null);
+
+  const allowProofView = canViewPaymentProof(user?.roles ?? []);
+
+  useEffect(() => {
+    return () => {
+      if (proof?.previewUrl) URL.revokeObjectURL(proof.previewUrl);
+      if (proofPreview?.blobUrl) URL.revokeObjectURL(proofPreview.blobUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup unmount saja
+  }, []);
 
   const run = async (label: string, fn: () => Promise<unknown>) => {
     try {
@@ -49,21 +80,53 @@ export function BalehoPage() {
   };
 
   const closeMarkPaid = () => {
+    if (proof?.previewUrl) URL.revokeObjectURL(proof.previewUrl);
     setMarkPaidRow(null);
     setProof(null);
     setUploading(false);
   };
 
+  const closeProofPreview = () => {
+    if (proofPreview?.blobUrl) URL.revokeObjectURL(proofPreview.blobUrl);
+    setProofPreview(null);
+  };
+
   const onPickProof = async (file: File) => {
     setUploading(true);
+    const localPreview = URL.createObjectURL(file);
     try {
-      const uploaded = await uploadImageToCdn(file, '/baleho/payment-proofs');
-      setProof({ url: uploaded.url, fileId: uploaded.fileId });
+      const uploaded = await uploadImageToCdn(file, '/baleho/payment-proofs', {
+        isPrivateFile: true,
+      });
+      if (proof?.previewUrl) URL.revokeObjectURL(proof.previewUrl);
+      setProof({
+        url: uploaded.url,
+        fileId: uploaded.fileId,
+        previewUrl: localPreview,
+      });
       message.success('Bukti pembayaran terunggah');
     } catch (err) {
+      URL.revokeObjectURL(localPreview);
       message.error(normalizeError(err).message);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const openStoredProof = async (row: BalehoPlacementWire) => {
+    if (!allowProofView) {
+      message.error('Bukti pembayaran hanya bisa dilihat admin.');
+      return;
+    }
+    setProofLoadingId(row.id);
+    try {
+      const blobUrl = await fetchPaymentProofBlob(row.id);
+      if (proofPreview?.blobUrl) URL.revokeObjectURL(proofPreview.blobUrl);
+      setProofPreview({ placementId: row.id, blobUrl });
+    } catch (err) {
+      message.error(normalizeError(err).message);
+    } finally {
+      setProofLoadingId(null);
     }
   };
 
@@ -108,13 +171,20 @@ export function BalehoPage() {
     },
     {
       title: 'Bukti bayar',
-      dataIndex: 'payment_proof_url',
+      dataIndex: 'has_payment_proof',
       width: 110,
-      render: (v: string | null) =>
-        v ? (
-          <a href={v} target="_blank" rel="noreferrer">
+      render: (has: boolean, row: BalehoPlacementWire) =>
+        has ? (
+          <Button
+            type="link"
+            size="small"
+            style={{ padding: 0 }}
+            loading={proofLoadingId === row.id}
+            disabled={!allowProofView}
+            onClick={() => void openStoredProof(row)}
+          >
             Lihat
-          </a>
+          </Button>
         ) : (
           '-'
         ),
@@ -201,6 +271,7 @@ export function BalehoPage() {
                 size="small"
                 type="primary"
                 onClick={() => {
+                  if (proof?.previewUrl) URL.revokeObjectURL(proof.previewUrl);
                   setProof(null);
                   setMarkPaidRow(row);
                 }}
@@ -254,8 +325,8 @@ export function BalehoPage() {
       <PageHeader title="Baleho" />
       <Typography.Paragraph type="secondary">
         Moderasi pesanan slide 1. Setujui → email + WA instruksi bayar. Tandai
-        lunas wajib unggah bukti transfer ke ImageKit, lalu → live. Pause
-        melepas area.
+        lunas wajib unggah bukti transfer (file privat). Preview bukti lewat
+        popup di layar ini - hanya admin/root.
       </Typography.Paragraph>
       <Table
         rowKey="id"
@@ -292,8 +363,8 @@ export function BalehoPage() {
         }}
       >
         <Typography.Paragraph type="secondary">
-          Unggah foto/screenshot bukti transfer. File disimpan di ImageKit
-          folder <code>/baleho/payment-proofs</code> (maks 2 MB).
+          Unggah foto/screenshot bukti transfer. File privat di ImageKit folder{' '}
+          <code>/baleho/payment-proofs</code> (maks 2 MB).
         </Typography.Paragraph>
         <Upload
           accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
@@ -311,12 +382,32 @@ export function BalehoPage() {
         {proof ? (
           <div style={{ marginTop: 12 }}>
             <Image
-              src={proof.url}
+              src={proof.previewUrl}
               alt="Bukti pembayaran"
               width={240}
               style={{ objectFit: 'contain' }}
             />
           </div>
+        ) : null}
+      </Modal>
+      <Modal
+        title="Bukti pembayaran"
+        open={proofPreview != null}
+        onCancel={closeProofPreview}
+        footer={
+          <Button type="primary" onClick={closeProofPreview}>
+            Tutup
+          </Button>
+        }
+        width={560}
+        destroyOnHidden
+      >
+        {proofPreview ? (
+          <Image
+            src={proofPreview.blobUrl}
+            alt="Bukti pembayaran"
+            style={{ width: '100%', objectFit: 'contain' }}
+          />
         ) : null}
       </Modal>
     </>

@@ -19,7 +19,8 @@ export interface BalehoPlacementWire {
   advertiser_user_id: string;
   advertiser_username: string | null;
   referral_username: string | null;
-  payment_proof_url: string | null;
+  /** Ada bukti di server - preview lewat fetchPaymentProofBlob, bukan URL CDN. */
+  has_payment_proof: boolean;
   quoted_amount: number | null;
   price_per_cell_per_day: number | null;
   days: number | null;
@@ -59,4 +60,13 @@ export async function markPaidBaleho(
 
 export async function pauseBaleho(id: string, reason?: string): Promise<void> {
   await client.post(`/admin/baleho/placements/${id}/pause`, { reason });
+}
+
+/** Byte bukti bayar (root/admin). Caller wajib revokeObjectURL setelah tutup popup. */
+export async function fetchPaymentProofBlob(id: string): Promise<string> {
+  const res = await client.get<Blob>(
+    `/admin/baleho/placements/${id}/payment-proof`,
+    { responseType: 'blob' },
+  );
+  return URL.createObjectURL(res.data);
 }
