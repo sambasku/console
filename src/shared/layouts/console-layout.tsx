@@ -99,6 +99,7 @@ const EKSPLORASI_ROUTES = {
   '/usaha': { icon: <ShopOutlined />, label: 'Usaha' },
   '/layanan': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
   '/karya': { icon: <PlayCircleOutlined />, label: 'Karya' },
+  '/baleho': { icon: <AppstoreOutlined />, label: 'Baleho' },
   '/usaha-categories': { icon: <AppstoreOutlined />, label: 'Kategori usaha' },
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },

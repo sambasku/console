@@ -1,0 +1,49 @@
+import { client } from '@/shared/api/client';
+
+export type BalehoPlacementStatus =
+  | 'pending_review'
+  | 'awaiting_payment'
+  | 'live'
+  | 'rejected'
+  | 'cancelled'
+  | 'expired';
+
+export interface BalehoPlacementWire {
+  id: string;
+  slide: number;
+  col: number;
+  row: number;
+  w: number;
+  h: number;
+  status: BalehoPlacementStatus;
+  advertiser_user_id: string;
+  advertiser_username: string | null;
+  referral_username: string | null;
+  created_at: string;
+}
+
+export async function listAdminBaleho(
+  signal?: AbortSignal,
+): Promise<BalehoPlacementWire[]> {
+  const res = await client.get<{
+    success: true;
+    data: BalehoPlacementWire[];
+  }>('/admin/baleho/placements', { signal });
+  return res.data.data;
+}
+
+export async function approveBaleho(id: string): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/approve`);
+}
+
+export async function rejectBaleho(id: string, reason?: string): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/reject`, { reason });
+}
+
+export async function markPaidBaleho(id: string): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/mark-paid`);
+}
+
+export async function pauseBaleho(id: string, reason?: string): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/pause`, { reason });
+}

@@ -47,6 +47,7 @@ import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
 import { LayananPage } from '@/features/layanan/presentation/layanan-page';
 import { KaryaPage } from '@/features/karya/presentation/karya-page';
+import { BalehoPage } from '@/features/baleho/presentation/baleho-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
 import { UsahaReportsPage } from '@/features/usaha/presentation/usaha-reports-page';
 import { UsahaCategoriesPage } from '@/features/usaha/presentation/usaha-categories-page';
@@ -422,6 +423,12 @@ const karyaRoute = createRoute({
   component: KaryaPage,
 });
 
+const balehoRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/baleho',
+  component: BalehoPage,
+});
+
 const usahaClaimsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/usaha-claims',
@@ -653,6 +660,7 @@ const routeTree = rootRoute.addChildren([
   usahaRoute,
   layananRoute,
   karyaRoute,
+  balehoRoute,
   usahaClaimsRoute,
   usahaReportsRoute,
   usahaCategoriesRoute,
