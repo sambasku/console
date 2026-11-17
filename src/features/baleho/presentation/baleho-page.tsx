@@ -88,6 +88,12 @@ export function BalehoPage() {
         `${row.w}x${row.h} @ ${row.col + 1},${row.row + 1}`,
     },
     {
+      title: 'Durasi',
+      width: 90,
+      render: (_: unknown, row: BalehoPlacementWire) =>
+        row.days == null ? '-' : `${row.days} hari`,
+    },
+    {
       title: 'Referral',
       dataIndex: 'referral_username',
       render: (v: string | null) => v ?? '-',
