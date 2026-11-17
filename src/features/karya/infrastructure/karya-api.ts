@@ -14,6 +14,19 @@ export interface SambasConnectionWire {
   note: string;
 }
 
+export interface KaryaRelatedRefWire {
+  kind:
+    | 'place'
+    | 'word'
+    | 'article'
+    | 'event'
+    | 'usaha'
+    | 'kreator'
+    | 'karya';
+  slug?: string | null;
+  id?: string | null;
+}
+
 export interface AccessLinkWire {
   kind: 'listen' | 'watch' | 'buy' | 'read' | 'stream' | 'official' | 'other';
   label: string;
@@ -40,6 +53,7 @@ export interface KaryaWire {
   publish_status: 'draft' | 'published' | 'archived' | 'restricted';
   author_id?: string | null;
   author_username?: string | null;
+  related_refs?: KaryaRelatedRefWire[];
   updated_at: string;
 }
 
@@ -57,6 +71,7 @@ export interface KaryaInput {
   music_is_cover?: boolean;
   film_type?: string | null;
   film_runtime_min?: number | null;
+  related?: KaryaRelatedRefWire[];
 }
 
 export interface KaryaContributionWire {

@@ -22,6 +22,16 @@ const KIND_OPTIONS = [
   { value: 'film', label: 'Film' },
 ];
 
+const RELATED_KIND_OPTIONS = [
+  { value: 'place', label: 'Tempat' },
+  { value: 'event', label: 'Acara' },
+  { value: 'article', label: 'Artikel' },
+  { value: 'usaha', label: 'Usaha' },
+  { value: 'kreator', label: 'Kreator' },
+  { value: 'karya', label: 'Karya' },
+  { value: 'word', label: 'Kata' },
+];
+
 const SAMBAS_TYPES = [
   { value: 'creator_origin', label: 'Kreator dari Sambas' },
   { value: 'language', label: 'Bahasa Sambas' },
@@ -84,6 +94,7 @@ export function KaryaPage() {
             music_is_cover: row.music_is_cover,
             film_type: row.film_type,
             film_runtime_min: row.film_runtime_min,
+            related: row.related_refs ?? [],
           }
         : {
             kind: 'music',
@@ -91,6 +102,7 @@ export function KaryaPage() {
             sambas_connections: [{ type: 'theme', note: '' }],
             credits: [{ role: 'vocal', name_text: '' }],
             access_links: [],
+            related: [],
           },
     );
     setOpen(true);
@@ -277,6 +289,40 @@ export function KaryaPage() {
                 ))}
                 <Button type="dashed" onClick={() => add({ type: 'other', note: '' })} block>
                   Tambah kaitan Sambas
+                </Button>
+              </>
+            )}
+          </Form.List>
+          <Form.List name="related">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field) => (
+                  <Space key={field.key} align="baseline" wrap style={{ display: 'flex' }}>
+                    <Form.Item
+                      {...field}
+                      name={[field.name, 'kind']}
+                      label="Terkait"
+                      rules={[{ required: true }]}
+                    >
+                      <Select options={RELATED_KIND_OPTIONS} style={{ width: 160 }} />
+                    </Form.Item>
+                    <Form.Item {...field} name={[field.name, 'slug']} label="Slug">
+                      <Input style={{ width: 200 }} placeholder="slug publik" />
+                    </Form.Item>
+                    <Form.Item {...field} name={[field.name, 'id']} label="ID">
+                      <Input style={{ width: 220 }} placeholder="ULID (opsional)" />
+                    </Form.Item>
+                    <Button type="link" danger onClick={() => remove(field.name)}>
+                      Hapus
+                    </Button>
+                  </Space>
+                ))}
+                <Button
+                  type="dashed"
+                  onClick={() => add({ kind: 'place', slug: '' })}
+                  block
+                >
+                  Tambah terkait
                 </Button>
               </>
             )}
