@@ -111,3 +111,10 @@ export async function rejectKaryaContribution(id: string): Promise<void> {
 export async function reviseKaryaContribution(id: string, note: string): Promise<void> {
   await client.post(`/admin/karya-contributions/${id}/request-revision`, { note });
 }
+
+export async function linkKaryaCredit(
+  creditId: string,
+  body: { kreator_id?: string; display_name?: string },
+): Promise<void> {
+  await client.post(`/admin/karya-credits/${creditId}/link`, body);
+}

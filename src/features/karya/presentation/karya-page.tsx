@@ -311,6 +311,9 @@ export function KaryaPage() {
                     >
                       <Input style={{ width: 220 }} />
                     </Form.Item>
+                    <Form.Item {...field} name={[field.name, 'kreator_id']} label="Kreator ID">
+                      <Input style={{ width: 200 }} disabled placeholder="Auto-link saat simpan" />
+                    </Form.Item>
                     {fields.length > 1 ? (
                       <Button type="link" danger onClick={() => remove(field.name)}>
                         Hapus
