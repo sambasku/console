@@ -4,6 +4,7 @@ export interface Sticker {
   play_once: boolean;
   sort_order: number;
   is_active: boolean;
+  category_slug: string | null;
 }
 
 export interface StickerInput {
@@ -12,6 +13,7 @@ export interface StickerInput {
   play_once?: boolean;
   sort_order?: number;
   is_active?: boolean;
+  category_slug?: string | null;
 }
 
 export type StickerPatch = Partial<Omit<StickerInput, 'id'>>;

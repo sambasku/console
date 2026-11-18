@@ -38,6 +38,7 @@ interface FormValues {
   play_once: boolean;
   sort_order: number;
   is_active: boolean;
+  category_slug?: string;
 }
 
 export function StickersPage() {
@@ -83,6 +84,7 @@ export function StickersPage() {
       play_once: row.play_once,
       sort_order: row.sort_order,
       is_active: row.is_active,
+      category_slug: row.category_slug ?? '',
     });
     setModalOpen(true);
   };
@@ -103,6 +105,7 @@ export function StickersPage() {
 
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
+    const categorySlug = values.category_slug?.trim().toLowerCase() || null;
     try {
       if (editing) {
         await updateMutation.mutateAsync({
@@ -111,12 +114,14 @@ export function StickersPage() {
           play_once: values.play_once,
           sort_order: values.sort_order,
           is_active: values.is_active,
+          category_slug: categorySlug,
         });
         message.success('Stiker diperbarui');
       } else {
         await createMutation.mutateAsync({
           id: values.id.trim().toLowerCase(),
           image_url: values.image_url.trim(),
+          category_slug: categorySlug,
           play_once: values.play_once,
           sort_order: values.sort_order,
           is_active: values.is_active,
@@ -167,6 +172,11 @@ export function StickersPage() {
             ),
           },
           { title: 'Id', dataIndex: 'id' },
+          {
+            title: 'Kategori',
+            dataIndex: 'category_slug',
+            render: (v: string | null) => v || '-',
+          },
           {
             title: 'Play once',
             dataIndex: 'play_once',
@@ -240,9 +250,16 @@ export function StickersPage() {
             </Button>
           </Upload>
           <Form.Item
+            name="category_slug"
+            label="Kategori (slug)"
+            style={{ marginTop: 16 }}
+            extra="Opsional. Kosong = tanpa kategori (hanya di tab Semua)."
+          >
+            <Input placeholder="reaksi" />
+          </Form.Item>
+          <Form.Item
             name="sort_order"
             label="Urutan"
-            style={{ marginTop: 16 }}
             rules={[{ required: true }]}
           >
             <InputNumber min={0} max={9999} style={{ width: '100%' }} />
