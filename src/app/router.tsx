@@ -40,6 +40,7 @@ import { NotificationCampaignDetailPage } from '@/features/notification-campaign
 import { NotificationTemplatesPage } from '@/features/notification-campaigns/presentation/notification-templates-page';
 import { AnnouncementsPage } from '@/features/announcements/presentation/announcements-page';
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
+import { StickersPage } from '@/features/stickers/presentation/stickers-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
@@ -375,6 +376,12 @@ const achievementsRoute = createRoute({
   component: AchievementsPage,
 });
 
+const stickersRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/stickers',
+  component: StickersPage,
+});
+
 const categoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/categories',
@@ -652,6 +659,7 @@ const routeTree = rootRoute.addChildren([
     notificationTemplatesRoute,
     announcementsRoute,
     achievementsRoute,
+    stickersRoute,
     categoriesRoute,
     regionsRoute,
     placesRoute,

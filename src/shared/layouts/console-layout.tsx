@@ -140,6 +140,7 @@ type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
+  | '/stickers'
   | '/users'
   | '/sponsorships'
   | '/audit-logs'
@@ -186,6 +187,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
+  stickers: 'Stiker',
   encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
@@ -318,8 +320,10 @@ export function ConsoleLayout() {
         ).map(([key, { icon, label }]) => ({ key, icon, label })),
       });
     }
-    // Pencapaian: katalog border/badge/stiker + evaluasi otomatis (root menu).
+    // Pencapaian: katalog border/badge/stiker reward + evaluasi otomatis (root menu).
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
+    // Katalog stiker chat/komentar (beda dari reward achievement).
+    items.push({ key: '/stickers', icon: <AppstoreOutlined />, label: 'Stiker' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({
