@@ -214,6 +214,45 @@ export function BalehoPage() {
       render: (v: number | undefined) => `${v ?? 0}%`,
     },
     {
+      title: 'Action-rate',
+      dataIndex: 'action_rate_percent',
+      width: 100,
+      render: (v: number | undefined) => `${v ?? 0}%`,
+    },
+    {
+      title: 'Sukses CTA',
+      dataIndex: 'success_rate_percent',
+      width: 100,
+      render: (v: number | undefined) => `${v ?? 0}%`,
+    },
+    {
+      title: 'Gagal CTA',
+      dataIndex: 'action_fail',
+      width: 90,
+      render: (v: number | undefined) => v ?? 0,
+    },
+    {
+      title: 'CPM',
+      dataIndex: 'cpm_idr',
+      width: 110,
+      render: (v: number | null | undefined) =>
+        v == null ? '-' : `Rp ${v.toLocaleString('id-ID')}`,
+    },
+    {
+      title: 'CPC',
+      dataIndex: 'cpc_idr',
+      width: 110,
+      render: (v: number | null | undefined) =>
+        v == null ? '-' : `Rp ${v.toLocaleString('id-ID')}`,
+    },
+    {
+      title: '7h tayang',
+      key: 'daily7_impressions',
+      width: 90,
+      render: (_: unknown, row: BalehoPlacementWire) =>
+        (row.daily ?? []).reduce((s, d) => s + d.impressions, 0),
+    },
+    {
       title: 'Dibuat',
       dataIndex: 'created_at',
       width: 180,

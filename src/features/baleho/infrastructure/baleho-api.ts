@@ -29,7 +29,19 @@ export interface BalehoPlacementWire {
   taps?: number;
   /** Klik tombol CTA (`event_type=action`). */
   actions?: number;
+  action_success?: number;
+  action_fail?: number;
   ctr_percent?: number;
+  action_rate_percent?: number;
+  success_rate_percent?: number;
+  cpm_idr?: number | null;
+  cpc_idr?: number | null;
+  daily?: Array<{
+    date: string;
+    impressions: number;
+    taps: number;
+    actions: number;
+  }>;
 }
 
 export async function listAdminBaleho(
