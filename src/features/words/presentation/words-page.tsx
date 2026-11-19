@@ -83,6 +83,7 @@ export function WordsPage() {
   const [wordType, setWordType] = useState<WordType | undefined>();
   const [isVerified, setIsVerified] = useState<boolean | undefined>();
   const [hasImage, setHasImage] = useState<boolean | undefined>();
+  const [needsReview, setNeedsReview] = useState<boolean | undefined>();
   const [activeTab, setActiveTab] = useState<WordsTab>('published');
   const [deletingId, setDeletingId] = useState<string | undefined>();
   const [publishingId, setPublishingId] = useState<string | undefined>();
@@ -98,7 +99,15 @@ export function WordsPage() {
   const commaSplitsQuery = useCommaSplits(true);
   const commaSplitCount = commaSplitsQuery.data?.total;
 
-  const listArgs: UseWordListArgs = { q, wordType, isVerified, published, hasImage, enabled: !isSpecialTab };
+  const listArgs: UseWordListArgs = {
+    q,
+    wordType,
+    isVerified,
+    published,
+    hasImage,
+    needsReview,
+    enabled: !isSpecialTab,
+  };
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
     useWordList(listArgs);
 
@@ -440,6 +449,17 @@ export function WordsPage() {
           ]}
           value={hasImage}
           onChange={setHasImage}
+        />
+        <Select
+          allowClear
+          placeholder="Perlu ditinjau"
+          style={{ width: 180 }}
+          options={[
+            { value: true, label: 'Perlu ditinjau' },
+            { value: false, label: 'Tidak perlu ditinjau' },
+          ]}
+          value={needsReview}
+          onChange={setNeedsReview}
         />
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
           Muat ulang

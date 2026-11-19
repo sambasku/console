@@ -19,6 +19,7 @@ export async function listWordsRequest(
       is_verified: params.isVerified,
       published: params.published,
       has_image: params.hasImage,
+      needs_review: params.needsReview,
       limit: params.limit ?? 20,
       cursor: params.cursor,
     },

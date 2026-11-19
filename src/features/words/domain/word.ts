@@ -85,6 +85,8 @@ export interface ListWordsParams {
   published?: boolean;
   /** true=bergambar, false=tanpa gambar, omit=semua */
   hasImage?: boolean;
+  /** true=punya makna needs_review, false=tidak, omit=semua (G5) */
+  needsReview?: boolean;
   limit?: number;
   cursor?: string;
 }
