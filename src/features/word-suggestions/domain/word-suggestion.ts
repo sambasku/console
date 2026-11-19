@@ -17,6 +17,7 @@ export type SuggestionReasonCode =
   | 'derived_from'
   | 'meaning_group'
   | 'spelling_variant'
+  | 'change_categories'
   | 'lemma_notes'
   | 'typo'
   | 'inaccurate_definition'
@@ -165,6 +166,7 @@ export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
   derived_from: 'Kata turunan',
   meaning_group: 'Kelompok makna',
   spelling_variant: 'Variasi penulisan',
+  change_categories: 'Ubah kategori',
   lemma_notes: 'Lemma atau catatan',
   typo: 'Kesalahan penulisan',
   inaccurate_definition: 'Definisi kurang tepat',
