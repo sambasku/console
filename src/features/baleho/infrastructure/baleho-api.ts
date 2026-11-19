@@ -27,6 +27,8 @@ export interface BalehoPlacementWire {
   created_at: string;
   impressions?: number;
   taps?: number;
+  /** Klik tombol CTA (`event_type=action`). */
+  actions?: number;
   ctr_percent?: number;
 }
 

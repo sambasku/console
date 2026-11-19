@@ -196,9 +196,15 @@ export function BalehoPage() {
       render: (v: number | undefined) => v ?? 0,
     },
     {
-      title: 'Tap',
+      title: 'Tap detail',
       dataIndex: 'taps',
-      width: 70,
+      width: 90,
+      render: (v: number | undefined) => v ?? 0,
+    },
+    {
+      title: 'Klik CTA',
+      dataIndex: 'actions',
+      width: 90,
       render: (v: number | undefined) => v ?? 0,
     },
     {
