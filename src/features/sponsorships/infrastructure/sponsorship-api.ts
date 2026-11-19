@@ -1,16 +1,19 @@
 import { client } from '@/shared/api/client';
 import type { ApiCursorPageEnvelope } from '@/shared/api/types';
-import type { Sponsorship, SponsorshipInput } from '../domain/sponsorship';
+import type { Sponsorship, SponsorshipInput, SponsorshipTier } from '../domain/sponsorship';
 
 interface SponsorshipWire {
   id: string;
   user_id: string | null;
+  usaha_id: string | null;
   name: string;
   description: string | null;
   logo_url: string | null;
   url: string | null;
   username: string | null;
+  tier: SponsorshipTier;
   since: string;
+  ends_on: string | null;
   note: string;
   created_at: string;
   updated_at: string | null;
@@ -20,12 +23,15 @@ function toDomain(w: SponsorshipWire): Sponsorship {
   return {
     id: w.id,
     userId: w.user_id,
+    usahaId: w.usaha_id,
     name: w.name,
     description: w.description,
     logoUrl: w.logo_url,
     url: w.url,
     username: w.username,
+    tier: w.tier ?? 'perak',
     since: w.since,
+    endsOn: w.ends_on,
     note: w.note,
     createdAt: w.created_at,
     updatedAt: w.updated_at,
