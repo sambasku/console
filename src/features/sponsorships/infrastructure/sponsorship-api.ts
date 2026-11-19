@@ -74,3 +74,24 @@ export async function updateSponsorshipRequest(
 export async function deleteSponsorshipRequest(id: string): Promise<void> {
   await client.delete(`/admin/sponsorships/${id}`);
 }
+
+/**
+ * Resize client-side + PNG (alpha aman) lalu unggah ke CDN ImageKit.
+ * Folder `/sponsorships` - dipakai splash + halaman Komunitas nanti.
+ */
+export async function uploadSponsorshipLogo(file: File): Promise<string> {
+  const { compressImageForUpload, SPONSOR_LOGO_MAX_HEIGHT, SPONSOR_LOGO_MAX_WIDTH } =
+    await import('@/shared/utils/compress-image');
+  const { uploadImageToCdn } = await import('@/shared/api/image-upload');
+
+  const prepared = await compressImageForUpload(file, {
+    maxWidth: SPONSOR_LOGO_MAX_WIDTH,
+    maxHeight: SPONSOR_LOGO_MAX_HEIGHT,
+    preserveAlpha: true,
+  });
+  if (prepared.size > 2 * 1024 * 1024) {
+    throw new Error('Logo masih terlalu besar setelah diproses (maks 2 MB)');
+  }
+  const { url } = await uploadImageToCdn(prepared, '/sponsorships');
+  return url;
+}

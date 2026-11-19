@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   App as AntdApp,
   Button,
   Form,
+  Image,
   Input,
   Modal,
   Popconfirm,
@@ -13,7 +14,9 @@ import {
   Space,
   Table,
   Typography,
+  Upload,
 } from 'antd';
+import type { UploadProps } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
 import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -21,12 +24,79 @@ import { listAdminUsersRequest } from '@/features/users/infrastructure/user-admi
 import { listUsahaRequest } from '@/features/usaha/infrastructure/usaha-api';
 import type { Sponsorship } from '../domain/sponsorship';
 import { SPONSORSHIP_TIER_OPTIONS } from '../domain/sponsorship';
+import { uploadSponsorshipLogo } from '../infrastructure/sponsorship-api';
 import {
   useCreateSponsorship,
   useDeleteSponsorship,
   useSponsorshipList,
   useUpdateSponsorship,
 } from '../application/use-sponsorships';
+
+
+function SponsorLogoField({
+  value,
+  onChange,
+}: {
+  value?: string | null;
+  onChange?: (url: string | null) => void;
+}) {
+  const { message } = AntdApp.useApp();
+  const [uploading, setUploading] = useState(false);
+
+  const beforeUpload: UploadProps['beforeUpload'] = (file) => {
+    setUploading(true);
+    uploadSponsorshipLogo(file as File)
+      .then((url) => onChange?.(url))
+      .catch((err) =>
+        message.error(normalizeError(err).message || 'Gagal mengunggah logo'),
+      )
+      .finally(() => setUploading(false));
+    return false;
+  };
+
+  return (
+    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+      {value ? (
+        <div
+          style={{
+            position: 'relative',
+            width: 120,
+            height: 72,
+            background:
+              'repeating-conic-gradient(#e7e5e4 0% 25%, #fafaf9 0% 50%) 50% / 12px 12px',
+            borderRadius: 8,
+            border: '1px solid #e7e5e4',
+          }}
+        >
+          <Image
+            src={value}
+            width={120}
+            height={72}
+            style={{ objectFit: 'contain', borderRadius: 8 }}
+            preview={false}
+          />
+          <Button
+            size="small"
+            danger
+            shape="circle"
+            icon={<DeleteOutlined />}
+            style={{ position: 'absolute', top: -8, right: -8 }}
+            onClick={() => onChange?.(null)}
+          />
+        </div>
+      ) : null}
+      <Upload
+        accept="image/png,image/webp,image/jpeg"
+        showUploadList={false}
+        beforeUpload={beforeUpload}
+      >
+        <Button icon={<UploadOutlined />} loading={uploading}>
+          {value ? 'Ganti logo' : 'Unggah logo'}
+        </Button>
+      </Upload>
+    </Space>
+  );
+}
 
 export function SponsorshipsPage() {
   const { user } = useAuth();
@@ -308,8 +378,12 @@ export function SponsorshipsPage() {
           <Form.Item name="note" label="Catatan">
             <Input.TextArea rows={2} />
           </Form.Item>
-          <Form.Item name="logo_url" label="URL logo">
-            <Input />
+          <Form.Item
+            name="logo_url"
+            label="Logo"
+            extra="Di-resize di browser (maks 512px) lalu disimpan sebagai PNG supaya transparan tetap aman."
+          >
+            <SponsorLogoField />
           </Form.Item>
           <Form.Item name="url" label="URL eksternal">
             <Input />
