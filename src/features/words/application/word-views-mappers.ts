@@ -1,15 +1,15 @@
-import type { WordViewsReport } from '../infrastructure/word-api';
+import type { WordViewSeries, WordViewsReport } from '../infrastructure/word-api';
 
 /**
  * Deret tren dengan hari kosong diisi 0 supaya sumbu-x chart utuh.
  * `nowMs` bisa diinjeksi supaya hasil deterministik di test.
  */
-export function fillTrendDays(
-  report: WordViewsReport,
+export function fillTrendPoints(
+  trend: Array<{ day: string; total: number }>,
   days: number,
   nowMs: number = Date.now(),
 ): Array<{ day: string; total: number }> {
-  const byDay = new Map(report.trend.map((p) => [p.day, p.total]));
+  const byDay = new Map(trend.map((p) => [p.day, p.total]));
   const out: Array<{ day: string; total: number }> = [];
   const offset = (days - 1) * 24 * 60 * 60 * 1000;
   const start = new Date(nowMs - offset);
@@ -19,6 +19,22 @@ export function fillTrendDays(
     out.push({ day: key, total: byDay.get(key) ?? 0 });
   }
   return out;
+}
+
+export function fillTrendDays(
+  report: WordViewsReport,
+  days: number,
+  nowMs: number = Date.now(),
+): Array<{ day: string; total: number }> {
+  return fillTrendPoints(report.trend, days, nowMs);
+}
+
+export function fillWordSeriesDays(
+  series: WordViewSeries,
+  days: number,
+  nowMs: number = Date.now(),
+): Array<{ day: string; total: number }> {
+  return fillTrendPoints(series.trend, days, nowMs);
 }
 
 export interface WordViewsKpis {

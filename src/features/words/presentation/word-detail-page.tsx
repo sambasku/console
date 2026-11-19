@@ -43,6 +43,7 @@ import {
   WordExampleAudiosSection,
   WordLemmaAudiosSection,
 } from './word-form-blocks';
+import { WordDetailViewsCard } from './word-detail-views-card';
 
 const { Text, Paragraph } = Typography;
 
@@ -664,6 +665,7 @@ function WordDetailContent({
           <Text>Atribusi tidak diketahui</Text>
         )}
       </Modal>
+      <WordDetailViewsCard wordId={detail.id} />
       <Tabs
         defaultActiveKey="ringkasan"
         items={[

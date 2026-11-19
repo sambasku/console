@@ -515,3 +515,31 @@ export async function getWordViewsReportRequest(
   };
 }
 
+export interface WordViewSeries {
+  total: number;
+  lastViewed: string | null;
+  trend: Array<{ day: string; total: number }>;
+}
+
+/** Tren pembaca unik satu lemma (detail kata Console). */
+export async function getWordViewSeriesRequest(
+  wordId: string,
+  days: number,
+  signal?: AbortSignal,
+): Promise<WordViewSeries> {
+  const res = await client.get<{
+    success: true;
+    data: {
+      total: number;
+      last_viewed: string | null;
+      trend: Array<{ day: string; total: number }>;
+    };
+  }>(`/admin/words/${wordId}/views`, { params: { days }, signal });
+  const data = res.data.data;
+  return {
+    total: data.total,
+    lastViewed: data.last_viewed,
+    trend: data.trend,
+  };
+}
+
