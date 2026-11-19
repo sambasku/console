@@ -719,6 +719,12 @@ function WordDetailContent({
                               : meaning.word_class.name
                             : 'Makna'}
                         </Text>
+                        {meaning.is_verified ? (
+                          <Tag color="cyan">Terverifikasi</Tag>
+                        ) : (
+                          <Tag>Menunggu pengecekan</Tag>
+                        )}
+                        {meaning.needs_review ? <Tag color="orange">Perlu ditinjau</Tag> : null}
                       </Space>
                       {meaning.order_index ? <Text type="secondary">Urutan {meaning.order_index}</Text> : null}
                     </Flex>

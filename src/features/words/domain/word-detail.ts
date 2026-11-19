@@ -60,6 +60,15 @@ export interface WordDetailMeaning {
   /** Null bila API mengirim definisi kosong; UI menampilkan "Belum ada definisi". */
   definition: string | null;
   order_index: number;
+  /** Trust per makna (G1). */
+  is_verified?: boolean;
+  needs_review?: boolean;
+  verified_at?: string | null;
+  verified_by?: {
+    username: string;
+    display_name?: string | null;
+    role: string;
+  } | null;
   translations: WordDetailMeaningTranslation[];
   examples: WordDetailMeaningExample[];
 }
