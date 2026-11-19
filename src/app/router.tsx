@@ -44,6 +44,7 @@ import { StickersPage } from '@/features/stickers/presentation/stickers-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
+import { WordViewsPage } from '@/features/words/presentation/word-views-page';
 import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
 import { LayananPage } from '@/features/layanan/presentation/layanan-page';
@@ -406,6 +407,12 @@ const placeViewsRoute = createRoute({
   component: PlaceViewsPage,
 });
 
+const wordViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/words/views',
+  component: WordViewsPage,
+});
+
 const eventsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/events',
@@ -629,6 +636,7 @@ const routeTree = rootRoute.addChildren([
     dashboardPlayRoute,
     dashboardMobileRoute,
     wordsRoute,
+    wordViewsRoute,
     importHistoryRoute,
     importHistoryDetailRoute,
     createWordRoute,

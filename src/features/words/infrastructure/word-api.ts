@@ -474,3 +474,44 @@ export async function rollbackWordImportSessionRequest(
   return res.data.data;
 }
 
+export interface WordViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    wordId: string;
+    lemma: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type WordViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    word_id: string;
+    lemma: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+/** Laporan tren harian + ranking untuk halaman analitik kata. */
+export async function getWordViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<WordViewsReport> {
+  const res = await client.get<{ success: true; data: WordViewsReportWire }>(
+    '/admin/words/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      wordId: i.word_id,
+      lemma: i.lemma,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}
+

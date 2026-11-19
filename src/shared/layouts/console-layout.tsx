@@ -65,6 +65,7 @@ const ANALYTICS_ROUTES = {
   '/dashboard/mobile': { icon: <MobileOutlined />, label: 'Trafik Mobile' },
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
   '/places/views': { icon: <EnvironmentOutlined />, label: 'Wisata' },
+  '/words/views': { icon: <TranslationOutlined />, label: 'Kata' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -221,7 +222,9 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
-  if (top === '/dashboard' || pathname === '/places/views') return ANALYTICS_GROUP_KEY;
+  if (top === '/dashboard' || pathname === '/places/views' || pathname === '/words/views') {
+    return ANALYTICS_GROUP_KEY;
+  }
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
   if (top in PERMAINAN_ROUTES) return PERMAINAN_GROUP_KEY;
@@ -427,7 +430,10 @@ export function ConsoleLayout() {
   }, [isLoggedIn, navigate]);
 
   const currentMenuKey =
-    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/') || pathname === '/places/views'
+    pathname.startsWith('/system/') ||
+    pathname.startsWith('/dashboard/') ||
+    pathname === '/places/views' ||
+    pathname === '/words/views'
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'
