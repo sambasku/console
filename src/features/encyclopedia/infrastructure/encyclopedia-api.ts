@@ -273,5 +273,64 @@ export async function takedownCommentRequest(
   return res.data.data;
 }
 
+/** Total view per article_id. `days` undefined = semua waktu. */
+export async function listArticleViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ article_id: string; views: number }> };
+  }>('/admin/encyclopedia/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.article_id, i.views]));
+}
+
+export interface ArticleViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    articleId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type ArticleViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    article_id: string;
+    name: string;
+    slug: string;
+    category_name: string | null;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+/** Laporan tren harian + ranking untuk halaman analitik ensiklopedia. */
+export async function getArticleViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<ArticleViewsReport> {
+  const res = await client.get<{ success: true; data: ArticleViewsReportWire }>(
+    '/admin/encyclopedia/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      articleId: i.article_id,
+      name: i.name,
+      slug: i.slug,
+      category: i.category_name ?? '-',
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}
+
 // ---- Image upload (ImageKit direct from browser) ----
 export { uploadImageToCdn } from '@/shared/api/image-upload';

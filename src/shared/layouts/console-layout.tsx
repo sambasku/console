@@ -66,6 +66,9 @@ const ANALYTICS_ROUTES = {
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
   '/places/views': { icon: <EnvironmentOutlined />, label: 'Wisata' },
   '/words/views': { icon: <TranslationOutlined />, label: 'Kata' },
+  '/usaha/views': { icon: <ShopOutlined />, label: 'Usaha' },
+  '/culinary/views': { icon: <CoffeeOutlined />, label: 'Kuliner' },
+  '/encyclopedia/views': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -222,7 +225,14 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
-  if (top === '/dashboard' || pathname === '/places/views' || pathname === '/words/views') {
+  if (
+    top === '/dashboard' ||
+    pathname === '/places/views' ||
+    pathname === '/words/views' ||
+    pathname === '/usaha/views' ||
+    pathname === '/culinary/views' ||
+    pathname === '/encyclopedia/views'
+  ) {
     return ANALYTICS_GROUP_KEY;
   }
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
@@ -433,7 +443,10 @@ export function ConsoleLayout() {
     pathname.startsWith('/system/') ||
     pathname.startsWith('/dashboard/') ||
     pathname === '/places/views' ||
-    pathname === '/words/views'
+    pathname === '/words/views' ||
+    pathname === '/usaha/views' ||
+    pathname === '/culinary/views' ||
+    pathname === '/encyclopedia/views'
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'
