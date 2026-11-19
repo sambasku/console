@@ -332,7 +332,12 @@ export function SponsorshipsPage() {
             <Input />
           </Form.Item>
           <Form.Item name="tier" label="Tingkat" rules={[{ required: true }]}>
-            <Select options={SPONSORSHIP_TIER_OPTIONS} />
+            <Select
+              options={SPONSORSHIP_TIER_OPTIONS}
+              onChange={() => {
+                void form.validateFields(['logo_url']);
+              }}
+            />
           </Form.Item>
           <Form.Item name="since" label="Sejak (YYYY-MM-DD)" rules={[{ required: true }]}>
             <Input placeholder="2026-01-01" />
@@ -381,7 +386,23 @@ export function SponsorshipsPage() {
           <Form.Item
             name="logo_url"
             label="Logo"
-            extra="Di-resize di browser (maks 512px) lalu disimpan sebagai PNG supaya transparan tetap aman."
+            extra="Di-resize di browser (maks 512px) lalu disimpan sebagai PNG supaya transparan tetap aman. Wajib untuk Emas / Intan / Mustika."
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const tier = getFieldValue('tier') as string | undefined;
+                  if (tier && tier !== 'perak' && !value) {
+                    return Promise.reject(
+                      new Error(
+                        'Logo wajib untuk Emas / Intan / Mustika (tampil di splash).',
+                      ),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
+            dependencies={['tier']}
           >
             <SponsorLogoField />
           </Form.Item>

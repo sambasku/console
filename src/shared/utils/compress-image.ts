@@ -16,14 +16,31 @@ export type CompressImageOptions = {
    * false/default = WebP (foto biasa).
    */
   preserveAlpha?: boolean;
+  /**
+   * true = gagal decode melempar Error (pesan jelas).
+   * Default: untuk preserveAlpha juga true; selain itu kembalikan file asli.
+   */
+  throwOnDecodeFail?: boolean;
 };
+
+async function decodeBitmap(file: File): Promise<ImageBitmap | null> {
+  // Hormati EXIF orientation (foto HP). Fallback tanpa opsi untuk browser lama.
+  try {
+    return await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    try {
+      return await createImageBitmap(file);
+    } catch {
+      return null;
+    }
+  }
+}
 
 /**
  * Resize (tidak ada sisi > max) + encode.
  * - Default: WebP quality 80 (foto).
- * - `preserveAlpha: true`: PNG (logo transparan - jangan pakai JPEG/WebP lossy
- *   yang merusak alpha di sebagian alur).
- * File non-image atau gagal decode → dikembalikan apa adanya.
+ * - `preserveAlpha: true`: PNG (logo transparan).
+ * Decode gagal: throw bila preserveAlpha / throwOnDecodeFail; selain itu file asli.
  */
 export async function compressImageForUpload(
   file: File,
@@ -33,11 +50,24 @@ export async function compressImageForUpload(
   const maxHeight = opts.maxHeight ?? PHOTO_UPLOAD_MAX_HEIGHT;
   const quality = opts.quality ?? PHOTO_UPLOAD_QUALITY;
   const preserveAlpha = opts.preserveAlpha === true;
+  const throwOnDecodeFail = opts.throwOnDecodeFail ?? preserveAlpha;
 
-  if (!file.type.startsWith('image/')) return file;
+  if (!file.type.startsWith('image/')) {
+    if (throwOnDecodeFail) {
+      throw new Error('File harus gambar (PNG, WebP, atau JPEG)');
+    }
+    return file;
+  }
 
-  const bitmap = await createImageBitmap(file).catch(() => null);
-  if (!bitmap) return file;
+  const bitmap = await decodeBitmap(file);
+  if (!bitmap) {
+    if (throwOnDecodeFail) {
+      throw new Error(
+        'Gambar tidak bisa dibaca. Pakai PNG, WebP, atau JPEG (bukan HEIC/HEIF).',
+      );
+    }
+    return file;
+  }
 
   try {
     const scale = Math.min(1, maxWidth / bitmap.width, maxHeight / bitmap.height);
@@ -50,7 +80,6 @@ export async function compressImageForUpload(
       file.type === 'image/webp' &&
       file.size < 200_000
     ) {
-      // Sudah kecil & dalam batas - skip re-encode
       return file;
     }
 
@@ -67,8 +96,13 @@ export async function compressImageForUpload(
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return file;
-    // Jangan isi latar putih - biar alpha PNG/WebP sumber tetap kosong.
+    if (!ctx) {
+      if (throwOnDecodeFail) {
+        throw new Error('Browser tidak mendukung proses gambar (canvas)');
+      }
+      return file;
+    }
+    // Jangan isi latar putih - biar alpha sumber tetap kosong.
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(bitmap, 0, 0, width, height);
 
@@ -78,7 +112,12 @@ export async function compressImageForUpload(
         ? canvas.toBlob(resolve, mime)
         : canvas.toBlob(resolve, mime, quality),
     );
-    if (!blob) return file;
+    if (!blob) {
+      if (throwOnDecodeFail) {
+        throw new Error('Gagal mengonversi gambar');
+      }
+      return file;
+    }
 
     const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
     const ext = preserveAlpha ? 'png' : 'webp';

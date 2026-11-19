@@ -21,7 +21,7 @@ describe('compressImageForUpload', () => {
     expect(out).toBe(file);
   });
 
-  it('gagal decode → file asli', async () => {
+  it('gagal decode (tanpa preserveAlpha) → file asli', async () => {
     vi.stubGlobal(
       'createImageBitmap',
       vi.fn().mockRejectedValue(new Error('bad')),
@@ -31,6 +31,20 @@ describe('compressImageForUpload', () => {
     });
     const out = await compressImageForUpload(file);
     expect(out).toBe(file);
+    vi.unstubAllGlobals();
+  });
+
+  it('gagal decode + preserveAlpha → throw pesan jelas', async () => {
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn().mockRejectedValue(new Error('bad')),
+    );
+    const file = new File([new Uint8Array([1, 2, 3])], 'a.png', {
+      type: 'image/png',
+    });
+    await expect(
+      compressImageForUpload(file, { preserveAlpha: true }),
+    ).rejects.toThrow(/tidak bisa dibaca/i);
     vi.unstubAllGlobals();
   });
 });
