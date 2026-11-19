@@ -17,8 +17,8 @@ export interface EventWire {
   description: string;
   category_id: string;
   category: EventCategoryRef | null;
-  starts_at: string;
-  ends_at: string;
+  starts_at: string | null;
+  ends_at: string | null;
   occurrence_status: EventOccurrenceStatus;
   location_text: string;
   lat: number | null;
@@ -119,8 +119,8 @@ export type EventInput = {
   name: string;
   description: string;
   category_id: string;
-  starts_at: string;
-  ends_at: string;
+  starts_at: string | null;
+  ends_at: string | null;
   location_text: string;
   lat?: number | null;
   lng?: number | null;

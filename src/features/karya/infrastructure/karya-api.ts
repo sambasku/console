@@ -39,7 +39,7 @@ export interface KaryaWire {
   slug: string;
   title: string;
   kind: KaryaKind;
-  year: number;
+  year: number | null;
   language: string | null;
   description: string | null;
   cover_url: string | null;
@@ -59,12 +59,12 @@ export interface KaryaWire {
 
 export interface KaryaInput {
   title: string;
-  year: number;
+  year?: number | null;
   kind: KaryaKind;
   language?: string | null;
   description?: string | null;
   cover_url?: string | null;
-  sambas_connections: SambasConnectionWire[];
+  sambas_connections?: SambasConnectionWire[];
   access_links?: AccessLinkWire[];
   credits: KaryaCreditWire[];
   music_release_type?: string | null;

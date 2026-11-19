@@ -12,7 +12,7 @@ import {
 } from '../infrastructure/event-api';
 import {
   approveEventContributionRequest,
-  listPendingEventContributionsRequest,
+  listEventContributionsRequest,
   rejectEventContributionRequest,
   requestEventRevisionRequest,
 } from '../infrastructure/event-contribution-api';
@@ -102,14 +102,26 @@ export function useSetEventCancelled() {
   });
 }
 
-/** Usulan acara yang menunggu tinjauan. */
-export function usePendingEventContributions(enabled = true) {
+/** Usulan acara: periksa / riwayat + cari. */
+export function useEventContributions(
+  enabled = true,
+  filters: { decided?: boolean; q?: string } = {},
+) {
+  const params = {
+    ...(filters.decided ? { decided: '1' as const } : { status: 'pending' }),
+    ...(filters.q?.trim() ? { q: filters.q.trim() } : {}),
+  };
   return useQuery({
-    queryKey: ['events', 'contributions', 'pending'],
-    queryFn: ({ signal }) => listPendingEventContributionsRequest(signal),
+    queryKey: ['events', 'contributions', params],
+    queryFn: ({ signal }) => listEventContributionsRequest(params, signal),
     enabled,
     staleTime: 30_000,
   });
+}
+
+/** @deprecated pakai useEventContributions */
+export function usePendingEventContributions(enabled = true) {
+  return useEventContributions(enabled, {});
 }
 
 export function useReviewEventContribution() {

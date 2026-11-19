@@ -98,8 +98,8 @@ export function KaryaPage() {
           }
         : {
             kind: 'music',
-            year: new Date().getFullYear(),
-            sambas_connections: [{ type: 'theme', note: '' }],
+            year: null,
+            sambas_connections: [],
             credits: [{ role: 'vocal', name_text: '' }],
             access_links: [],
             related: [],
@@ -236,7 +236,7 @@ export function KaryaPage() {
           <Form.Item name="title" label="Judul" rules={[{ required: true, min: 1 }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="year" label="Tahun" rules={[{ required: true }]}>
+          <Form.Item name="year" label="Tahun">
             <InputNumber min={1800} max={2100} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="language" label="Bahasa">
@@ -248,18 +248,7 @@ export function KaryaPage() {
           <Form.Item name="cover_url" label="Cover / poster">
             <Input placeholder="https://..." />
           </Form.Item>
-          <Form.List
-            name="sambas_connections"
-            rules={[
-              {
-                validator: async (_, value) => {
-                  if (!value || value.length < 1) {
-                    throw new Error('Minimal satu alasan berbau Sambas');
-                  }
-                },
-              },
-            ]}
-          >
+          <Form.List name="sambas_connections">
             {(fields, { add, remove }) => (
               <>
                 {fields.map((field) => (

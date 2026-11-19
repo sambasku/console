@@ -43,8 +43,8 @@ export interface Event {
   description: string;
   categoryId: EventCategory;
   category: EventCategoryRef | null;
-  startsAt: string;
-  endsAt: string;
+  startsAt: string | null;
+  endsAt: string | null;
   occurrenceStatus: EventOccurrenceStatus;
   locationText: string;
   lat: number | null;
@@ -86,7 +86,7 @@ export interface EventContributionPayload {
   description: string;
   category_id: string;
   starts_at: string;
-  ends_at: string;
+  ends_at: string | null;
   location_text: string;
   lat: number | null;
   lng: number | null;

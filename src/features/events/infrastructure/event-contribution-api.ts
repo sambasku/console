@@ -57,15 +57,23 @@ export function mapContribution(w: EventContributionWire): EventContribution {
   };
 }
 
-/** Usulan acara yang menunggu tinjauan admin. */
-export async function listPendingEventContributionsRequest(
+/** Usulan acara admin: periksa (pending) atau riwayat (decided) + cari. */
+export async function listEventContributionsRequest(
+  params: { status?: string; decided?: '1'; q?: string } = {},
   signal?: AbortSignal,
 ): Promise<EventContribution[]> {
   const res = await client.get<{
     success: true;
     data: { items: EventContributionWire[] };
-  }>('/admin/event-contributions', { signal });
+  }>('/admin/event-contributions', { params, signal });
   return res.data.data.items.map(mapContribution);
+}
+
+/** @deprecated pakai listEventContributionsRequest({ status: 'pending' }) */
+export async function listPendingEventContributionsRequest(
+  signal?: AbortSignal,
+): Promise<EventContribution[]> {
+  return listEventContributionsRequest({ status: 'pending' }, signal);
 }
 
 export async function approveEventContributionRequest(id: string): Promise<void> {
