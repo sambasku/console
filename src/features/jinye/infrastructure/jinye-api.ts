@@ -14,6 +14,9 @@ export interface JinyeRow {
   body: string | null;
   hasImages: boolean;
   hasAudio: boolean;
+  /** URL gambar tayang / staging untuk preview moderasi. */
+  imageUrls: string[];
+  audioUrl: string | null;
   status: JinyeStatus | string;
   createdAt: string;
 }
@@ -24,10 +27,24 @@ interface JinyeWire {
   display_name: string | null;
   username: string | null;
   body: string | null;
-  images?: Array<{ public_url?: string | null; url?: string }>;
+  images?: Array<{
+    public_url?: string | null;
+    url?: string | null;
+    status?: string;
+  }>;
   audio?: { audio_url?: string | null } | null;
   status: string;
   created_at: string;
+}
+
+function imagePreviewUrl(img: {
+  public_url?: string | null;
+  url?: string | null;
+}): string | null {
+  const pub = img.public_url?.trim();
+  if (pub) return pub;
+  const staging = img.url?.trim();
+  return staging || null;
 }
 
 export async function listJinyeRequest(
@@ -50,17 +67,24 @@ export async function listJinyeRequest(
     },
     signal,
   });
-  return res.data.data.map((w) => ({
-    id: w.id,
-    userId: w.user_id,
-    displayName: w.display_name,
-    username: w.username,
-    body: w.body,
-    hasImages: Array.isArray(w.images) && w.images.length > 0,
-    hasAudio: !!w.audio?.audio_url,
-    status: w.status,
-    createdAt: w.created_at,
-  }));
+  return res.data.data.map((w) => {
+    const imageUrls = (w.images ?? [])
+      .map(imagePreviewUrl)
+      .filter((u): u is string => !!u);
+    return {
+      id: w.id,
+      userId: w.user_id,
+      displayName: w.display_name,
+      username: w.username,
+      body: w.body,
+      hasImages: Array.isArray(w.images) && w.images.length > 0,
+      hasAudio: !!w.audio?.audio_url,
+      imageUrls,
+      audioUrl: w.audio?.audio_url?.trim() || null,
+      status: w.status,
+      createdAt: w.created_at,
+    };
+  });
 }
 
 export async function takedownJinyeRequest(id: string): Promise<void> {

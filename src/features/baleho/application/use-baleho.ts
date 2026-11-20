@@ -5,6 +5,7 @@ import {
   markPaidBaleho,
   pauseBaleho,
   rejectBaleho,
+  resumeBaleho,
 } from '../infrastructure/baleho-api';
 
 const key = ['admin', 'baleho', 'placements'] as const;
@@ -44,6 +45,10 @@ export function useBalehoMutations() {
     pause: useMutation({
       mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
         pauseBaleho(id, reason),
+      onSuccess: invalidate,
+    }),
+    resume: useMutation({
+      mutationFn: (id: string) => resumeBaleho(id),
       onSuccess: invalidate,
     }),
   };

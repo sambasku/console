@@ -5,6 +5,7 @@ import {
   Image,
   Input,
   Modal,
+  Result,
   Space,
   Table,
   Tag,
@@ -27,10 +28,21 @@ const STATUS_COLOR: Record<BalehoPlacementStatus, string> = {
   pending_review: 'gold',
   awaiting_payment: 'blue',
   live: 'green',
+  paused: 'orange',
   rejected: 'red',
   cancelled: 'default',
   expired: 'default',
 };
+
+function canProcessBaleho(roles: string[] | undefined): boolean {
+  return (roles ?? []).some((r) => r === 'root' || r === 'admin');
+}
+
+function isEndsAtActive(endsAt: string | null | undefined): boolean {
+  if (!endsAt) return false;
+  const t = Date.parse(endsAt);
+  return Number.isFinite(t) && t > Date.now();
+}
 
 type PaymentProof = {
   /** URL ImageKit (disimpan ke API saat mark-paid; mungkin privat). */
@@ -47,6 +59,7 @@ function canViewPaymentProof(roles: string[]): boolean {
 export function BalehoPage() {
   const { message, modal } = AntdApp.useApp();
   const { user } = useAuth();
+  const canProcess = canProcessBaleho(user?.roles);
   const list = useAdminBaleho();
   const actions = useBalehoMutations();
   const [markPaidRow, setMarkPaidRow] = useState<BalehoPlacementWire | null>(
@@ -129,6 +142,19 @@ export function BalehoPage() {
       setProofLoadingId(null);
     }
   };
+
+  if (!canProcess) {
+    return (
+      <>
+        <PageHeader title="Baleho" />
+        <Result
+          status="403"
+          title="Akses terbatas"
+          subTitle="Kelola Baleho hanya untuk role admin dan root."
+        />
+      </>
+    );
+  }
 
   const columns = [
     {
@@ -343,15 +369,16 @@ export function BalehoPage() {
               loading={actions.pause.isPending}
               onClick={() => {
                 modal.confirm({
-                  title: 'Pause / turunkan iklan?',
-                  content: 'Area akan dilepas dari papan.',
+                  title: 'Pause iklan?',
+                  content:
+                    'Konten disembunyikan dari papan, slot tetap dikunci sampai masa berlaku. Bisa ditayangkan ulang selama belum berakhir.',
                   okText: 'Pause',
                   okButtonProps: { danger: true },
                   onOk: () =>
                     run('Di-pause', () =>
                       actions.pause.mutateAsync({
                         id: row.id,
-                        reason: 'takedown',
+                        reason: 'paused',
                       }),
                     ),
                 });
@@ -360,6 +387,27 @@ export function BalehoPage() {
               Pause
             </Button>
           )}
+          {row.status === 'paused' &&
+            isEndsAtActive(row.ends_at) && (
+              <Button
+                size="small"
+                type="primary"
+                loading={actions.resume.isPending}
+                onClick={() =>
+                  run('Ditayangkan ulang', () =>
+                    actions.resume.mutateAsync(row.id),
+                  )
+                }
+              >
+                Tayangkan ulang
+              </Button>
+            )}
+          {row.status === 'paused' &&
+            !isEndsAtActive(row.ends_at) && (
+              <Typography.Text type="secondary">
+                Pause kedaluwarsa
+              </Typography.Text>
+            )}
         </Space>
       ),
     },
@@ -369,9 +417,10 @@ export function BalehoPage() {
     <>
       <PageHeader title="Baleho" />
       <Typography.Paragraph type="secondary">
-        Moderasi pesanan slide 1. Setujui → email + WA instruksi bayar. Tandai
-        lunas wajib unggah bukti transfer (file privat). Preview bukti lewat
-        popup di layar ini - hanya admin/root.
+        Moderasi pesanan slide 1 (admin/root). Setujui → email + WA instruksi
+        bayar. Pause menyembunyikan konten tanpa melepas slot; selama masa
+        berlaku belum habis bisa ditayangkan ulang. Preview bukti bayar hanya
+        admin/root.
       </Typography.Paragraph>
       <Table
         rowKey="id"

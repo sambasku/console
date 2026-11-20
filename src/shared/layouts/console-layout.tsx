@@ -319,7 +319,11 @@ export function ConsoleLayout() {
             EksplorasiRoute,
             (typeof EKSPLORASI_ROUTES)[EksplorasiRoute],
           ][]
-        ).map(([key, { icon, label }]) => ({ key, icon, label })),
+        )
+          .filter(([key]) =>
+            key === '/baleho' ? canManageUsers : true,
+          )
+          .map(([key, { icon, label }]) => ({ key, icon, label })),
       });
       items.push({
         key: PERMAINAN_GROUP_KEY,

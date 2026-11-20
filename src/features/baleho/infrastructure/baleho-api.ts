@@ -4,6 +4,7 @@ export type BalehoPlacementStatus =
   | 'pending_review'
   | 'awaiting_payment'
   | 'live'
+  | 'paused'
   | 'rejected'
   | 'cancelled'
   | 'expired';
@@ -25,6 +26,8 @@ export interface BalehoPlacementWire {
   price_per_cell_per_day: number | null;
   days: number | null;
   created_at: string;
+  /** ISO; null jika belum live/belum di-set. */
+  ends_at: string | null;
   impressions?: number;
   taps?: number;
   /** Klik tombol CTA (`event_type=action`). */
@@ -74,6 +77,10 @@ export async function markPaidBaleho(
 
 export async function pauseBaleho(id: string, reason?: string): Promise<void> {
   await client.post(`/admin/baleho/placements/${id}/pause`, { reason });
+}
+
+export async function resumeBaleho(id: string): Promise<void> {
+  await client.post(`/admin/baleho/placements/${id}/resume`);
 }
 
 /** Byte bukti bayar (root/admin). Caller wajib revokeObjectURL setelah tutup popup. */

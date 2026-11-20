@@ -5,6 +5,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import {
   App as AntdApp,
   Button,
+  Image,
   Input,
   Popconfirm,
   Select,
@@ -44,7 +45,7 @@ const STATUS_OPTIONS: { value: JinyeStatus | 'all'; label: string }[] = [
   { value: 'deleted_by_author', label: 'Dihapus penulis' },
 ];
 
-/** Moderasi Jinye: list + filter username/status + takedown. */
+/** Moderasi Jinye: list + filter username/status + takedown (bukan antrean approve foto). */
 export function JinyeModerationPage() {
   const { message } = AntdApp.useApp();
   const [status, setStatus] = useState<JinyeStatus | 'all'>('all');
@@ -73,28 +74,41 @@ export function JinyeModerationPage() {
         columnHelper.display({
           id: 'body',
           header: 'Isi',
-          size: 420,
+          size: 480,
           cell: (info) => {
             const row = info.row.original;
-            const mediaBits = [
-              row.hasImages ? 'Foto' : null,
-              row.hasAudio ? 'Suara' : null,
-            ].filter(Boolean);
             return (
-              <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
                 <Typography.Paragraph
                   ellipsis={{ rows: 4, expandable: true }}
                   style={{ margin: 0, whiteSpace: 'pre-line' }}
                 >
                   {row.body?.trim() || '-'}
                 </Typography.Paragraph>
-                {mediaBits.length > 0 ? (
-                  <Space size={4}>
-                    {mediaBits.map((m) => (
-                      <Tag key={m}>{m}</Tag>
-                    ))}
-                  </Space>
+                {row.imageUrls.length > 0 ? (
+                  <Image.PreviewGroup>
+                    <Space size={6} wrap>
+                      {row.imageUrls.map((src) => (
+                        <Image
+                          key={src}
+                          src={src}
+                          width={56}
+                          height={56}
+                          style={{ objectFit: 'cover', borderRadius: 6 }}
+                        />
+                      ))}
+                    </Space>
+                  </Image.PreviewGroup>
                 ) : null}
+                {row.audioUrl ? (
+                  <audio controls preload="none" src={row.audioUrl} style={{ width: '100%', maxWidth: 320 }}>
+                    <track kind="captions" />
+                  </audio>
+                ) : null}
+                {row.hasImages && row.imageUrls.length === 0 ? (
+                  <Tag>Foto (URL kosong)</Tag>
+                ) : null}
+                {row.hasAudio && !row.audioUrl ? <Tag>Suara</Tag> : null}
               </Space>
             );
           },
@@ -139,7 +153,7 @@ export function JinyeModerationPage() {
             return (
               <Popconfirm
                 title="Tarik Jinye ini dari feed?"
-                description="Jinye langsung disembunyikan dari publik."
+                description="Jinye (teks, foto, suara) langsung disembunyikan dari publik."
                 okText="Tarik"
                 okButtonProps={{ danger: true }}
                 cancelText="Batal"
@@ -168,7 +182,7 @@ export function JinyeModerationPage() {
     <>
       <PageHeader
         title="Jinye"
-        subtitle="Timeline Jinye (siapa buat apa). Filter username untuk lihat timeline satu orang. Takedown menyembunyikan dari publik."
+        subtitle="Foto dan suara auto-tayang. Moderasi lewat Takedown di sini (atau laporan di Jinye Reports) - tidak ada antrean approve media."
         extra={
           <Button icon={<ReloadOutlined />} onClick={() => void list.refetch()}>
             Muat ulang
