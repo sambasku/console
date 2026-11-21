@@ -36,7 +36,7 @@ import {
   useDeleteEvent,
   useEventCategories,
   useEventList,
-  usePendingEventContributions,
+  useEventContributions,
   useReviewEventContribution,
   useSetEventCancelled,
   useUpdateEvent,
@@ -61,45 +61,92 @@ const OCCURRENCE_COLOR: Record<Event['occurrenceStatus'], string> = {
   cancelled: 'red',
 };
 
-function PendingProposals({
+function ContributionQueue({
   rows,
+  decided,
+  q,
+  onDecidedChange,
+  onSearch,
   onPreview,
 }: {
   rows: EventContribution[];
+  decided: boolean;
+  q: string;
+  onDecidedChange: (decided: boolean) => void;
+  onSearch: (q: string) => void;
   onPreview: (row: EventContribution) => void;
 }) {
-  if (rows.length === 0) return null;
   return (
-    <Space direction="vertical" size={4} style={{ marginBottom: 16, width: '100%' }}>
-      <Typography.Text strong>Usulan menunggu tinjauan ({rows.length})</Typography.Text>
-      <Space direction="vertical" size={4} style={{ width: '100%' }}>
-        {rows.map((row) => (
-          <Space
-            key={row.id}
-            style={{
-              width: '100%',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              border: '1px solid #f0f0f0',
-              borderRadius: 8,
-            }}
-          >
-            <Space direction="vertical" size={0}>
-              <Typography.Text>{row.payload.name}</Typography.Text>
-              <Typography.Text type="secondary">
-                {formatDateTime(row.payload.starts_at)} - {row.payload.location_text}
-              </Typography.Text>
-            </Space>
-            <Tooltip title="Pratinjau">
-              <Button
-                type="link"
-                icon={<EyeOutlined />}
-                onClick={() => onPreview(row)}
-              />
-            </Tooltip>
-          </Space>
-        ))}
+    <Space direction="vertical" size={8} style={{ marginBottom: 16, width: '100%' }}>
+      <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+        <Typography.Text strong>
+          {decided ? 'Riwayat usulan' : 'Usulan menunggu tinjauan'} ({rows.length})
+        </Typography.Text>
+        <Space wrap>
+          <Select
+            value={decided ? 'history' : 'pending'}
+            style={{ width: 160 }}
+            onChange={(v) => onDecidedChange(v === 'history')}
+            options={[
+              { value: 'pending', label: 'Periksa' },
+              { value: 'history', label: 'Riwayat' },
+            ]}
+          />
+          <Input.Search
+            placeholder="Cari nama / lokasi"
+            allowClear
+            defaultValue={q}
+            onSearch={onSearch}
+            style={{ width: 220 }}
+          />
+        </Space>
       </Space>
+      {rows.length === 0 ? (
+        <Typography.Text type="secondary">
+          {q.trim()
+            ? 'Tidak ada usulan yang cocok.'
+            : decided
+              ? 'Belum ada usulan yang diputus.'
+              : 'Tidak ada usulan menunggu.'}
+        </Typography.Text>
+      ) : (
+        <Space direction="vertical" size={4} style={{ width: '100%' }}>
+          {rows.map((row) => (
+            <Space
+              key={row.id}
+              style={{
+                width: '100%',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                border: '1px solid #f0f0f0',
+                borderRadius: 8,
+              }}
+            >
+              <Space direction="vertical" size={0}>
+                <Space>
+                  <Typography.Text>{row.payload.name}</Typography.Text>
+                  <Tag>{row.status}</Tag>
+                </Space>
+                <Typography.Text type="secondary">
+                  {formatDateTime(row.payload.starts_at)}
+                  {row.payload.location_text
+                    ? ` - ${row.payload.location_text}`
+                    : ''}
+                </Typography.Text>
+              </Space>
+              {!decided ? (
+                <Tooltip title="Pratinjau">
+                  <Button
+                    type="link"
+                    icon={<EyeOutlined />}
+                    onClick={() => onPreview(row)}
+                  />
+                </Tooltip>
+              ) : null}
+            </Space>
+          ))}
+        </Space>
+      )}
     </Space>
   );
 }
@@ -110,6 +157,8 @@ export function EventsPage() {
     user?.role === 'admin' || user?.role === 'root' || user?.role === 'reviewer';
   const { message } = AntdApp.useApp();
   const [q, setQ] = useState('');
+  const [contribQ, setContribQ] = useState('');
+  const [contribDecided, setContribDecided] = useState(false);
   const [category, setCategory] = useState<string | undefined>();
   const [status, setStatus] = useState<EventStatus | undefined>();
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
@@ -121,7 +170,10 @@ export function EventsPage() {
   });
   const regions = useAllRegions(canManage);
   const categories = useEventCategories(canManage);
-  const pending = usePendingEventContributions(canManage);
+  const pending = useEventContributions(canManage, {
+    decided: contribDecided,
+    q: contribQ,
+  });
   const createMutation = useCreateEvent();
   const updateMutation = useUpdateEvent();
   const deleteMutation = useDeleteEvent();
@@ -163,9 +215,14 @@ export function EventsPage() {
           size: 170,
           cell: (info) => (
             <Space direction="vertical" size={0}>
-              <Typography.Text>{formatDateTime(info.getValue())}</Typography.Text>
+              <Typography.Text>
+                {info.getValue() ? formatDateTime(info.getValue()!) : '-'}
+              </Typography.Text>
               <Typography.Text type="secondary">
-                s/d {formatDateTime(info.row.original.endsAt)}
+                s/d{' '}
+                {info.row.original.endsAt
+                  ? formatDateTime(info.row.original.endsAt)
+                  : '-'}
               </Typography.Text>
             </Space>
           ),
@@ -311,8 +368,12 @@ export function EventsPage() {
         }
       />
 
-      <PendingProposals
+      <ContributionQueue
         rows={pending.data ?? []}
+        decided={contribDecided}
+        q={contribQ}
+        onDecidedChange={setContribDecided}
+        onSearch={setContribQ}
         onPreview={setProposal}
       />
 

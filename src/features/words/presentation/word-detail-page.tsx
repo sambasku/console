@@ -43,6 +43,7 @@ import {
   WordExampleAudiosSection,
   WordLemmaAudiosSection,
 } from './word-form-blocks';
+import { WordDetailViewsCard } from './word-detail-views-card';
 
 const { Text, Paragraph } = Typography;
 
@@ -664,6 +665,7 @@ function WordDetailContent({
           <Text>Atribusi tidak diketahui</Text>
         )}
       </Modal>
+      <WordDetailViewsCard wordId={detail.id} />
       <Tabs
         defaultActiveKey="ringkasan"
         items={[
@@ -719,6 +721,12 @@ function WordDetailContent({
                               : meaning.word_class.name
                             : 'Makna'}
                         </Text>
+                        {meaning.is_verified ? (
+                          <Tag color="cyan">Terverifikasi</Tag>
+                        ) : (
+                          <Tag>Menunggu pengecekan</Tag>
+                        )}
+                        {meaning.needs_review ? <Tag color="orange">Perlu ditinjau</Tag> : null}
                       </Space>
                       {meaning.order_index ? <Text type="secondary">Urutan {meaning.order_index}</Text> : null}
                     </Flex>

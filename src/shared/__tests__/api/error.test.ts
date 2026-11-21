@@ -54,6 +54,12 @@ describe('normalizeError', () => {
   it('mengubah error tak dikenal menjadi UNKNOWN_ERROR', () => {
     expect(normalizeError(new Error('bebas')).errorCode).toBe('UNKNOWN_ERROR');
   });
+
+  it('mempertahankan pesan Error biasa (upload ImageKit dll)', () => {
+    const normalized = normalizeError(new Error('Unggah gambar gagal (HTTP 403)'));
+    expect(normalized.errorCode).toBe('UNKNOWN_ERROR');
+    expect(normalized.message).toBe('Unggah gambar gagal (HTTP 403)');
+  });
 });
 
 describe('isAuthExpiredError', () => {

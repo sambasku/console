@@ -18,7 +18,7 @@ import { useAdminLayanan, useLayananMutations, useLayananQueue } from '../applic
 import type { LayananInput, LayananWire } from '../infrastructure/layanan-api';
 
 const CATEGORY = [
-  { value: 'ambulance', label: 'Ambulans' },
+  { value: 'ambulance', label: 'Ambulan' },
   { value: 'fire', label: 'Pemadam kebakaran' },
 ];
 
@@ -131,10 +131,15 @@ export function LayananPage() {
           {
             title: 'Kategori',
             dataIndex: 'category',
-            render: (v: string) => (v === 'fire' ? 'Pemadam' : 'Ambulans'),
+            render: (v: string) => (v === 'fire' ? 'Pemadam' : 'Ambulan'),
           },
           { title: 'Nama', dataIndex: 'name' },
           { title: 'Kecamatan', dataIndex: 'region_name' },
+          {
+            title: 'Pengusul',
+            dataIndex: 'author_username',
+            render: (v: string | null) => v ?? '-',
+          },
           { title: 'Telepon', render: (_, row) => phonesLabel(row.phones) },
           {
             title: 'Status',

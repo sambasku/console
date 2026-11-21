@@ -19,6 +19,7 @@ export async function listWordsRequest(
       is_verified: params.isVerified,
       published: params.published,
       has_image: params.hasImage,
+      needs_review: params.needsReview,
       limit: params.limit ?? 20,
       cursor: params.cursor,
     },
@@ -471,5 +472,74 @@ export async function rollbackWordImportSessionRequest(
     ApiOkEnvelope<{ session_id: string; deleted_count: number; session: WordImportSession }>
   >(`/admin/words/import-sessions/${id}/rollback`);
   return res.data.data;
+}
+
+export interface WordViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    wordId: string;
+    lemma: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type WordViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    word_id: string;
+    lemma: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+/** Laporan tren harian + ranking untuk halaman analitik kata. */
+export async function getWordViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<WordViewsReport> {
+  const res = await client.get<{ success: true; data: WordViewsReportWire }>(
+    '/admin/words/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      wordId: i.word_id,
+      lemma: i.lemma,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}
+
+export interface WordViewSeries {
+  total: number;
+  lastViewed: string | null;
+  trend: Array<{ day: string; total: number }>;
+}
+
+/** Tren pembaca unik satu lemma (detail kata Console). */
+export async function getWordViewSeriesRequest(
+  wordId: string,
+  days: number,
+  signal?: AbortSignal,
+): Promise<WordViewSeries> {
+  const res = await client.get<{
+    success: true;
+    data: {
+      total: number;
+      last_viewed: string | null;
+      trend: Array<{ day: string; total: number }>;
+    };
+  }>(`/admin/words/${wordId}/views`, { params: { days }, signal });
+  const data = res.data.data;
+  return {
+    total: data.total,
+    lastViewed: data.last_viewed,
+    trend: data.trend,
+  };
 }
 

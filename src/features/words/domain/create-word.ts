@@ -21,7 +21,13 @@ export const RELATION_TYPES = [
 ] as const;
 export type RelationType = (typeof RELATION_TYPES)[number];
 
-export const VARIANT_TYPES = ['inflection', 'derivation', 'alternative', 'reduplication'] as const;
+export const VARIANT_TYPES = [
+  'inflection',
+  'derivation',
+  'alternative',
+  'reduplication',
+  'abbreviation',
+] as const;
 export type VariantType = (typeof VARIANT_TYPES)[number];
 
 export const AFFIX_TYPES = ['prefix', 'suffix', 'circumfix', 'reduplication'] as const;
@@ -50,6 +56,7 @@ export const VARIANT_TYPE_LABELS: Record<VariantType, string> = {
   derivation: 'Turunan',
   alternative: 'Ejaan Alternatif',
   reduplication: 'Pengulangan',
+  abbreviation: 'Singkatan',
 };
 
 export const AFFIX_TYPE_LABELS: Record<AffixType, string> = {

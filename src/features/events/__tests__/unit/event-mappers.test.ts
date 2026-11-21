@@ -52,6 +52,12 @@ describe('mapEvent', () => {
     expect(e.places[0].slug).toBe('pantai');
   });
 
+  it('mapEvent: starts/ends null aman', () => {
+    const e = mapEvent(eventWire({ starts_at: null, ends_at: null }));
+    expect(e.startsAt).toBeNull();
+    expect(e.endsAt).toBeNull();
+  });
+
   it('places kosong aman (tidak undefined)', () => {
     const e = mapEvent(eventWire({ places: undefined as never }));
     expect(e.places).toEqual([]);

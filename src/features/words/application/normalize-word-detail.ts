@@ -93,6 +93,18 @@ function meaning(raw: unknown): WordDetailMeaning {
     inherited_from_meaning_id: str(item.inherited_from_meaning_id),
     definition: str(item.definition),
     order_index: intOr(item.order_index, 0),
+    is_verified: bool(item.is_verified),
+    needs_review: bool(item.needs_review),
+    verified_at: str(item.verified_at),
+    verified_by: (() => {
+      const v = record(item.verified_by);
+      if (!v || !str(v.username)) return null;
+      return {
+        username: strOr(v.username),
+        display_name: str(v.display_name),
+        role: strOr(v.role),
+      };
+    })(),
     translations: list(item.translations).map((entry) => {
       const translation = record(entry) ?? {};
       return {

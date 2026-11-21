@@ -419,6 +419,21 @@ function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
           ))}
         </div>
       ))}
+      {view.pronunciations.map((pronunciation, index) => (
+        <div
+          key={`pronunciation-${pronunciation.heading}-${index}`}
+          style={{
+            border: '1px solid var(--ant-color-border-secondary, rgba(0,0,0,0.06))',
+            borderRadius: 8,
+            padding: 12,
+          }}
+        >
+          <Typography.Text strong>{pronunciation.heading}</Typography.Text>
+          {pronunciation.lines.map((line) => (
+            <ReplaceLineView key={line.label} line={line} />
+          ))}
+        </div>
+      ))}
       {hasCategories ? (
         <div>
           <Typography.Text strong>Kategori</Typography.Text>

@@ -40,16 +40,22 @@ import { NotificationCampaignDetailPage } from '@/features/notification-campaign
 import { NotificationTemplatesPage } from '@/features/notification-campaigns/presentation/notification-templates-page';
 import { AnnouncementsPage } from '@/features/announcements/presentation/announcements-page';
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
+import { StickersPage } from '@/features/stickers/presentation/stickers-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
+import { WordViewsPage } from '@/features/words/presentation/word-views-page';
 import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
+import { UsahaViewsPage } from '@/features/usaha/presentation/usaha-views-page';
 import { LayananPage } from '@/features/layanan/presentation/layanan-page';
+import { KaryaPage } from '@/features/karya/presentation/karya-page';
+import { BalehoPage } from '@/features/baleho/presentation/baleho-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
 import { UsahaReportsPage } from '@/features/usaha/presentation/usaha-reports-page';
 import { UsahaCategoriesPage } from '@/features/usaha/presentation/usaha-categories-page';
 import { CulinaryPage } from '@/features/culinary/presentation/culinary-page';
+import { CulinaryViewsPage } from '@/features/culinary/presentation/culinary-views-page';
 import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-claims-page';
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
@@ -59,6 +65,7 @@ import { JinyeReportsPage } from '@/features/jinye-reports/presentation/jinye-re
 import { TranslationsPage } from '@/features/translations/presentation/translations-page';
 import { CulinaryCategoriesPage } from '@/features/culinary/presentation/culinary-categories-page';
 import { EncyclopediaPage } from '@/features/encyclopedia/presentation/encyclopedia-page';
+import { EncyclopediaViewsPage } from '@/features/encyclopedia/presentation/encyclopedia-views-page';
 import { EncyclopediaContributionsPage } from '@/features/encyclopedia/presentation/encyclopedia-contributions-page';
 import { EncyclopediaCategoriesPage } from '@/features/encyclopedia/presentation/encyclopedia-categories-page';
 import { EncyclopediaReportsPage } from '@/features/encyclopedia/presentation/encyclopedia-reports-page';
@@ -373,6 +380,12 @@ const achievementsRoute = createRoute({
   component: AchievementsPage,
 });
 
+const stickersRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/stickers',
+  component: StickersPage,
+});
+
 const categoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/categories',
@@ -397,6 +410,12 @@ const placeViewsRoute = createRoute({
   component: PlaceViewsPage,
 });
 
+const wordViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/words/views',
+  component: WordViewsPage,
+});
+
 const eventsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/events',
@@ -409,10 +428,28 @@ const usahaRoute = createRoute({
   component: UsahaPage,
 });
 
+const usahaViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/usaha/views',
+  component: UsahaViewsPage,
+});
+
 const layananRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/layanan',
   component: LayananPage,
+});
+
+const karyaRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/karya',
+  component: KaryaPage,
+});
+
+const balehoRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/baleho',
+  component: BalehoPage,
 });
 
 const usahaClaimsRoute = createRoute({
@@ -437,6 +474,12 @@ const culinaryRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/culinary',
   component: CulinaryPage,
+});
+
+const culinaryViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/culinary/views',
+  component: CulinaryViewsPage,
 });
 
 const culinaryClaimsRoute = createRoute({
@@ -497,6 +540,12 @@ const encyclopediaRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/encyclopedia',
   component: EncyclopediaPage,
+});
+
+const encyclopediaViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/encyclopedia/views',
+  component: EncyclopediaViewsPage,
 });
 
 const encyclopediaContributionsRoute = createRoute({
@@ -608,6 +657,7 @@ const routeTree = rootRoute.addChildren([
     dashboardPlayRoute,
     dashboardMobileRoute,
     wordsRoute,
+    wordViewsRoute,
     importHistoryRoute,
     importHistoryDetailRoute,
     createWordRoute,
@@ -638,17 +688,22 @@ const routeTree = rootRoute.addChildren([
     notificationTemplatesRoute,
     announcementsRoute,
     achievementsRoute,
+    stickersRoute,
     categoriesRoute,
     regionsRoute,
     placesRoute,
     placeViewsRoute,
     eventsRoute,
   usahaRoute,
+  usahaViewsRoute,
   layananRoute,
+  karyaRoute,
+  balehoRoute,
   usahaClaimsRoute,
   usahaReportsRoute,
   usahaCategoriesRoute,
   culinaryRoute,
+  culinaryViewsRoute,
   culinaryClaimsRoute,
   culinaryReportsRoute,
   culinaryCategoriesRoute,
@@ -659,6 +714,7 @@ const routeTree = rootRoute.addChildren([
   translationsRoute,
     placeCategoriesRoute,
     encyclopediaRoute,
+    encyclopediaViewsRoute,
     encyclopediaContributionsRoute,
     encyclopediaCategoriesRoute,
     encyclopediaReportsRoute,

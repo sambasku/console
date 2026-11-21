@@ -24,6 +24,7 @@ const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
 export async function uploadImageToCdn(
   file: File,
   folder = '/uploads',
+  opts?: { isPrivateFile?: boolean },
 ): Promise<{ url: string; fileId: string }> {
   if (!file.type.startsWith('image/')) throw new Error('File harus gambar');
   if (file.size > MAX_UPLOAD_BYTES) throw new Error('Ukuran gambar maksimal 2 MB');
@@ -42,10 +43,27 @@ export async function uploadImageToCdn(
   form.append('token', creds.token);
   form.append('expire', String(creds.expire));
   form.append('signature', creds.signature);
+  // Bukti bayar Baleho: private file - CDN URL mentah tidak bisa dibuka publik.
+  if (opts?.isPrivateFile) {
+    form.append('isPrivateFile', 'true');
+  }
 
   const up = await fetch(creds.upload_endpoint, { method: 'POST', body: form });
-  if (!up.ok) throw new Error(`Unggah gambar gagal (HTTP ${up.status})`);
-  const data = (await up.json()) as { url?: string; fileId?: string };
+  const rawText = await up.text();
+  let data: { url?: string; fileId?: string; message?: string; help?: string } = {};
+  try {
+    data = JSON.parse(rawText) as typeof data;
+  } catch {
+    // body non-JSON
+  }
+  if (!up.ok) {
+    const detail = data.message || data.help || rawText.slice(0, 200);
+    throw new Error(
+      detail
+        ? `Unggah gambar gagal (HTTP ${up.status}): ${detail}`
+        : `Unggah gambar gagal (HTTP ${up.status})`,
+    );
+  }
   if (!data.url || !data.fileId) throw new Error('Respons penyedia gambar tidak lengkap');
   return { url: data.url, fileId: data.fileId };
 }

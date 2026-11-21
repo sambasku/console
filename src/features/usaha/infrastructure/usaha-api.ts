@@ -217,3 +217,62 @@ export async function uploadUsahaImage(file: File): Promise<string> {
   );
   return res.data.data.url;
 }
+
+/** Total view per usaha_id. `days` undefined = semua waktu. */
+export async function listUsahaViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ usaha_id: string; views: number }> };
+  }>('/admin/usaha/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.usaha_id, i.views]));
+}
+
+export interface UsahaViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    usahaId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type UsahaViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    usaha_id: string;
+    name: string;
+    slug: string;
+    category_name: string | null;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+/** Laporan tren harian + ranking untuk halaman analitik usaha. */
+export async function getUsahaViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<UsahaViewsReport> {
+  const res = await client.get<{ success: true; data: UsahaViewsReportWire }>(
+    '/admin/usaha/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      usahaId: i.usaha_id,
+      name: i.name,
+      slug: i.slug,
+      category: i.category_name ?? '-',
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}

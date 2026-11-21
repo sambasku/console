@@ -37,6 +37,8 @@ interface FormValues {
   window_to?: Dayjs | null;
   /** Filter entity_type untuk contributions_approved. */
   filter_entity_type?: string | null;
+  /** Filter role_in untuk user_role (multi → string pisah koma di wire). */
+  filter_role_in?: string[] | null;
   family: string;
   level: number | null;
   is_active: boolean;
@@ -67,6 +69,19 @@ const SOURCE_OPTIONS: Array<{
     label: 'Manual (diberikan admin)',
     supportsThreshold: false,
     supportsWindow: false,
+  },
+  {
+    value: 'user_role',
+    label: 'Memiliki role',
+    supportsThreshold: false,
+    supportsWindow: false,
+    filterFields: [
+      {
+        key: 'role_in',
+        label: 'Role',
+        options: ['contributor', 'editor', 'reviewer', 'admin', 'root'],
+      },
+    ],
   },
   {
     value: 'contributions_approved',
@@ -115,6 +130,16 @@ const SOURCE_OPTIONS: Array<{
 
 function sourceMeta(source: string | undefined) {
   return SOURCE_OPTIONS.find((s) => s.value === source) ?? null;
+}
+
+/** Wire `role_in` (pisah koma) → multi Select value. */
+function parseRoleInList(raw: string | null | undefined): string[] | null {
+  if (!raw?.trim()) return null;
+  const roles = raw
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean);
+  return roles.length > 0 ? roles : null;
 }
 
 /** Dayjs -> ISO 8601 dengan offset WIB (+07:00), tanpa plugin utcOffset. */
@@ -183,6 +208,7 @@ export function AchievementDrawer({
             window_from: criteria?.window?.from ? fromIso(criteria.window.from) : undefined,
             window_to: criteria?.window?.to ? fromIso(criteria.window.to) : undefined,
             filter_entity_type: criteria?.filters?.entity_type ?? null,
+            filter_role_in: parseRoleInList(criteria?.filters?.role_in),
             family: editing.family ?? '',
             level: editing.level ?? null,
             is_active: editing.isActive,
@@ -199,6 +225,7 @@ export function AchievementDrawer({
             window_from: undefined,
             window_to: undefined,
             filter_entity_type: null,
+            filter_role_in: null,
             family: '',
             level: null,
             is_active: true,
@@ -216,6 +243,12 @@ export function AchievementDrawer({
       const filters: Record<string, string> = {};
       if (meta?.filterFields?.some((f) => f.key === 'entity_type') && values.filter_entity_type) {
         filters.entity_type = values.filter_entity_type;
+      }
+      if (meta?.filterFields?.some((f) => f.key === 'role_in')) {
+        const roles = (values.filter_role_in ?? []).map((r) => r.trim()).filter(Boolean);
+        if (roles.length > 0) {
+          filters.role_in = roles.join(',');
+        }
       }
       await submit({
         code: values.code.trim(),
@@ -368,6 +401,28 @@ export function AchievementDrawer({
               options={(sourceMeta(source)?.filterFields?.find((f) => f.key === 'entity_type')
                 ?.options ?? []
               ).map((value) => ({ value, label: value }))}
+            />
+          </Form.Item>
+        ) : null}
+        {sourceMeta(source)?.filterFields?.some((f) => f.key === 'role_in') ? (
+          <Form.Item
+            name="filter_role_in"
+            label="Role"
+            extra="Verifikator di wire = reviewer. Minimal satu role."
+            rules={[{ required: true, type: 'array', min: 1, message: 'Pilih minimal satu role' }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Pilih role"
+              options={(sourceMeta(source)?.filterFields?.find((f) => f.key === 'role_in')
+                ?.options ?? []
+              ).map((value) => ({
+                value,
+                label:
+                  value === 'reviewer'
+                    ? 'reviewer (verifikator)'
+                    : value,
+              }))}
             />
           </Form.Item>
         ) : null}

@@ -65,6 +65,10 @@ const ANALYTICS_ROUTES = {
   '/dashboard/mobile': { icon: <MobileOutlined />, label: 'Trafik Mobile' },
   '/dashboard/play': { icon: <AndroidOutlined />, label: 'Play Store' },
   '/places/views': { icon: <EnvironmentOutlined />, label: 'Wisata' },
+  '/words/views': { icon: <TranslationOutlined />, label: 'Kata' },
+  '/usaha/views': { icon: <ShopOutlined />, label: 'Usaha' },
+  '/culinary/views': { icon: <CoffeeOutlined />, label: 'Kuliner' },
+  '/encyclopedia/views': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
@@ -98,6 +102,8 @@ const EKSPLORASI_ROUTES = {
   '/events': { icon: <CalendarOutlined />, label: 'Acara' },
   '/usaha': { icon: <ShopOutlined />, label: 'Usaha' },
   '/layanan': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
+  '/karya': { icon: <PlayCircleOutlined />, label: 'Karya' },
+  '/baleho': { icon: <AppstoreOutlined />, label: 'Baleho' },
   '/usaha-categories': { icon: <AppstoreOutlined />, label: 'Kategori usaha' },
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
@@ -138,6 +144,7 @@ type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
+  | '/stickers'
   | '/users'
   | '/sponsorships'
   | '/audit-logs'
@@ -184,6 +191,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'notification-templates': 'Template',
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
+  stickers: 'Stiker',
   encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
@@ -194,6 +202,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'usaha-reports': 'Laporan usaha',
   usaha: 'Usaha',
   layanan: 'Layanan Publik',
+  karya: 'Karya',
   culinary: 'Kuliner',
   'culinary-categories': 'Kategori kuliner',
   'culinary-claims': 'Klaim kuliner',
@@ -216,7 +225,16 @@ function topPath(pathname: string): string {
 
 function groupKeyForPath(pathname: string): string | null {
   const top = topPath(pathname);
-  if (top === '/dashboard' || pathname === '/places/views') return ANALYTICS_GROUP_KEY;
+  if (
+    top === '/dashboard' ||
+    pathname === '/places/views' ||
+    pathname === '/words/views' ||
+    pathname === '/usaha/views' ||
+    pathname === '/culinary/views' ||
+    pathname === '/encyclopedia/views'
+  ) {
+    return ANALYTICS_GROUP_KEY;
+  }
   if (top in KAMUS_ROUTES) return KAMUS_GROUP_KEY;
   if (top in EKSPLORASI_ROUTES) return EKSPLORASI_GROUP_KEY;
   if (top in PERMAINAN_ROUTES) return PERMAINAN_GROUP_KEY;
@@ -301,7 +319,11 @@ export function ConsoleLayout() {
             EksplorasiRoute,
             (typeof EKSPLORASI_ROUTES)[EksplorasiRoute],
           ][]
-        ).map(([key, { icon, label }]) => ({ key, icon, label })),
+        )
+          .filter(([key]) =>
+            key === '/baleho' ? canManageUsers : true,
+          )
+          .map(([key, { icon, label }]) => ({ key, icon, label })),
       });
       items.push({
         key: PERMAINAN_GROUP_KEY,
@@ -315,8 +337,10 @@ export function ConsoleLayout() {
         ).map(([key, { icon, label }]) => ({ key, icon, label })),
       });
     }
-    // Pencapaian: katalog border/badge/stiker + evaluasi otomatis (root menu).
+    // Pencapaian: katalog border/badge/stiker reward + evaluasi otomatis (root menu).
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
+    // Katalog stiker chat/komentar (beda dari reward achievement).
+    items.push({ key: '/stickers', icon: <AppstoreOutlined />, label: 'Stiker' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({
@@ -420,7 +444,13 @@ export function ConsoleLayout() {
   }, [isLoggedIn, navigate]);
 
   const currentMenuKey =
-    pathname.startsWith('/system/') || pathname.startsWith('/dashboard/') || pathname === '/places/views'
+    pathname.startsWith('/system/') ||
+    pathname.startsWith('/dashboard/') ||
+    pathname === '/places/views' ||
+    pathname === '/words/views' ||
+    pathname === '/usaha/views' ||
+    pathname === '/culinary/views' ||
+    pathname === '/encyclopedia/views'
       ? pathname
       : topPath(pathname) === '/'
         ? '/dashboard'

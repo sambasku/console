@@ -376,3 +376,62 @@ export async function uploadCulinaryImage(file: File): Promise<string> {
   );
   return res.data.data.url;
 }
+
+/** Total view per cuisine_id. `days` undefined = semua waktu. */
+export async function listCuisineViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ cuisine_id: string; views: number }> };
+  }>('/admin/culinary/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.cuisine_id, i.views]));
+}
+
+export interface CuisineViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    cuisineId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type CuisineViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    cuisine_id: string;
+    name: string;
+    slug: string;
+    category_name: string | null;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+/** Laporan tren harian + ranking untuk halaman analitik kuliner. */
+export async function getCuisineViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<CuisineViewsReport> {
+  const res = await client.get<{ success: true; data: CuisineViewsReportWire }>(
+    '/admin/culinary/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      cuisineId: i.cuisine_id,
+      name: i.name,
+      slug: i.slug,
+      category: i.category_name ?? '-',
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}

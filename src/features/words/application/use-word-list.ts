@@ -10,22 +10,32 @@ export interface UseWordListArgs {
   isVerified?: boolean;
   published?: boolean;
   hasImage?: boolean;
+  needsReview?: boolean;
   enabled?: boolean;
 }
 
 /**
  * List kata admin: `q` untuk penelusuran lemma (debounce dilakukan di UI),
- * `wordType`/`isVerified`/`published`/`hasImage` sebagai filter. Kunci query menyertakan
- * SEMUA filter - filter berubah ⇒ list dimulai ulang dari halaman pertama.
+ * filter `wordType`/`isVerified`/`published`/`hasImage`/`needsReview`.
+ * Kunci query menyertakan SEMUA filter - filter berubah ⇒ halaman 1.
  */
 export function useWordList(args: UseWordListArgs = {}) {
-  const { q, wordType, isVerified, published, hasImage, enabled } = args;
+  const { q, wordType, isVerified, published, hasImage, needsReview, enabled } = args;
 
   return useCursorList<WordListItem>({
-    queryKey: ['words', { q, wordType, isVerified, published, hasImage }],
+    queryKey: ['words', { q, wordType, isVerified, published, hasImage, needsReview }],
     fetcher: (pageParam, signal) =>
       listWordsRequest(
-        { q, wordType, isVerified, published, hasImage, limit: PAGE_LIMIT, cursor: pageParam },
+        {
+          q,
+          wordType,
+          isVerified,
+          published,
+          hasImage,
+          needsReview,
+          limit: PAGE_LIMIT,
+          cursor: pageParam,
+        },
         signal,
       ),
     enabled,

@@ -49,7 +49,8 @@ interface FormValues {
 }
 
 /** `datetime-local` butuh "YYYY-MM-DDTHH:mm" (tanpa detik + offset). */
-function toLocalInput(iso: string): string {
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -258,13 +259,14 @@ export function EventDrawer({
   }, [open, editing, form]);
 
   const handleFinish = async (values: FormValues) => {
-    const startsAt = toIso(values.starts_at);
-    const endsAt = toIso(values.ends_at);
-    if (!startsAt || !endsAt) {
-      message.error('Tanggal mulai dan selesai wajib diisi');
+    const startsAt = values.starts_at?.trim() ? toIso(values.starts_at) : null;
+    const endsAt = values.ends_at?.trim() ? toIso(values.ends_at) : null;
+    // Usulan/published barebone: tanggal mulai wajib; draft boleh kosong.
+    if (values.status !== 'draft' && !startsAt) {
+      message.error('Tanggal mulai wajib diisi (kecuali draft)');
       return;
     }
-    if (new Date(endsAt).getTime() < new Date(startsAt).getTime()) {
+    if (startsAt && endsAt && new Date(endsAt).getTime() < new Date(startsAt).getTime()) {
       message.error('Waktu selesai tidak boleh sebelum waktu mulai');
       return;
     }
@@ -283,7 +285,7 @@ export function EventDrawer({
         category_id: values.category_id,
         starts_at: startsAt,
         ends_at: endsAt,
-        location_text: values.location_text.trim(),
+        location_text: (values.location_text ?? '').trim(),
         lat: values.lat ?? null,
         lng: values.lng ?? null,
         maps_url: values.maps_url?.trim() || null,
@@ -429,8 +431,8 @@ export function EventDrawer({
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item name="description" label="Deskripsi" rules={[{ required: true, message: 'Wajib diisi' }]}>
-              <Input.TextArea rows={5} />
+            <Form.Item name="description" label="Deskripsi">
+              <Input.TextArea rows={5} placeholder="Opsional" />
             </Form.Item>
           </Col>
         </Row>
@@ -438,12 +440,16 @@ export function EventDrawer({
         <Typography.Title level={5}>Jadwal</Typography.Title>
         <Row gutter={16}>
           <Col xs={24} md={12}>
-            <Form.Item name="starts_at" label="Mulai" rules={[{ required: true, message: 'Wajib diisi' }]}>
+            <Form.Item
+              name="starts_at"
+              label="Mulai"
+              extra="Wajib untuk published; draft boleh kosong. Jam 00:00 = tanpa jam spesifik."
+            >
               <Input type="datetime-local" />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
-            <Form.Item name="ends_at" label="Selesai" rules={[{ required: true, message: 'Wajib diisi' }]}>
+            <Form.Item name="ends_at" label="Selesai" extra="Opsional">
               <Input type="datetime-local" />
             </Form.Item>
           </Col>
@@ -475,8 +481,8 @@ export function EventDrawer({
             </Form.Item>
           </Col>
           <Col span={24}>
-            <Form.Item name="location_text" label="Lokasi acara" rules={[{ required: true, message: 'Wajib diisi' }]}>
-              <Input placeholder="Nama lokasi atau alamat" />
+            <Form.Item name="location_text" label="Lokasi acara">
+              <Input placeholder="Opsional - nama lokasi atau alamat" />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>

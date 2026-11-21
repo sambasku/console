@@ -73,5 +73,10 @@ export function normalizeError(err: unknown, fallbackMessage = 'Terjadi kesalaha
     return new ApiError(0, 'REQUEST_CANCELLED', err.message, null);
   }
 
+  // Plain Error dari upload ImageKit / validasi lokal - jangan hilangkan pesan.
+  if (err instanceof Error && err.message.trim()) {
+    return new ApiError(0, 'UNKNOWN_ERROR', err.message, null);
+  }
+
   return new ApiError(0, 'UNKNOWN_ERROR', fallbackMessage, null);
 }

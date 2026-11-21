@@ -1178,16 +1178,19 @@ interface VariantRowProps {
   remove: (index: number) => void;
 }
 
-/** Satu baris variasi - afiks disembunyikan untuk tipe 'alternative'
- * (mirror validasi server: 400 bila alternative membawa afiks). */
+/** Satu baris variasi - afiks disembunyikan untuk tipe 'alternative' /
+ * 'abbreviation' (mirror validasi server: 400 bila membawa afiks). */
 function VariantRow({ field, remove }: VariantRowProps) {
   const form = Form.useFormInstance();
   const variantType = Form.useWatch(['variants', field.name, 'variant_type'], form);
-  const isAlternative = variantType === 'alternative' || variantType === undefined;
+  const isAlternative =
+    variantType === 'alternative' ||
+    variantType === 'abbreviation' ||
+    variantType === undefined;
   const lemma = ((Form.useWatch('lemma', form) as string | undefined) ?? '').trim().toLowerCase();
 
   const clearAffixIfAlternative = (value: string) => {
-    if (value !== 'alternative') return;
+    if (value !== 'alternative' && value !== 'abbreviation') return;
     const variants = (form.getFieldValue('variants') as Array<Record<string, unknown>>) ?? [];
     form.setFieldsValue({
       variants: variants.map((item, i) =>
