@@ -28,6 +28,7 @@ import {
   useCategoryOptions,
   useDeleteAdminArticle,
 } from '../application/use-encyclopedia-articles';
+import { useArticleViews, useArticleViewsReport } from '../application/use-encyclopedia-views';
 import {
   ARTICLE_STATUS_COLOR,
   ARTICLE_STATUS_LABEL,
@@ -38,13 +39,48 @@ import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { ArticleDrawer } from './article-drawer';
 import { ArticleRevisionsDrawer } from './article-revisions-drawer';
 
+/**
+ * Top 10 artikel terpopuler - sumber sama dengan halaman analitik
+ * (`/admin/encyclopedia/views/daily`).
+ */
+function TopArticles({
+  days,
+  enabled,
+}: {
+  days: number | 'all';
+  enabled: boolean;
+}) {
+  const report = useArticleViewsReport(days === 'all' ? 3650 : days, enabled);
+  const top = (report.data?.items ?? []).slice(0, 10);
+  if (!enabled || top.length === 0) return null;
+  return (
+    <Table
+      style={{ marginBottom: 16 }}
+      rowKey="articleId"
+      pagination={false}
+      size="small"
+      title={() => 'Artikel terpopuler'}
+      dataSource={top}
+      columns={[
+        { title: 'Artikel', dataIndex: 'name' },
+        { title: 'Kategori', dataIndex: 'category', width: 120 },
+        { title: 'Dilihat', dataIndex: 'views', width: 100 },
+        { title: 'Terakhir dilihat', dataIndex: 'lastViewed', width: 140 },
+      ]}
+    />
+  );
+}
+
 export function EncyclopediaPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { message } = AntdApp.useApp();
   const canManage = user?.role === 'admin' || user?.role === 'root' || user?.role === 'editor';
+  const canViewMetrics =
+    user?.role === 'admin' || user?.role === 'root' || user?.role === 'reviewer';
 
   const [searchInput, setSearchInput] = useState('');
+  const [viewDays, setViewDays] = useState<number | 'all'>(30);
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>();
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | undefined>();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,6 +98,10 @@ export function EncyclopediaPage() {
 
   const categoriesQuery = useCategoryOptions();
   const deleteMutation = useDeleteAdminArticle();
+  const views = useArticleViews(
+    viewDays === 'all' ? undefined : viewDays,
+    canViewMetrics,
+  );
 
   const items = listQuery.data?.items ?? [];
   const categoryOptions = useMemo(() => {
@@ -113,6 +153,8 @@ export function EncyclopediaPage() {
         }
       />
 
+      <TopArticles days={viewDays} enabled={canViewMetrics} />
+
       <Flex wrap gap={12} style={{ marginBottom: 16 }}>
         <Input.Search
           allowClear
@@ -141,6 +183,19 @@ export function EncyclopediaPage() {
             { value: 'archived', label: 'Diarsipkan' },
           ]}
         />
+        {canViewMetrics ? (
+          <Select
+            placeholder="Periode Dilihat"
+            style={{ width: 140 }}
+            value={viewDays}
+            onChange={(v) => setViewDays(v)}
+            options={[
+              { value: 7, label: '7 hari' },
+              { value: 30, label: '30 hari' },
+              { value: 'all', label: 'Semua waktu' },
+            ]}
+          />
+        ) : null}
       </Flex>
 
       <Table<AdminArticleListItem>
@@ -192,6 +247,20 @@ export function EncyclopediaPage() {
               <Tag color={ARTICLE_STATUS_COLOR[row.status]}>{ARTICLE_STATUS_LABEL[row.status]}</Tag>
             ),
           },
+          ...(canViewMetrics
+            ? [
+                {
+                  title: 'Dilihat',
+                  key: 'views',
+                  width: 90,
+                  render: (_: unknown, row: AdminArticleListItem) => (
+                    <Tooltip title="Pembaca unik: 1 orang dihitung sekali per hari walau refresh berkali-kali.">
+                      <Typography.Text>{views.data?.get(row.id) ?? 0}</Typography.Text>
+                    </Tooltip>
+                  ),
+                },
+              ]
+            : []),
           {
             title: 'Penulis',
             key: 'author',
