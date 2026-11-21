@@ -104,6 +104,7 @@ const EKSPLORASI_ROUTES = {
   '/layanan': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
   '/karya': { icon: <PlayCircleOutlined />, label: 'Karya' },
   '/baleho': { icon: <AppstoreOutlined />, label: 'Baleho' },
+  '/leaderboard': { icon: <TrophyOutlined />, label: 'Papan peringkat' },
   '/usaha-categories': { icon: <AppstoreOutlined />, label: 'Kategori usaha' },
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
@@ -321,7 +322,7 @@ export function ConsoleLayout() {
           ][]
         )
           .filter(([key]) =>
-            key === '/baleho' ? canManageUsers : true,
+            (key === '/baleho' || key === '/leaderboard') ? canManageUsers : true,
           )
           .map(([key, { icon, label }]) => ({ key, icon, label })),
       });
