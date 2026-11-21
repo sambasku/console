@@ -59,7 +59,7 @@ export function LeaderboardExclusionsPage() {
           })),
       );
     } catch (err) {
-      message.error(normalizeError(err));
+      message.error(normalizeError(err).message);
     }
   };
 
@@ -80,7 +80,7 @@ export function LeaderboardExclusionsPage() {
         );
       }
     } catch (err) {
-      message.error(normalizeError(err));
+      message.error(normalizeError(err).message);
     }
   };
 
@@ -103,7 +103,7 @@ export function LeaderboardExclusionsPage() {
             message.warning('Exclude dihapus, tapi CDN belum ke-refresh.');
           }
         } catch (err) {
-          message.error(normalizeError(err));
+          message.error(normalizeError(err).message);
         }
       },
     });
