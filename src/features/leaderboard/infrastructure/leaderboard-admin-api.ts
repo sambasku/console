@@ -26,6 +26,16 @@ export async function listLeaderboardExclusions(
   return res.data.data;
 }
 
+export async function listLeaderboardSystemUsers(
+  signal?: AbortSignal,
+): Promise<LeaderboardExclusionWire[]> {
+  const res = await client.get<{ success: true; data: LeaderboardExclusionWire[] }>(
+    '/admin/leaderboard/exclusions/system',
+    { signal },
+  );
+  return res.data.data;
+}
+
 export async function addLeaderboardExclusion(
   body: { user_id: string; note?: string | null },
   signal?: AbortSignal,

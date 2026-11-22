@@ -7,8 +7,10 @@ import {
   Modal,
   Select,
   Space,
+  Switch,
   Table,
   Tag,
+  Tooltip,
 } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageHeader } from '@/shared/components/page-header';
@@ -18,7 +20,10 @@ import { listAdminUsersRequest } from '@/features/users/infrastructure/user-admi
 import {
   useLeaderboardExclusionMutations,
   useLeaderboardExclusions,
+  useLeaderboardSystemExclusionMutations,
+  useLeaderboardSystemUsers,
 } from '../application/use-leaderboard-exclusions';
+import type { LeaderboardExclusionWire } from '../infrastructure/leaderboard-admin-api';
 
 function canManageLeaderboard(roles: string[] | undefined): boolean {
   return (roles ?? []).some((r) => r === 'root' || r === 'admin');
@@ -28,8 +33,12 @@ export function LeaderboardExclusionsPage() {
   const { message, modal } = AntdApp.useApp();
   const { user } = useAuth();
   const canManage = canManageLeaderboard(user?.roles);
+
   const list = useLeaderboardExclusions(canManage);
+  const systemList = useLeaderboardSystemUsers(canManage);
   const { add, remove } = useLeaderboardExclusionMutations();
+  const { add: addSystem, remove: removeSystem } = useLeaderboardSystemExclusionMutations();
+
   const [addOpen, setAddOpen] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [userOptions, setUserOptions] = useState<
@@ -38,7 +47,7 @@ export function LeaderboardExclusionsPage() {
   const [form] = Form.useForm<{ user_id: string; note?: string }>();
 
   const excludedIds = useMemo(
-  () => new Set((list.data ?? []).map((r) => r.user_id)),
+    () => new Set((list.data ?? []).map((r) => r.user_id)),
     [list.data],
   );
 
@@ -109,11 +118,104 @@ export function LeaderboardExclusionsPage() {
     });
   };
 
+  /** Toggle exclude akun sistem: on = exclude, off = tampil di peringkat. */
+  const onToggleSystem = async (row: LeaderboardExclusionWire, excluded: boolean) => {
+    try {
+      const result = excluded
+        ? await addSystem.mutateAsync({ user_id: row.user_id, note: row.note })
+        : await removeSystem.mutateAsync(row.user_id);
+      if (result.refreshed) {
+        message.success(excluded ? 'User sistem di-exclude. current.json di-refresh.' : 'User sistem masuk peringkat lagi. current.json di-refresh.');
+      } else {
+        message.warning('Perubahan disimpan, tapi CDN belum ke-refresh.');
+      }
+    } catch (err) {
+      message.error(normalizeError(err).message);
+    }
+  };
+
   if (!canManage) {
     return (
       <PageHeader title="Papan peringkat" subtitle="Kelola user yang dikecualikan dari peringkat mingguan." />
     );
   }
+
+  const systemColumns = [
+    {
+      title: 'Username',
+      dataIndex: 'username',
+      render: (username: string) => <span>@{username}</span>,
+    },
+    {
+      title: 'Nama tampilan',
+      dataIndex: 'display_name',
+      render: (v: string | null) => v ?? '-',
+    },
+    {
+      title: 'Catatan',
+      dataIndex: 'note',
+      render: (v: string | null) => v ?? '-',
+    },
+    {
+      title: 'Di-exclude',
+      key: 'excluded',
+      width: 140,
+      render: (_: unknown, row: LeaderboardExclusionWire) => {
+        const excluded = excludedIds.has(row.user_id);
+        return (
+          <Tooltip title={excluded ? 'Saat ini tidak masuk peringkat' : 'Saat ini masuk peringkat mingguan'}>
+            <Switch
+              checked={excluded}
+              checkedChildren="Exclude"
+              unCheckedChildren="Tampil"
+              loading={addSystem.isPending || removeSystem.isPending}
+              onChange={(checked) => onToggleSystem(row, checked)}
+            />
+          </Tooltip>
+        );
+      },
+    },
+  ];
+
+  const manualColumns = [
+    {
+      title: 'Username',
+      dataIndex: 'username',
+      render: (username: string, row: LeaderboardExclusionWire) => (
+        <Space>
+          <span>@{username}</span>
+          {row.is_default_system ? <Tag color="blue">Sistem bawaan</Tag> : null}
+        </Space>
+      ),
+    },
+    {
+      title: 'Nama tampilan',
+      dataIndex: 'display_name',
+      render: (v: string | null) => v ?? '-',
+    },
+    {
+      title: 'Catatan',
+      dataIndex: 'note',
+      render: (v: string | null) => v ?? '-',
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 120,
+      render: (_: unknown, row: LeaderboardExclusionWire) => (
+        <Button
+          danger
+          size="small"
+          icon={<DeleteOutlined />}
+          disabled={row.is_default_system}
+          loading={remove.isPending}
+          onClick={() => onRemove(row.user_id, row.username, row.is_default_system)}
+        >
+          Hapus
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -126,50 +228,24 @@ export function LeaderboardExclusionsPage() {
           </Button>
         }
       />
+
+      <Table
+        rowKey="user_id"
+        loading={systemList.isLoading}
+        dataSource={systemList.data ?? []}
+        pagination={false}
+        columns={systemColumns}
+        title={() => 'User sistem bawaan'}
+        style={{ marginBottom: 24 }}
+      />
+
       <Table
         rowKey="user_id"
         loading={list.isLoading}
         dataSource={list.data ?? []}
         pagination={false}
-        columns={[
-          {
-            title: 'Username',
-            dataIndex: 'username',
-            render: (username: string, row) => (
-              <Space>
-                <span>@{username}</span>
-                {row.is_default_system ? <Tag color="blue">Sistem bawaan</Tag> : null}
-              </Space>
-            ),
-          },
-          {
-            title: 'Nama tampilan',
-            dataIndex: 'display_name',
-            render: (v: string | null) => v ?? '-',
-          },
-          {
-            title: 'Catatan',
-            dataIndex: 'note',
-            render: (v: string | null) => v ?? '-',
-          },
-          {
-            title: '',
-            key: 'actions',
-            width: 120,
-            render: (_, row) => (
-              <Button
-                danger
-                size="small"
-                icon={<DeleteOutlined />}
-                disabled={row.is_default_system}
-                loading={remove.isPending}
-                onClick={() => onRemove(row.user_id, row.username, row.is_default_system)}
-              >
-                Hapus
-              </Button>
-            ),
-          },
-        ]}
+        columns={manualColumns}
+        title={() => 'Semua user ter-exclude'}
       />
 
       <Modal
