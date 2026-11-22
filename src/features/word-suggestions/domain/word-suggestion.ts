@@ -18,6 +18,7 @@ export type SuggestionReasonCode =
   | 'meaning_group'
   | 'spelling_variant'
   | 'change_categories'
+  | 'change_usage_labels'
   | 'lemma_notes'
   | 'typo'
   | 'inaccurate_definition'
@@ -45,6 +46,8 @@ export interface SuggestionListItem {
     pronunciations_count?: number;
     categories_added: number;
     categories_removed: number;
+    usage_labels_added?: number;
+    usage_labels_removed?: number;
     relations_count: number;
     variants_count: number;
     images_count: number;
@@ -89,6 +92,7 @@ export interface SuggestionDetail {
       dialect_id: string | null;
     }>;
     category_ids: string[];
+    usage_labels?: string[];
     relations: Array<{ relation_type: string; word_id: string; lemma: string }>;
     variants: Array<{ form: string; variant_type: string; dialect_id: string | null }>;
     images: Array<{ id: string; url: string; is_primary: boolean; alt_text: string | null }>;
@@ -112,6 +116,7 @@ export interface SuggestionDetail {
       }>;
     }>;
     categories: { added: string[]; removed: string[] };
+    usage_labels?: { added: string[]; removed: string[] };
     relations: {
       added: Array<{
         relation_type: string;
@@ -166,7 +171,8 @@ export const REASON_CODE_LABELS: Record<SuggestionReasonCode, string> = {
   derived_from: 'Kata turunan',
   meaning_group: 'Kelompok makna',
   spelling_variant: 'Variasi penulisan',
-  change_categories: 'Ubah kategori',
+  change_categories: 'Ubah kategori topik',
+  change_usage_labels: 'Label register & peringatan',
   lemma_notes: 'Lemma atau catatan',
   typo: 'Kesalahan penulisan',
   inaccurate_definition: 'Definisi kurang tepat',

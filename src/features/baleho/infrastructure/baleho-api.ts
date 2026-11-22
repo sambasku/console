@@ -26,6 +26,14 @@ export interface BalehoPlacementWire {
   price_per_cell_per_day: number | null;
   days: number | null;
   created_at: string;
+  /** WA konfirmasi pembayaran (format internasional 62…/60…). */
+  confirmation_phone: string | null;
+  /** Jadwal booking YYYY-MM-DD (WIB), dari `starts_on` pesan. */
+  scheduled_starts_on: string | null;
+  /** Akhir jendela booking YYYY-MM-DD (WIB), `starts_on` + hari - 1. */
+  scheduled_ends_on: string | null;
+  /** Tayang aktual (ISO) setelah mark-paid. */
+  starts_at: string | null;
   /** ISO; null jika belum live/belum di-set. */
   ends_at: string | null;
   impressions?: number;

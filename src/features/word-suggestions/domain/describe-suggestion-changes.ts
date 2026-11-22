@@ -4,6 +4,7 @@ import {
   type RelationType,
   type VariantType,
 } from '@/features/words/domain/create-word';
+import { USAGE_LABEL_LABELS, type UsageLabel } from '@/features/words/domain/word';
 import type { SuggestionDetail, SuggestionListItem } from './word-suggestion';
 
 /** Satu baris sebelum → sesudah. `before` atau `after` null = hanya sisi itu. */
@@ -26,6 +27,7 @@ export interface SuggestionChangeView {
   /** Ubah notasi pelafalan. */
   pronunciations: MeaningChangeBlock[];
   categories: { added: string[]; removed: string[] };
+  usageLabels: { added: string[]; removed: string[] };
   relations: { added: string[]; removed: string[] };
   variants: { added: string[]; removed: string[] };
   /** PRD relasi-lemma: perubahan keanggotaan kelompok makna. */
@@ -91,6 +93,19 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
       .filter((name) => name.trim().length > 0),
   };
 
+
+  const currentUsage = new Set(current.usage_labels ?? []);
+  const usageLabels = {
+    added: uniqueStrings(pickStringList(proposed, 'usageLabelsToAdd', 'usage_labels_to_add'))
+      .filter((code) => !currentUsage.has(code))
+      .map((code) => usageLabelText(code))
+      .filter((name) => name.trim().length > 0),
+    removed: uniqueStrings(pickStringList(proposed, 'usageLabelsToRemove', 'usage_labels_to_remove'))
+      .filter((code) => currentUsage.has(code))
+      .map((code) => usageLabelText(code))
+      .filter((name) => name.trim().length > 0),
+  };
+
   const relations = { added: [] as string[], removed: [] as string[] };
   for (const relation of parseRelations(proposed.relations)) {
     const lemma = relation.wordId ? input.relationLemma(relation.wordId) : relation.lemma;
@@ -143,6 +158,7 @@ export function describeSuggestionChanges(input: DescribeSuggestionInput): Sugge
     examples: examples.filter((block) => block.lines.length > 0),
     pronunciations: pronunciations.filter((block) => block.lines.length > 0),
     categories,
+    usageLabels,
     relations,
     variants,
     groups,
@@ -157,6 +173,8 @@ export function suggestionChangesAreEmpty(view: SuggestionChangeView): boolean {
     view.pronunciations.length === 0 &&
     view.categories.added.length === 0 &&
     view.categories.removed.length === 0 &&
+    view.usageLabels.added.length === 0 &&
+    view.usageLabels.removed.length === 0 &&
     view.relations.added.length === 0 &&
     view.relations.removed.length === 0 &&
     view.variants.added.length === 0 &&
@@ -180,6 +198,7 @@ export function summarizeSuggestionChanges(summary: SuggestionListItem['summary_
   if (pronunciationsCount === 1) parts.push('1 pelafalan');
   else if (pronunciationsCount > 1) parts.push(`${pronunciationsCount} pelafalan`);
   if (summary.categories_added || summary.categories_removed) parts.push('kategori');
+  if (summary.usage_labels_added || summary.usage_labels_removed) parts.push('label');
   if (summary.relations_count) parts.push('relasi');
   if (summary.variants_count) parts.push('varian');
   if (summary.images_count) parts.push('gambar');
@@ -506,4 +525,12 @@ function joinTexts(values: string[]): string {
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
+}
+
+
+function usageLabelText(code: string): string {
+  if ((Object.keys(USAGE_LABEL_LABELS) as UsageLabel[]).includes(code as UsageLabel)) {
+    return USAGE_LABEL_LABELS[code as UsageLabel];
+  }
+  return code;
 }

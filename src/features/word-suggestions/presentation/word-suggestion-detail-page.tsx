@@ -383,6 +383,7 @@ function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
   const relationLines = [...view.relations.added, ...view.relations.removed];
   const variantLines = [...view.variants.added, ...view.variants.removed];
   const hasCategories = view.categories.added.length > 0 || view.categories.removed.length > 0;
+  const hasUsageLabels = view.usageLabels.added.length > 0 || view.usageLabels.removed.length > 0;
 
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -453,7 +454,26 @@ function SuggestionChangePreview({ view }: { view: SuggestionChangeView }) {
           </div>
         </div>
       ) : null}
-      {relationLines.length > 0 ? (
+            {hasUsageLabels ? (
+        <div>
+          <Typography.Text strong>Label register & peringatan</Typography.Text>
+          <div style={{ marginTop: 8 }}>
+            <Space size={4} wrap>
+              {view.usageLabels.added.map((name, index) => (
+                <Tag key={`usage-add-${index}`} color="green">
+                  + {name}
+                </Tag>
+              ))}
+              {view.usageLabels.removed.map((name, index) => (
+                <Tag key={`usage-remove-${index}`} color="red">
+                  - {name}
+                </Tag>
+              ))}
+            </Space>
+          </div>
+        </div>
+      ) : null}
+{relationLines.length > 0 ? (
         <div>
           <Typography.Text strong>Relasi</Typography.Text>
           {relationLines.map((line, index) => (
