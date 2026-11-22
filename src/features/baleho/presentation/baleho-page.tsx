@@ -44,6 +44,30 @@ function isEndsAtActive(endsAt: string | null | undefined): boolean {
   return Number.isFinite(t) && t > Date.now();
 }
 
+function formatWibDay(isoDay: string | null | undefined): string {
+  if (!isoDay?.trim()) return '-';
+  const [y, m, d] = isoDay.split('-');
+  if (!y || !m || !d) return isoDay;
+  return `${d}/${m}/${y}`;
+}
+
+function formatIsoDateTime(iso: string | null | undefined): string {
+  if (!iso?.trim()) return '-';
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return '-';
+  return new Date(t).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+}
+
+function balehoStartLabel(row: BalehoPlacementWire): string {
+  if (row.starts_at) return formatIsoDateTime(row.starts_at);
+  return formatWibDay(row.scheduled_starts_on);
+}
+
+function balehoEndLabel(row: BalehoPlacementWire): string {
+  if (row.ends_at) return formatIsoDateTime(row.ends_at);
+  return formatWibDay(row.scheduled_ends_on);
+}
+
 type PaymentProof = {
   /** URL ImageKit (disimpan ke API saat mark-paid; mungkin privat). */
   url: string;
@@ -181,6 +205,24 @@ export function BalehoPage() {
       width: 90,
       render: (_: unknown, row: BalehoPlacementWire) =>
         row.days == null ? '-' : `${row.days} hari`,
+    },
+    {
+      title: 'WA konfirmasi',
+      dataIndex: 'confirmation_phone',
+      width: 130,
+      render: (v: string | null) => v ?? '-',
+    },
+    {
+      title: 'Mulai',
+      key: 'schedule_start',
+      width: 150,
+      render: (_: unknown, row: BalehoPlacementWire) => balehoStartLabel(row),
+    },
+    {
+      title: 'Berakhir',
+      key: 'schedule_end',
+      width: 150,
+      render: (_: unknown, row: BalehoPlacementWire) => balehoEndLabel(row),
     },
     {
       title: 'Referral',

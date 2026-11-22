@@ -18,6 +18,7 @@ const current: SuggestionDetail['current_word'] = {
     },
   ],
   category_ids: ['c2'],
+  usage_labels: ['informal', 'kasar'],
   relations: [],
   variants: [],
   images: [],
@@ -78,6 +79,7 @@ describe('describeSuggestionChanges', () => {
     });
 
     expect(view.categories).toEqual({ added: ['Makanan'], removed: ['Hewan'] });
+
     expect(view.relations.added).toEqual(['Tambah sinonim: bebek']);
     expect(view.meanings).toEqual([]);
     expect(view.examples).toEqual([]);
@@ -174,6 +176,21 @@ describe('describeSuggestionChanges', () => {
       'Tambah turunan dari: anak ayam (kata baru)',
       'Tambah sinonim: unggas',
     ]);
+  });
+
+  it('memetakan usage_labels tambah dan lepas', () => {
+    const view = describeSuggestionChanges({
+      proposed: {
+        usage_labels_to_add: ['seksual'],
+        usage_labels_to_remove: ['informal'],
+      },
+      current,
+      categoryName: (id) => id,
+      wordClassName: (id) => id,
+      relationLemma: () => undefined,
+    });
+    expect(view.usageLabels.added).toEqual(['Seksual']);
+    expect(view.usageLabels.removed).toEqual(['Informal']);
   });
 
   it('meringkas antrean dengan frasa, bukan shorthand', () => {
