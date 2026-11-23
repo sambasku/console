@@ -133,3 +133,61 @@ export async function linkKaryaCredit(
 ): Promise<void> {
   await client.post(`/admin/karya-credits/${creditId}/link`, body);
 }
+
+/** Total view per karya_id. `days` undefined = semua waktu. */
+export async function listKaryaViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ karya_id: string; views: number }> };
+  }>('/admin/karya/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.karya_id, i.views]));
+}
+
+export interface KaryaViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    karyaId: string;
+    title: string;
+    slug: string;
+    kind: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type KaryaViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    karya_id: string;
+    title: string;
+    slug: string;
+    kind: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+export async function getKaryaViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<KaryaViewsReport> {
+  const res = await client.get<{ success: true; data: KaryaViewsReportWire }>(
+    '/admin/karya/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      karyaId: i.karya_id,
+      title: i.title,
+      slug: i.slug,
+      kind: i.kind,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}

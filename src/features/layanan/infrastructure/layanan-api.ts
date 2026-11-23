@@ -91,3 +91,61 @@ export async function rejectLayananContribution(id: string): Promise<void> {
 export async function reviseLayananContribution(id: string, note: string): Promise<void> {
   await client.post(`/admin/layanan-contributions/${id}/request-revision`, { note });
 }
+
+/** Total view per layanan_id. `days` undefined = semua waktu. */
+export async function listLayananViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ layanan_id: string; views: number }> };
+  }>('/admin/layanan/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.layanan_id, i.views]));
+}
+
+export interface LayananViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    layananId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type LayananViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    layanan_id: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+export async function getLayananViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<LayananViewsReport> {
+  const res = await client.get<{ success: true; data: LayananViewsReportWire }>(
+    '/admin/layanan/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      layananId: i.layanan_id,
+      name: i.name,
+      slug: i.slug,
+      category: i.category,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
+}

@@ -49,7 +49,9 @@ import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
 import { UsahaViewsPage } from '@/features/usaha/presentation/usaha-views-page';
 import { LayananPage } from '@/features/layanan/presentation/layanan-page';
+import { LayananViewsPage } from '@/features/layanan/presentation/layanan-views-page';
 import { KaryaPage } from '@/features/karya/presentation/karya-page';
+import { KaryaViewsPage } from '@/features/karya/presentation/karya-views-page';
 import { BalehoPage } from '@/features/baleho/presentation/baleho-page';
 import { LeaderboardExclusionsPage } from '@/features/leaderboard/presentation/leaderboard-exclusions-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
@@ -441,6 +443,18 @@ const layananRoute = createRoute({
   component: LayananPage,
 });
 
+const karyaViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/karya/views',
+  component: KaryaViewsPage,
+});
+
+const layananViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/layanan/views',
+  component: LayananViewsPage,
+});
+
 const karyaRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/karya',
@@ -705,6 +719,8 @@ const routeTree = rootRoute.addChildren([
   usahaViewsRoute,
   layananRoute,
   karyaRoute,
+  karyaViewsRoute,
+  layananViewsRoute,
   balehoRoute,
   leaderboardExclusionsRoute,
   usahaClaimsRoute,

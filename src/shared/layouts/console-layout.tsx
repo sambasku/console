@@ -69,6 +69,8 @@ const ANALYTICS_ROUTES = {
   '/usaha/views': { icon: <ShopOutlined />, label: 'Usaha' },
   '/culinary/views': { icon: <CoffeeOutlined />, label: 'Kuliner' },
   '/encyclopedia/views': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
+  '/karya/views': { icon: <PlayCircleOutlined />, label: 'Karya' },
+  '/layanan/views': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
