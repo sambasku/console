@@ -1,4 +1,4 @@
-export type ProfileCoverVariant = 'tab' | 'public';
+export type ProfileCoverVariant = 'tab' | 'public' | 'wotd';
 
 export interface ProfileCover {
   id: string;
@@ -29,5 +29,11 @@ export const PROFILE_COVER_SPECS: Record<
     height: 534,
     label: 'Profil publik',
     aspect: 1032 / 534,
+  },
+  wotd: {
+    width: 600,
+    height: 338,
+    label: 'Kata Hari Ini (kartu Home)',
+    aspect: 600 / 338,
   },
 };

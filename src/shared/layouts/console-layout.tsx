@@ -77,6 +77,7 @@ const ANALYTICS_ROUTES = {
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
 const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
+  '/word-of-day': { icon: <CalendarOutlined />, label: 'Kata Hari Ini' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
   '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
   '/jinye': { icon: <MessageOutlined />, label: 'Jinye' },
@@ -177,6 +178,7 @@ const SYSTEM_GROUP_KEY = 'system';
 const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Analitik',
   words: 'Kata',
+  'word-of-day': 'Kata Hari Ini',
   contributions: 'Review',
   'discussions': 'Ruang Diskusi',
   jinye: 'Jinye',

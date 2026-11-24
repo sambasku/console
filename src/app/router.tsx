@@ -42,6 +42,7 @@ import { AnnouncementsPage } from '@/features/announcements/presentation/announc
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
 import { StickersPage } from '@/features/stickers/presentation/stickers-page';
 import { ProfileCoversPage } from '@/features/profile-covers/presentation/profile-covers-page';
+import { WordOfDayManagePage } from '@/features/word-of-day/presentation/word-of-day-manage-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
@@ -397,6 +398,12 @@ const profileCoversRoute = createRoute({
   component: ProfileCoversPage,
 });
 
+const wordOfDayManageRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/word-of-day',
+  component: WordOfDayManagePage,
+});
+
 const categoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/categories',
@@ -725,6 +732,7 @@ const routeTree = rootRoute.addChildren([
     achievementsRoute,
     stickersRoute,
     profileCoversRoute,
+    wordOfDayManageRoute,
     categoriesRoute,
     regionsRoute,
     placesRoute,

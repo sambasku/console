@@ -218,7 +218,7 @@ export function ProfileCoversPage() {
     <>
       <PageHeader
         title="Cover Profil"
-        subtitle="Global untuk tab Profil dan profil publik. Riwayat bisa dipakai lagi."
+        subtitle="Tab Profil, profil publik, dan kartu Kata Hari Ini. Riwayat bisa dipakai lagi."
         extra={
           <Button
             icon={<ReloadOutlined />}
@@ -241,6 +241,11 @@ export function ProfileCoversPage() {
             key: 'public',
             label: PROFILE_COVER_SPECS.public.label,
             children: <VariantPanel variant="public" />,
+          },
+          {
+            key: 'wotd',
+            label: PROFILE_COVER_SPECS.wotd.label,
+            children: <VariantPanel variant="wotd" />,
           },
         ]}
       />
