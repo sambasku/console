@@ -111,6 +111,7 @@ const EKSPLORASI_ROUTES = {
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
   '/culinary': { icon: <CoffeeOutlined />, label: 'Kuliner' },
+  '/community': { icon: <TeamOutlined />, label: 'Komunitas' },
   '/culinary-categories': { icon: <AppstoreOutlined />, label: 'Kategori kuliner' },
   '/culinary-claims': { icon: <KeyOutlined />, label: 'Klaim kuliner' },
   '/culinary-reports': { icon: <WarningOutlined />, label: 'Laporan kuliner' },

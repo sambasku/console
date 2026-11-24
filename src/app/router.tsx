@@ -61,6 +61,7 @@ import { CulinaryPage } from '@/features/culinary/presentation/culinary-page';
 import { CulinaryViewsPage } from '@/features/culinary/presentation/culinary-views-page';
 import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-claims-page';
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
+import { CommunityPage } from '@/features/community/presentation/community-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
 import { JinyeModerationPage } from '@/features/jinye/presentation/jinye-moderation-page';
@@ -497,6 +498,12 @@ const culinaryRoute = createRoute({
   component: CulinaryPage,
 });
 
+const communityRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/community',
+  component: CommunityPage,
+});
+
 const culinaryViewsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/culinary/views',
@@ -727,6 +734,7 @@ const routeTree = rootRoute.addChildren([
   usahaReportsRoute,
   usahaCategoriesRoute,
   culinaryRoute,
+  communityRoute,
   culinaryViewsRoute,
   culinaryClaimsRoute,
   culinaryReportsRoute,
