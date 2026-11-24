@@ -25,7 +25,7 @@ import {
 
 interface ApproveFormValues {
   name: string;
-  category: CommunityProposalApproveInput["category"];
+  category: string;
   description: string;
   logo_url?: string | null;
   is_featured_kind?: CommunityProposalApproveInput["is_featured_kind"];
@@ -72,7 +72,7 @@ export function CommunityProposalDrawer({
         action: "approve",
         body: {
           name: values.name,
-          category: values.category,
+          category_id: values.category,
           description: values.description,
           logo_url: values.logo_url || null,
           is_featured_kind: values.is_featured_kind ?? null,

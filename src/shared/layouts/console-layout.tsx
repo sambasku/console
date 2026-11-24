@@ -34,6 +34,7 @@ UserOutlined,
   FileProtectOutlined,
   ApiOutlined,
   AppstoreOutlined,
+  PictureOutlined,
   CloudServerOutlined,
   CloudUploadOutlined,
   CompassOutlined,
@@ -149,6 +150,7 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
   | '/stickers'
+  | '/profile-covers'
   | '/users'
   | '/sponsorships'
   | '/audit-logs'
@@ -196,6 +198,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
   stickers: 'Stiker',
+  'profile-covers': 'Cover Profil',
   encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
@@ -345,6 +348,7 @@ export function ConsoleLayout() {
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
     // Katalog stiker chat/komentar (beda dari reward achievement).
     items.push({ key: '/stickers', icon: <AppstoreOutlined />, label: 'Stiker' });
+    items.push({ key: '/profile-covers', icon: <PictureOutlined />, label: 'Cover Profil' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({

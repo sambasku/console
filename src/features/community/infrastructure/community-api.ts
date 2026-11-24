@@ -12,7 +12,9 @@ interface CommunityOrgWire {
   id: string;
   slug: string;
   name: string;
-  category: CommunityCategory;
+  category?: CommunityCategory;
+  category_id?: string;
+  category_name?: string | null;
   description: string;
   logo_url: string | null;
   cover_url: string | null;
@@ -28,7 +30,9 @@ interface CommunityProposalWire {
   name: string;
   description: string;
   logo_url: string | null;
-  category: CommunityCategory;
+  category?: CommunityCategory;
+  category_id?: string;
+  category_name?: string | null;
   status: CommunityProposalStatus;
   review_note: string | null;
   community_org_id: string | null;
@@ -41,7 +45,7 @@ interface CommunityProposalWire {
 
 export interface CommunityOrgInput {
   name: string;
-  category: CommunityCategory;
+  category_id: string;
   description: string;
   logo_url?: string | null;
   cover_url?: string | null;
@@ -49,7 +53,7 @@ export interface CommunityOrgInput {
 }
 
 export interface CommunityProposalApproveInput {
-  category?: CommunityCategory;
+  category_id?: string;
   name?: string;
   description?: string;
   logo_url?: string | null;
@@ -95,7 +99,8 @@ export function mapCommunityOrg(w: CommunityOrgWire): CommunityOrg {
     id: w.id,
     slug: w.slug,
     name: w.name,
-    category: w.category,
+    category: w.category_id ?? w.category ?? "lain",
+    categoryName: w.category_name ?? null,
     description: w.description,
     logoUrl: w.logo_url,
     coverUrl: w.cover_url,
@@ -115,7 +120,8 @@ export function mapCommunityProposal(
     name: w.name,
     description: w.description,
     logoUrl: w.logo_url,
-    category: w.category,
+    category: w.category_id ?? w.category ?? "lain",
+    categoryName: w.category_name ?? null,
     status: w.status,
     reviewNote: w.review_note,
     communityOrgId: w.community_org_id,

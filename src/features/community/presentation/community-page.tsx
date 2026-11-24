@@ -60,7 +60,7 @@ const proposalHelper = createColumnHelper<
 >();
 const orgHelper = createColumnHelper<typeof tableFeatureSet, CommunityOrg>();
 
-const CATEGORY_LABEL: Record<CommunityCategory, string> = {
+const CATEGORY_LABEL: Record<string, string> = {
   seni: "Seni",
   bahasa: "Bahasa",
   pendidikan: "Pendidikan",
@@ -133,7 +133,7 @@ function CommunityOrgDrawer({
     try {
       const body = {
         name: values.name,
-        category: values.category,
+        category_id: values.category,
         description: values.description,
         logo_url: values.logo_url || null,
         cover_url: values.cover_url || null,

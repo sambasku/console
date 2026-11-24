@@ -1,18 +1,22 @@
-export type CommunityCategory =
-  "seni" | "bahasa" | "pendidikan" | "ukm" | "lain";
+/** Id slug di master `kategori_komunitas`. */
+export type CommunityCategory = string;
 
 export type CommunityFeaturedKind = "tim" | "sponsor";
 
 export type CommunityPublishStatus = "published" | "archived";
 
 export type CommunityProposalStatus =
-  "pending" | "approved" | "rejected" | "cancelled";
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled";
 
 export interface CommunityOrg {
   id: string;
   slug: string;
   name: string;
   category: CommunityCategory;
+  categoryName: string | null;
   description: string;
   logoUrl: string | null;
   coverUrl: string | null;
@@ -29,6 +33,7 @@ export interface CommunityProposal {
   description: string;
   logoUrl: string | null;
   category: CommunityCategory;
+  categoryName: string | null;
   status: CommunityProposalStatus;
   reviewNote: string | null;
   communityOrgId: string | null;
