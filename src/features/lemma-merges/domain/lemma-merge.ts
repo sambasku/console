@@ -12,6 +12,7 @@ export interface LemmaMergeListItem {
   keep_word_id: string;
   keep_lemma: string;
   merge_word_ids: string[];
+  merge_lemmas: string[];
   merge_count: number;
   reason_text: string | null;
   proposer_id: string;

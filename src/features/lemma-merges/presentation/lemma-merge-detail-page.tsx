@@ -85,6 +85,11 @@ function LemmaMergeDetail({ id }: { id: string }) {
             {data.proposer_display_name || data.proposer_username || data.proposer_id}
           </Descriptions.Item>
           <Descriptions.Item label="Diajukan">{formatDateTime(data.created_at)}</Descriptions.Item>
+          <Descriptions.Item label="Semua lemma">
+            {[data.keep_lemma, ...data.merge_words.map((w) => w.lemma)]
+              .filter((l) => l.trim() && l !== '-')
+              .join(' + ') || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label="Alasan">
             {data.reason_text?.trim() || '-'}
           </Descriptions.Item>

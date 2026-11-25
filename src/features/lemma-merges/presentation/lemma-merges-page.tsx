@@ -59,10 +59,18 @@ export function LemmaMergesPage() {
           header: 'Lemma utama',
           size: 140,
         }),
-        columnHelper.accessor('merge_count', {
+        columnHelper.accessor('merge_lemmas', {
           header: 'Digabung',
-          size: 96,
-          cell: (info) => `${info.getValue()} entri`,
+          size: 200,
+          cell: (info) => {
+            const merged = info.getValue().filter((l) => l.trim() && l !== '-');
+            const label = merged.length > 0 ? merged.join(', ') : `${info.row.original.merge_count} entri`;
+            return (
+              <Typography.Text ellipsis={{ tooltip: label }}>
+                {label}
+              </Typography.Text>
+            );
+          },
         }),
         columnHelper.accessor('reason_text', {
           header: 'Alasan',
