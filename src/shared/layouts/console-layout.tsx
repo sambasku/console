@@ -9,6 +9,7 @@ import {
   CommentOutlined,
   DashboardOutlined,
   EditOutlined,
+  MergeCellsOutlined,
   EnvironmentOutlined,
   FileTextOutlined,
   FlagOutlined,
@@ -84,6 +85,7 @@ const KAMUS_ROUTES = {
   '/jinye-reports': { icon: <WarningOutlined />, label: 'Laporan Jinye' },
   '/translations': { icon: <TranslationOutlined />, label: 'Usulan terjemahan' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
+  '/lemma-merges': { icon: <MergeCellsOutlined />, label: 'Gabung kata' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
   '/comment-blocklist': { icon: <StopOutlined />, label: 'Blocklist' },
@@ -185,6 +187,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'jinye-reports': 'Laporan Jinye',
   translations: 'Usulan terjemahan',
   'word-suggestions': 'Usul Edit',
+  'lemma-merges': 'Gabung kata',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
   'comment-blocklist': 'Blocklist',
@@ -281,6 +284,7 @@ export function ConsoleLayout() {
           ? canModerateContent || user?.role === 'editor'
           : key === '/vote-moderation' ||
               key === '/word-suggestions' ||
+              key === '/lemma-merges' ||
               key === '/jinye' ||
               key === '/jinye-reports' ||
               key === '/translations'

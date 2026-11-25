@@ -24,6 +24,8 @@ import { SearchMissesPage } from '@/features/search-miss/presentation/search-mis
 import { VoteModerationPage } from '@/features/vote-moderation/presentation/vote-moderation-page';
 import { WordSuggestionsPage } from '@/features/word-suggestions/presentation/word-suggestions-page';
 import { WordSuggestionDetailPage } from '@/features/word-suggestions/presentation/word-suggestion-detail-page';
+import { LemmaMergesPage } from '@/features/lemma-merges/presentation/lemma-merges-page';
+import { LemmaMergeDetailPage } from '@/features/lemma-merges/presentation/lemma-merge-detail-page';
 import { AuditLogsPage } from '@/features/audit/presentation/audit-logs-page';
 import { BugReportsPage } from '@/features/bug-reports/presentation/bug-reports-page';
 import { WordReportsPage } from '@/features/word-reports/presentation/word-reports-page';
@@ -279,6 +281,18 @@ const wordSuggestionDetailRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/word-suggestions/$id',
   component: WordSuggestionDetailPage,
+});
+
+const lemmaMergesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/lemma-merges',
+  component: LemmaMergesPage,
+});
+
+const lemmaMergeDetailRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/lemma-merges/$id',
+  component: LemmaMergeDetailPage,
 });
 
 const auditLogsRoute = createRoute({
@@ -715,6 +729,8 @@ const routeTree = rootRoute.addChildren([
     voteModerationRoute,
     wordSuggestionsRoute,
     wordSuggestionDetailRoute,
+    lemmaMergesRoute,
+    lemmaMergeDetailRoute,
     wordReportsRoute,
     wordReportDetailRoute,
     auditLogsRoute,
