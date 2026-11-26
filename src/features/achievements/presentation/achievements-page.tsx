@@ -22,7 +22,7 @@ import {
   Typography,
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
-import { AchievementAssetPreview } from './achievement-asset-preview';
+import { AchievementAssetPreview, resolveBadgeAssetKind } from './achievement-asset-preview';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -158,7 +158,7 @@ export function AchievementsPage() {
               row.badgeUrl ? (
                 <AchievementAssetPreview
                   url={row.badgeUrl}
-                  assetKind={row.badgeAssetKind ?? 'image'}
+                  assetKind={resolveBadgeAssetKind(row.badgeUrl, row.badgeAssetKind)}
                   size={44}
                 />
               ) : (

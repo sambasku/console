@@ -1,8 +1,38 @@
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import { Image } from 'antd';
-import { useMemo } from 'react';
+import { Image, Typography } from 'antd';
+import { Lottie } from 'lottie-react';
+import { useMemo, useState } from 'react';
 
 export type BadgeAssetKind = 'image' | 'lottie';
+
+export function isLottieBadgeUrl(url: string | null | undefined): boolean {
+  if (!url?.trim()) return false;
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    return pathname.endsWith('.lottie') || pathname.endsWith('.json');
+  } catch {
+    const lower = url.toLowerCase();
+    return lower.endsWith('.lottie') || lower.endsWith('.json');
+  }
+}
+
+export function resolveBadgeAssetKind(
+  url: string | null | undefined,
+  wireKind: BadgeAssetKind | undefined,
+): BadgeAssetKind {
+  if (wireKind === 'lottie' || isLottieBadgeUrl(url)) return 'lottie';
+  return wireKind ?? 'image';
+}
+
+function isDotLottieSource(url: string, fileName?: string | null): boolean {
+  const n = fileName?.trim().toLowerCase() ?? '';
+  if (n.endsWith('.lottie')) return true;
+  try {
+    return new URL(url).pathname.toLowerCase().endsWith('.lottie');
+  } catch {
+    return url.toLowerCase().endsWith('.lottie');
+  }
+}
 
 function isLottieSource(url: string, fileName?: string | null): boolean {
   const n = fileName?.trim().toLowerCase() ?? '';
@@ -13,6 +43,15 @@ function isLottieSource(url: string, fileName?: string | null): boolean {
   } catch {
     const lower = url.toLowerCase();
     return lower.endsWith('.lottie') || lower.endsWith('.json');
+  }
+}
+
+function fileNameFromUrl(url: string): string | undefined {
+  try {
+    const name = new URL(url).pathname.split('/').pop();
+    return name || undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -28,11 +67,16 @@ export function AchievementAssetPreview({
   /** Nama file asli (penting untuk blob: pratinjau lokal). */
   fileName?: string | null;
 }) {
-  const lottieKey = useMemo(() => `${url}|${fileName ?? ''}`, [url, fileName]);
+  const [failed, setFailed] = useState(false);
+  const hintName = fileName ?? fileNameFromUrl(url) ?? null;
+  const lottieKey = useMemo(
+    () => `${url}|${hintName ?? ''}`,
+    [url, hintName],
+  );
 
   if (!url.trim()) return null;
 
-  const isLottie = assetKind === 'lottie' || isLottieSource(url, fileName);
+  const isLottie = assetKind === 'lottie' || isLottieSource(url, hintName);
 
   if (!isLottie) {
     return (
@@ -40,11 +84,39 @@ export function AchievementAssetPreview({
     );
   }
 
-  // DotLottieReact (dotlottie-web WASM) menangani .lottie (ZIP) dan .json
-  // sekaligus lewat fetch() tanpa perlu lottie-web / 'unsafe-eval'.
+  if (failed) {
+    return (
+      <Typography.Text type="secondary" style={{ fontSize: 11, maxWidth: size }}>
+        Pratinjau gagal
+      </Typography.Text>
+    );
+  }
+
+  // Bodymovin .json: lottie-react (lottie-web). DotLottieReact cocok untuk .lottie (ZIP).
+  if (isDotLottieSource(url, hintName)) {
+    return (
+      <div style={{ width: size, height: size }} key={lottieKey}>
+        <DotLottieReact
+          src={url}
+          loop
+          autoplay
+          style={{ width: size, height: size }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ width: size, height: size }} key={lottieKey}>
-      <DotLottieReact src={url} loop autoplay style={{ width: size, height: size }} />
-    </div>
+    <Lottie
+      key={lottieKey}
+      src={url}
+      loop
+      autoplay
+      style={{ width: size, height: size }}
+      rendererSettings={{ preserveAspectRatio: 'xMidYMid meet' }}
+      subscriptions={{
+        error: () => setFailed(true),
+      }}
+    />
   );
 }
