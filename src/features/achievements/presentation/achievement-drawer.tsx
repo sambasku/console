@@ -21,6 +21,7 @@ import {
 } from '@/shared/api/achievement-asset-upload';
 import {
   AchievementAssetPreview,
+  isLottieBadgeUrl,
   type BadgeAssetKind,
 } from './achievement-asset-preview';
 import {
@@ -276,6 +277,15 @@ export function AchievementDrawer({
     }
   }, [rewardType, form]);
 
+  useEffect(() => {
+    if (!open) return;
+    const u = badgeUrl?.trim();
+    if (rewardType !== 'profile_border' || !u) return;
+    if (isLottieBadgeUrl(u)) {
+      form.setFieldValue('badge_asset_kind', 'lottie');
+    }
+  }, [badgeUrl, rewardType, open, form]);
+
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
     try {
@@ -293,14 +303,22 @@ export function AchievementDrawer({
           filters.role_in = roles.join(',');
         }
       }
+      const badgeUrlTrimmed = values.badge_url?.trim() || null;
+      const badgeAssetKindForWire: BadgeAssetKind =
+        values.reward_type === 'profile_border' &&
+        badgeUrlTrimmed &&
+        isLottieBadgeUrl(badgeUrlTrimmed)
+          ? 'lottie'
+          : (values.badge_asset_kind ?? 'image');
+
       await submit({
         code: values.code.trim(),
         title: values.title.trim(),
         description: values.description.trim(),
         category: values.category,
         reward_type: values.reward_type,
-        badge_url: values.badge_url?.trim() || null,
-        badge_asset_kind: values.badge_asset_kind ?? 'image',
+        badge_url: badgeUrlTrimmed,
+        badge_asset_kind: badgeAssetKindForWire,
         criteria: {
           source: values.source,
           // Jangan kirim threshold/window bila source tidak support - API menolak.
@@ -411,11 +429,11 @@ export function AchievementDrawer({
           }
         >
           <input
-            key={badgeAssetKind === 'lottie' ? 'lottie' : 'image'}
+            key="achievement-asset-file"
             type="file"
             accept={
-              badgeAssetKind === 'lottie'
-                ? ACHIEVEMENT_ASSET_ACCEPT_LOTTIE
+              rewardType === 'profile_border'
+                ? `${ACHIEVEMENT_ASSET_ACCEPT_IMAGE},${ACHIEVEMENT_ASSET_ACCEPT_LOTTIE}`
                 : ACHIEVEMENT_ASSET_ACCEPT_IMAGE
             }
             style={{ display: 'block' }}
@@ -424,13 +442,15 @@ export function AchievementDrawer({
               e.target.value = '';
               if (!file) return;
 
-              const kind =
-                badgeAssetKind === 'lottie'
-                  ? 'lottie'
-                  : ((form.getFieldValue('badge_asset_kind') as BadgeAssetKind) ?? 'image');
               const fileIsLottie = await isLottieAssetFile(file);
-              if (rewardType === 'profile_border' && fileIsLottie) {
-                form.setFieldValue('badge_asset_kind', 'lottie');
+              if (fileIsLottie && rewardType !== 'profile_border') {
+                message.error('Lottie hanya untuk reward border profil');
+                return;
+              }
+              const uploadKind: BadgeAssetKind =
+                rewardType === 'profile_border' && fileIsLottie ? 'lottie' : 'image';
+              if (uploadKind === 'lottie') {
+                form.setFieldsValue({ badge_asset_kind: 'lottie' });
               }
               if (localPreviewUrlRef.current) {
                 URL.revokeObjectURL(localPreviewUrlRef.current);
@@ -442,16 +462,14 @@ export function AchievementDrawer({
 
               setUploading(true);
               try {
-                const uploadKind: BadgeAssetKind =
-                  kind === 'lottie' || fileIsLottie ? 'lottie' : 'image';
                 const { url } =
                   uploadKind === 'lottie'
                     ? await uploadAchievementLottieToGithub(file)
                     : await uploadAchievementAssetToCdn(file, '/achievements', 'image');
-                form.setFieldValue('badge_url', url);
-                if (uploadKind === 'lottie') {
-                  form.setFieldValue('badge_asset_kind', 'lottie');
-                }
+                form.setFieldsValue({
+                  badge_url: url,
+                  badge_asset_kind: uploadKind,
+                })
                 if (localPreviewUrlRef.current) {
                   URL.revokeObjectURL(localPreviewUrlRef.current);
                   localPreviewUrlRef.current = null;
