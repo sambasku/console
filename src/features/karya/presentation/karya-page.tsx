@@ -382,6 +382,9 @@ export function KaryaPage() {
                         options={[
                           { value: 'listen', label: 'Dengar' },
                           { value: 'watch', label: 'Tonton' },
+                          ...(kind === 'film'
+                            ? [{ value: 'trailer' as const, label: 'Trailer' }]
+                            : []),
                           { value: 'buy', label: 'Beli' },
                           { value: 'official', label: 'Resmi' },
                           { value: 'other', label: 'Lainnya' },

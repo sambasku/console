@@ -28,7 +28,7 @@ export interface KaryaRelatedRefWire {
 }
 
 export interface AccessLinkWire {
-  kind: 'listen' | 'watch' | 'buy' | 'read' | 'stream' | 'official' | 'other';
+  kind: 'listen' | 'watch' | 'trailer' | 'buy' | 'read' | 'stream' | 'official' | 'other';
   label: string;
   url: string;
   is_primary?: boolean;
