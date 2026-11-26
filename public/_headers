@@ -5,8 +5,10 @@
 # buka link di tab baru. microphone=(self): MediaRecorder di form pelafalan.
 # connect-src + upload.imagekit.io: direct upload bukti bayar Baleho / gambar
 # kata (browser POST ke ImageKit, bukan lewat API worker).
+# script-src 'wasm-unsafe-eval' + connect-src blob: / unpkg.com: player
+# @lottiefiles/dotlottie-react memuat modul WASM dan pratinjau lokal .lottie.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://api.sambasku.com https://cloudflare.sambasku.com https://sambasku-staging.iamutaki.com https://cdn.jsdelivr.net https://nominatim.openstreetmap.org https://tile.openstreetmap.org https://tiles.openfreemap.org https://upload.imagekit.io; frame-ancestors 'none'; base-uri 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' blob: https://api.sambasku.com https://cloudflare.sambasku.com https://sambasku-staging.iamutaki.com https://cdn.jsdelivr.net https://unpkg.com https://nominatim.openstreetmap.org https://tile.openstreetmap.org https://tiles.openfreemap.org https://upload.imagekit.io; frame-ancestors 'none'; base-uri 'none'; form-action 'self'
   X-Frame-Options: DENY
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Cross-Origin-Opener-Policy: same-origin

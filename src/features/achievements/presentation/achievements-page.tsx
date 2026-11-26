@@ -12,7 +12,6 @@ import {
   Badge,
   Button,
   Drawer,
-  Image,
   Input,
   Modal,
   Popconfirm,
@@ -23,6 +22,7 @@ import {
   Typography,
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
+import { AchievementAssetPreview } from './achievement-asset-preview';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -156,7 +156,11 @@ export function AchievementsPage() {
             width: 80,
             render: (_: unknown, row) =>
               row.badgeUrl ? (
-                <Image src={row.badgeUrl} alt={row.title} width={44} height={44} style={{ objectFit: 'contain' }} />
+                <AchievementAssetPreview
+                  url={row.badgeUrl}
+                  assetKind={row.badgeAssetKind ?? 'image'}
+                  size={44}
+                />
               ) : (
                 <Typography.Text type="secondary">-</Typography.Text>
               ),
