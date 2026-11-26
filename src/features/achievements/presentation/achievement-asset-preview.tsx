@@ -1,17 +1,18 @@
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { Image } from 'antd';
-import { Lottie } from 'lottie-react';
 import { useMemo } from 'react';
 
 export type BadgeAssetKind = 'image' | 'lottie';
 
-function isDotLottieSource(url: string, fileName?: string | null): boolean {
+function isLottieSource(url: string, fileName?: string | null): boolean {
   const n = fileName?.trim().toLowerCase() ?? '';
-  if (n.endsWith('.lottie')) return true;
+  if (n.endsWith('.lottie') || n.endsWith('.json')) return true;
   try {
-    return new URL(url).pathname.toLowerCase().endsWith('.lottie');
+    const pathname = new URL(url).pathname.toLowerCase();
+    return pathname.endsWith('.lottie') || pathname.endsWith('.json');
   } catch {
-    return url.toLowerCase().endsWith('.lottie');
+    const lower = url.toLowerCase();
+    return lower.endsWith('.lottie') || lower.endsWith('.json');
   }
 }
 
@@ -31,27 +32,19 @@ export function AchievementAssetPreview({
 
   if (!url.trim()) return null;
 
-  if (assetKind === 'image') {
+  const isLottie = assetKind === 'lottie' || isLottieSource(url, fileName);
+
+  if (!isLottie) {
     return (
       <Image src={url} width={size} height={size} style={{ objectFit: 'contain' }} alt="" />
     );
   }
 
-  if (isDotLottieSource(url, fileName)) {
-    return (
-      <div style={{ width: size, height: size }} key={lottieKey}>
-        <DotLottieReact src={url} loop autoplay style={{ width: size, height: size }} />
-      </div>
-    );
-  }
-
+  // DotLottieReact (dotlottie-web WASM) menangani .lottie (ZIP) dan .json
+  // sekaligus lewat fetch() tanpa perlu lottie-web / 'unsafe-eval'.
   return (
-    <Lottie
-      key={lottieKey}
-      src={url}
-      loop
-      autoplay
-      style={{ width: size, height: size }}
-    />
+    <div style={{ width: size, height: size }} key={lottieKey}>
+      <DotLottieReact src={url} loop autoplay style={{ width: size, height: size }} />
+    </div>
   );
 }
