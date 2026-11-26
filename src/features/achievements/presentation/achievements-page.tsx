@@ -327,7 +327,8 @@ export function AchievementsPage() {
         }}
         submit={(values) => {
           if (editing) {
-            const { code: _code, ...body } = values;
+            const { code, ...body } = values;
+            void code;
             return updateMutation.mutateAsync({ id: editing.id, ...body });
           }
           return createMutation.mutateAsync(values);
