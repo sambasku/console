@@ -190,11 +190,17 @@ export function AchievementDrawer({
   onSaved,
   editing,
   submit,
+  patchBadge,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
   editing: Achievement | null;
+  /** Saat edit: simpan badge_url/kind langsung ke API setelah unggah. */
+  patchBadge?: (
+    id: string,
+    body: { badge_url: string; badge_asset_kind: BadgeAssetKind },
+  ) => Promise<unknown>;
   submit: (values: {
     code: string;
     title: string;
@@ -418,7 +424,7 @@ export function AchievementDrawer({
         <Form.Item
           name="badge_url"
           label="URL aset (opsional)"
-          extra="Tempel URL, atau unggah dari komputer. Aset tersimpan di CDN."
+          extra="Border Lottie: unggah .json Bodymovin atau .lottie (jsDelivr). PNG tetap ImageKit. Setelah unggah, edit otomatis tersimpan ke pencapaian."
         >
           <Input placeholder="https://cdn.jsdelivr.net/gh/sambasku/images@main/assets/achievements/..." />
         </Form.Item>
@@ -471,7 +477,13 @@ export function AchievementDrawer({
                 form.setFieldsValue({
                   badge_url: url,
                   badge_asset_kind: uploadKind,
-                })
+                });
+                if (editing && patchBadge) {
+                  await patchBadge(editing.id, {
+                    badge_url: url,
+                    badge_asset_kind: uploadKind,
+                  });
+                }
                 if (localPreviewUrlRef.current) {
                   URL.revokeObjectURL(localPreviewUrlRef.current);
                   localPreviewUrlRef.current = null;
@@ -479,9 +491,13 @@ export function AchievementDrawer({
                 setLocalPreviewFile(null);
                 setLocalPreviewUrl(null);
                 message.success(
-                  uploadKind === 'lottie'
-                    ? 'Lottie tersimpan di repo GitHub (jsDelivr)'
-                    : 'Gambar terunggah ke ImageKit',
+                  editing
+                    ? uploadKind === 'lottie'
+                      ? 'Lottie terunggah dan pencapaian diperbarui'
+                      : 'Gambar terunggah dan pencapaian diperbarui'
+                    : uploadKind === 'lottie'
+                      ? 'Lottie tersimpan di repo GitHub (jsDelivr) - klik Buat untuk menyimpan'
+                      : 'Gambar terunggah ke ImageKit - klik Buat untuk menyimpan',
                 );
               } catch (err) {
                 message.error(normalizeError(err).message);
@@ -629,7 +645,7 @@ export function AchievementDrawer({
 
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>Batal</Button>
-          <Button type="primary" htmlType="submit" loading={saving}>
+          <Button type="primary" htmlType="submit" loading={saving} disabled={uploading}>
             {editing ? 'Simpan' : 'Buat'}
           </Button>
         </Flex>

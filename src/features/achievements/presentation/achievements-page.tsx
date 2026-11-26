@@ -325,6 +325,7 @@ export function AchievementsPage() {
           setEditing(null);
           void list.refetch();
         }}
+        patchBadge={(id, body) => updateMutation.mutateAsync({ id, ...body })}
         submit={(values) => {
           if (editing) {
             const { code, ...body } = values;
