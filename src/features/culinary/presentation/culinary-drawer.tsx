@@ -151,6 +151,13 @@ export function CuisineImagesField({
                 >
                   {img.is_main ? 'Utama' : 'Jadikan utama'}
                 </Button>
+                <ExplorePhotoModerationActions
+                  module="culinary"
+                  entityId={entityId}
+                  imageUrl={img.url}
+                  onCensored={(newUrl) => patch(i, { url: newUrl })}
+                  onTakedown={() => onChange?.(images.filter((_, j) => j !== i))}
+                />
                 <Button
                   size="small"
                   danger
@@ -406,7 +413,7 @@ export function CuisineDrawer({
           name="images"
           extra="Atribusi wajib: nama pemilik dan lisensi. Disimpan dan ditampilkan apa adanya."
         >
-          <CuisineImagesField />
+          <CuisineImagesField entityId={editing?.id} />
         </Form.Item>
       </Form>
     </Drawer>

@@ -5,6 +5,7 @@ import type { UploadProps } from 'antd';
 import { ApiError, normalizeError } from '@/shared/api/error';
 import { displayImageUrl } from '@/shared/utils/display-image-url';
 import { uploadPlaceImage } from '../infrastructure/place-image-api';
+import { ExplorePhotoModerationActions } from '@/shared/components/explore-photo-censor-button';
 
 const MAX_ORIGINAL_MB = 20;
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
@@ -24,9 +25,11 @@ export interface PlaceImageDraft {
 export function PlaceImagesField({
   value,
   onChange,
+  entityId,
 }: {
   value?: PlaceImageDraft[];
   onChange?: (next: PlaceImageDraft[]) => void;
+  entityId?: string;
 }) {
   const { message } = AntdApp.useApp();
   const [images, setLocal] = useState<PlaceImageDraft[]>(() => value ?? []);
@@ -225,6 +228,15 @@ export function PlaceImagesField({
                 <Button size="small" disabled={img.isMain || img.status !== 'done'} onClick={() => setMain(img.uid)}>
                   Jadikan utama
                 </Button>
+                {img.status === 'done' && img.url ? (
+                  <ExplorePhotoModerationActions
+                    module="place"
+                    entityId={entityId}
+                    imageUrl={img.url}
+                    onCensored={(newUrl) => patch(img.uid, { url: newUrl, fileName: newUrl })}
+                    onTakedown={() => remove(img.uid)}
+                  />
+                ) : null}
                 <Button size="small" danger onClick={() => remove(img.uid)}>
                   Hapus
                 </Button>

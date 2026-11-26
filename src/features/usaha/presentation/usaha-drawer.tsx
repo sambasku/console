@@ -17,6 +17,7 @@ import {
   Upload,
 } from 'antd';
 import type { FormProps, UploadProps } from 'antd';
+import { ExplorePhotoModerationActions } from '@/shared/components/explore-photo-censor-button';
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import { formatDateTime } from '@/shared/utils/format-datetime';
@@ -122,9 +123,11 @@ export const USAHA_OPERATIONAL_STATUS_OPTIONS: Array<{
 function CoverField({
   value,
   onChange,
+  entityId,
 }: {
   value?: string | null;
   onChange?: (url: string | null) => void;
+  entityId?: string;
 }) {
   const { message } = AntdApp.useApp();
   const [uploading, setUploading] = useState(false);
@@ -152,17 +155,28 @@ function CoverField({
   return (
     <Space direction="vertical" size={8} style={{ width: '100%' }}>
       {value ? (
-        <div style={{ position: 'relative', width: 160, height: 120 }}>
-          <Image src={value} width={160} height={120} style={{ objectFit: 'cover', borderRadius: 8 }} />
-          <Button
-            size="small"
-            danger
-            shape="circle"
-            icon={<DeleteOutlined />}
-            style={{ position: 'absolute', top: -8, right: -8 }}
-            onClick={() => onChange?.(null)}
-          />
-        </div>
+        <Space direction="vertical" size={6}>
+          <div style={{ position: 'relative', width: 160, height: 120 }}>
+            <Image src={value} width={160} height={120} style={{ objectFit: 'cover', borderRadius: 8 }} />
+            <Button
+              size="small"
+              danger
+              shape="circle"
+              icon={<DeleteOutlined />}
+              style={{ position: 'absolute', top: -8, right: -8 }}
+              onClick={() => onChange?.(null)}
+            />
+          </div>
+          <Space size={6}>
+            <ExplorePhotoModerationActions
+              module="usaha"
+              entityId={entityId}
+              imageUrl={value}
+              onCensored={(newUrl) => onChange?.(newUrl)}
+              onTakedown={() => onChange?.(null)}
+            />
+          </Space>
+        </Space>
       ) : null}
       <Upload
         accept="image/jpeg,image/png,image/webp"
@@ -455,7 +469,7 @@ export function UsahaDrawer({
           </Col>
           <Col span={24}>
             <Form.Item name="cover_url" label="Foto utama" extra="Unggah file (dikompres) atau tempel URL https.">
-              <CoverField />
+              <CoverField entityId={editing?.id} />
             </Form.Item>
           </Col>
         </Row>
