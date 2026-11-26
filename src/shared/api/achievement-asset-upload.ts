@@ -23,15 +23,24 @@ const multipartFormConfig = {
   ],
 };
 
+function basenameUploadName(raw: string): string {
+  const base = raw.replace(/\\/g, '/').split('/').pop()?.trim();
+  return base && base.length > 0 ? base : 'border-lottie.json';
+}
+
 function fileForMultipartUpload(file: File): File {
-  if (file.type && file.type !== 'application/octet-stream') return file;
-  const name = file.name.toLowerCase();
-  const type = name.endsWith('.lottie')
-    ? 'application/octet-stream'
-    : name.endsWith('.json')
-      ? 'application/json'
-      : file.type || 'application/octet-stream';
-  return new File([file], file.name, { type, lastModified: file.lastModified });
+  const safeName = basenameUploadName(file.name);
+  const name = safeName.toLowerCase();
+  const type =
+    file.type && file.type !== 'application/octet-stream'
+      ? file.type
+      : name.endsWith('.lottie')
+        ? 'application/octet-stream'
+        : name.endsWith('.json')
+          ? 'application/json'
+          : file.type || 'application/octet-stream';
+  if (safeName === file.name && file.type === type) return file;
+  return new File([file], safeName, { type, lastModified: file.lastModified });
 }
 
 function looksLikeZip(bytes: Uint8Array): boolean {
