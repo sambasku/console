@@ -289,48 +289,50 @@ export function AchievementDrawer({
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
     try {
-      const meta = sourceMeta(values.source);
+      // Field disabled (mis. `code` saat edit) tidak masuk `values` onFinish.
+      const fields = { ...form.getFieldsValue(true), ...values } as FormValues;
+      const meta = sourceMeta(fields.source);
       const needsWindow = meta?.supportsWindow === true;
       const needsThreshold = meta?.supportsThreshold === true;
-      const hasWindow = needsWindow && values.window_from && values.window_to;
+      const hasWindow = needsWindow && fields.window_from && fields.window_to;
       const filters: Record<string, string> = {};
-      if (meta?.filterFields?.some((f) => f.key === 'entity_type') && values.filter_entity_type) {
-        filters.entity_type = values.filter_entity_type;
+      if (meta?.filterFields?.some((f) => f.key === 'entity_type') && fields.filter_entity_type) {
+        filters.entity_type = fields.filter_entity_type;
       }
       if (meta?.filterFields?.some((f) => f.key === 'role_in')) {
-        const roles = (values.filter_role_in ?? []).map((r) => r.trim()).filter(Boolean);
+        const roles = (fields.filter_role_in ?? []).map((r) => r.trim()).filter(Boolean);
         if (roles.length > 0) {
           filters.role_in = roles.join(',');
         }
       }
-      const badgeUrlTrimmed = values.badge_url?.trim() || null;
+      const badgeUrlTrimmed = fields.badge_url?.trim() || null;
       const badgeAssetKindForWire: BadgeAssetKind =
-        values.reward_type === 'profile_border' &&
+        fields.reward_type === 'profile_border' &&
         badgeUrlTrimmed &&
         isLottieBadgeUrl(badgeUrlTrimmed)
           ? 'lottie'
-          : (values.badge_asset_kind ?? 'image');
+          : (fields.badge_asset_kind ?? 'image');
 
       await submit({
-        code: values.code.trim(),
-        title: values.title.trim(),
-        description: values.description.trim(),
-        category: values.category,
-        reward_type: values.reward_type,
+        code: (editing?.code ?? fields.code ?? '').trim(),
+        title: fields.title.trim(),
+        description: fields.description.trim(),
+        category: fields.category,
+        reward_type: fields.reward_type,
         badge_url: badgeUrlTrimmed,
         badge_asset_kind: badgeAssetKindForWire,
         criteria: {
-          source: values.source,
+          source: fields.source,
           // Jangan kirim threshold/window bila source tidak support - API menolak.
-          threshold: needsThreshold ? (values.threshold ?? null) : null,
+          threshold: needsThreshold ? (fields.threshold ?? null) : null,
           window: hasWindow
-            ? { from: toIsoWithOffset(values.window_from!), to: toIsoWithOffset(values.window_to!) }
+            ? { from: toIsoWithOffset(fields.window_from!), to: toIsoWithOffset(fields.window_to!) }
             : null,
           filters: Object.keys(filters).length > 0 ? filters : null,
         },
-        family: values.family?.trim() || null,
-        level: values.level ?? null,
-        is_active: values.is_active,
+        family: fields.family?.trim() || null,
+        level: fields.level ?? null,
+        is_active: fields.is_active,
       });
       message.success(editing ? 'Pencapaian diperbarui' : 'Pencapaian dibuat');
       onSaved();

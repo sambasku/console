@@ -320,12 +320,18 @@ export function AchievementsPage() {
         open={drawerOpen}
         editing={editing}
         onClose={() => setDrawerOpen(false)}
-        onSaved={() => setDrawerOpen(false)}
-        submit={(values) =>
-          editing
-            ? updateMutation.mutateAsync({ id: editing.id, ...values })
-            : createMutation.mutateAsync(values)
-        }
+        onSaved={() => {
+          setDrawerOpen(false);
+          setEditing(null);
+          void list.refetch();
+        }}
+        submit={(values) => {
+          if (editing) {
+            const { code: _code, ...body } = values;
+            return updateMutation.mutateAsync({ id: editing.id, ...body });
+          }
+          return createMutation.mutateAsync(values);
+        }}
       />
 
       <Modal
