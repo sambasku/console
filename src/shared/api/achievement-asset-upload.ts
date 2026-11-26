@@ -10,6 +10,30 @@ interface UploadCredentials {
 
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
+/** Biarkan browser set boundary multipart (hindari VALIDATION_ERROR file kosong). */
+const multipartFormConfig = {
+  headers: { 'Content-Type': 'multipart/form-data' },
+  transformRequest: [
+    (data: unknown, headers?: Record<string, unknown>) => {
+      if (data instanceof FormData && headers) {
+        delete headers['Content-Type'];
+      }
+      return data;
+    },
+  ],
+};
+
+function fileForMultipartUpload(file: File): File {
+  if (file.type && file.type !== 'application/octet-stream') return file;
+  const name = file.name.toLowerCase();
+  const type = name.endsWith('.lottie')
+    ? 'application/octet-stream'
+    : name.endsWith('.json')
+      ? 'application/json'
+      : file.type || 'application/octet-stream';
+  return new File([file], file.name, { type, lastModified: file.lastModified });
+}
+
 function looksLikeZip(bytes: Uint8Array): boolean {
   return (
     bytes.length >= 4 &&
@@ -44,13 +68,14 @@ export async function uploadAchievementLottieToGithub(
   file: File,
 ): Promise<{ url: string; fileId: string }> {
   const form = new FormData();
-  form.append('file', file, file.name);
+  const toSend = fileForMultipartUpload(file);
+  form.append('file', toSend, toSend.name);
   const res = await client.post<
     {
       success: true;
       data: { url: string; provider: string; provider_file_id: string; sha: string };
     }
-  >('/images?purpose=achievement', form);
+  >('/images?purpose=achievement', form, multipartFormConfig);
   const url = res.data.data.url;
   if (url.includes('imagekit.io')) {
     throw new Error(
