@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   App as AntdApp,
   Button,
@@ -14,7 +14,11 @@ import {
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
-import { uploadAchievementAssetToCdn } from '@/shared/api/achievement-asset-upload';
+import {
+  isLottieAssetFile,
+  uploadAchievementAssetToCdn,
+  uploadAchievementLottieToGithub,
+} from '@/shared/api/achievement-asset-upload';
 import {
   AchievementAssetPreview,
   type BadgeAssetKind,
@@ -165,16 +169,6 @@ const ACHIEVEMENT_ASSET_ACCEPT_IMAGE =
 const ACHIEVEMENT_ASSET_ACCEPT_LOTTIE =
   '.json,.lottie,application/json,text/json,application/zip,application/octet-stream';
 
-function isLottieUploadFile(file: File): boolean {
-  const name = file.name.toLowerCase();
-  return (
-    name.endsWith('.json') ||
-    name.endsWith('.lottie') ||
-    file.type === 'application/json' ||
-    file.type === 'text/json'
-  );
-}
-
 const ACHIEVEMENT_FORM_DEFAULTS: Partial<FormValues> = {
   category: 'kohort',
   reward_type: 'profile_border',
@@ -223,10 +217,23 @@ export function AchievementDrawer({
   const [form] = Form.useForm<FormValues>();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [localPreviewFile, setLocalPreviewFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const localPreviewUrlRef = useRef<string | null>(null);
   const source = Form.useWatch('source', form);
   const badgeUrl = Form.useWatch('badge_url', form);
   const badgeAssetKind = Form.useWatch('badge_asset_kind', form) ?? 'image';
   const rewardType = Form.useWatch('reward_type', form);
+
+  useEffect(() => {
+    if (open) return;
+    if (localPreviewUrlRef.current) {
+      URL.revokeObjectURL(localPreviewUrlRef.current);
+      localPreviewUrlRef.current = null;
+    }
+    setLocalPreviewFile(null);
+    setLocalPreviewUrl(null);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -399,7 +406,7 @@ export function AchievementDrawer({
           label="Unggah aset"
           extra={
             badgeAssetKind === 'lottie'
-              ? 'JSON atau .lottie untuk border animasi. Maks 2 MB.'
+              ? 'JSON atau .lottie diunggah ke repo GitHub (jsDelivr). Maks 2 MB. PNG tetap ImageKit.'
               : 'PNG/JPEG/WebP. Maks 2 MB.'
           }
         >
@@ -416,17 +423,46 @@ export function AchievementDrawer({
               const file = e.target.files?.[0];
               e.target.value = '';
               if (!file) return;
-              if (rewardType === 'profile_border' && isLottieUploadFile(file)) {
+
+              const kind =
+                badgeAssetKind === 'lottie'
+                  ? 'lottie'
+                  : ((form.getFieldValue('badge_asset_kind') as BadgeAssetKind) ?? 'image');
+              const fileIsLottie = await isLottieAssetFile(file);
+              if (rewardType === 'profile_border' && fileIsLottie) {
                 form.setFieldValue('badge_asset_kind', 'lottie');
               }
+              if (localPreviewUrlRef.current) {
+                URL.revokeObjectURL(localPreviewUrlRef.current);
+              }
+              const blobUrl = URL.createObjectURL(file);
+              localPreviewUrlRef.current = blobUrl;
+              setLocalPreviewFile(file);
+              setLocalPreviewUrl(blobUrl);
+
               setUploading(true);
               try {
-                const { url } = await uploadAchievementAssetToCdn(file, '/achievements');
+                const uploadKind: BadgeAssetKind =
+                  kind === 'lottie' || fileIsLottie ? 'lottie' : 'image';
+                const { url } =
+                  uploadKind === 'lottie'
+                    ? await uploadAchievementLottieToGithub(file)
+                    : await uploadAchievementAssetToCdn(file, '/achievements', 'image');
                 form.setFieldValue('badge_url', url);
-                if (isLottieUploadFile(file)) {
+                if (uploadKind === 'lottie') {
                   form.setFieldValue('badge_asset_kind', 'lottie');
                 }
-                message.success('Aset terunggah');
+                if (localPreviewUrlRef.current) {
+                  URL.revokeObjectURL(localPreviewUrlRef.current);
+                  localPreviewUrlRef.current = null;
+                }
+                setLocalPreviewFile(null);
+                setLocalPreviewUrl(null);
+                message.success(
+                  uploadKind === 'lottie'
+                    ? 'Lottie tersimpan di repo GitHub (jsDelivr)'
+                    : 'Gambar terunggah ke ImageKit',
+                );
               } catch (err) {
                 message.error(normalizeError(err).message);
               } finally {
@@ -436,9 +472,28 @@ export function AchievementDrawer({
           />
           {uploading ? <Typography.Text type="secondary">Mengunggah...</Typography.Text> : null}
         </Form.Item>
-        {badgeUrl ? (
-          <Form.Item label="Pratinjau">
-            <AchievementAssetPreview url={badgeUrl} assetKind={badgeAssetKind} size={120} />
+        {badgeUrl || localPreviewUrl ? (
+          <Form.Item
+            label="Pratinjau"
+            extra={
+              localPreviewUrl && !badgeUrl
+                ? 'Pratinjau lokal - selesai unggah untuk URL jsDelivr.'
+                : undefined
+            }
+          >
+            <AchievementAssetPreview
+              url={localPreviewUrl ?? badgeUrl ?? ''}
+              assetKind={
+                localPreviewFile &&
+                (badgeAssetKind === 'lottie' ||
+                  localPreviewFile.name.toLowerCase().endsWith('.json') ||
+                  localPreviewFile.name.toLowerCase().endsWith('.lottie'))
+                  ? 'lottie'
+                  : badgeAssetKind
+              }
+              fileName={localPreviewFile?.name}
+              size={120}
+            />
           </Form.Item>
         ) : null}
         <Typography.Title level={5}>Kriteria</Typography.Title>

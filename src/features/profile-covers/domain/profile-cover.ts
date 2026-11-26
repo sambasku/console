@@ -31,9 +31,10 @@ export const PROFILE_COVER_SPECS: Record<
     aspect: 1032 / 534,
   },
   wotd: {
-    width: 600,
-    height: 338,
+    width: 1032,
+    height: 176,
     label: 'Kata Hari Ini (kartu Home)',
-    aspect: 600 / 338,
+    // Rasio ~5.86:1 = kartu beranda mobile (BoxFit.cover, tinggi ikut konten teks).
+    aspect: 1032 / 176,
   },
 };
