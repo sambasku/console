@@ -1,6 +1,8 @@
 /** Jenis reward dalam satu katalog achievement. */
 export type RewardType = 'profile_border' | 'badge' | 'sticker';
 
+export type BadgeAssetKind = 'image' | 'lottie';
+
 export const REWARD_TYPE_LABELS: Record<RewardType, string> = {
   profile_border: 'Border',
   badge: 'Badge',
@@ -38,6 +40,7 @@ export interface Achievement {
   category: AchievementCategory;
   rewardType: RewardType;
   badgeUrl: string | null;
+  badgeAssetKind: BadgeAssetKind;
   criteria: AchievementCriteria;
   family: string | null;
   level: number | null;
@@ -55,6 +58,7 @@ export interface AchievementInput {
   category: AchievementCategory;
   reward_type: RewardType;
   badge_url: string | null;
+  badge_asset_kind?: BadgeAssetKind;
   criteria: AchievementCriteria;
   family?: string | null;
   level?: number | null;

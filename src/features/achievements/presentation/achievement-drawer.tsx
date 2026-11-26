@@ -6,7 +6,6 @@ import {
   Drawer,
   Flex,
   Form,
-  Image,
   Input,
   InputNumber,
   Select,
@@ -15,7 +14,11 @@ import {
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
-import { uploadImageToCdn } from '@/shared/api/image-upload';
+import { uploadAchievementAssetToCdn } from '@/shared/api/achievement-asset-upload';
+import {
+  AchievementAssetPreview,
+  type BadgeAssetKind,
+} from './achievement-asset-preview';
 import {
   ACHIEVEMENT_CATEGORY_LABELS,
   REWARD_TYPE_LABELS,
@@ -31,6 +34,7 @@ interface FormValues {
   category: AchievementCategory;
   reward_type: RewardType;
   badge_url: string;
+  badge_asset_kind: BadgeAssetKind;
   source: string;
   threshold: number | null;
   window_from?: Dayjs | null;
@@ -173,6 +177,7 @@ export function AchievementDrawer({
     category: AchievementCategory;
     reward_type: RewardType;
     badge_url: string | null;
+    badge_asset_kind: BadgeAssetKind;
     criteria: {
       source: string;
       threshold?: number | null;
@@ -190,6 +195,8 @@ export function AchievementDrawer({
   const [uploading, setUploading] = useState(false);
   const source = Form.useWatch('source', form);
   const badgeUrl = Form.useWatch('badge_url', form);
+  const badgeAssetKind = Form.useWatch('badge_asset_kind', form) ?? 'image';
+  const rewardType = Form.useWatch('reward_type', form);
 
   useEffect(() => {
     if (!open) return;
@@ -203,6 +210,7 @@ export function AchievementDrawer({
             category: editing.category,
             reward_type: editing.rewardType,
             badge_url: editing.badgeUrl ?? '',
+            badge_asset_kind: editing.badgeAssetKind ?? 'image',
             source: criteria?.source ?? 'registration',
             threshold: criteria?.threshold ?? null,
             window_from: criteria?.window?.from ? fromIso(criteria.window.from) : undefined,
@@ -220,6 +228,7 @@ export function AchievementDrawer({
             category: 'kohort',
             reward_type: 'profile_border',
             badge_url: '',
+            badge_asset_kind: 'image',
             source: 'registration',
             threshold: null,
             window_from: undefined,
@@ -257,6 +266,7 @@ export function AchievementDrawer({
         category: values.category,
         reward_type: values.reward_type,
         badge_url: values.badge_url?.trim() || null,
+        badge_asset_kind: values.badge_asset_kind ?? 'image',
         criteria: {
           source: values.source,
           // Jangan kirim threshold/window bila source tidak support - API menolak.
@@ -333,30 +343,54 @@ export function AchievementDrawer({
           />
         </Form.Item>
         <Form.Item
+          name="badge_asset_kind"
+          label="Jenis aset"
+          extra="Lottie untuk border animasi (.json atau .lottie). Badge/stiker tetap gambar."
+          rules={[{ required: true }]}
+        >
+          <Select
+            options={[
+              { value: 'image', label: 'Gambar (PNG/WebP)' },
+              { value: 'lottie', label: 'Lottie animasi' },
+            ]}
+            disabled={rewardType !== 'profile_border'}
+          />
+        </Form.Item>
+        <Form.Item
           name="badge_url"
           label="URL aset (opsional)"
-          extra="Tempel URL, atau unggah gambar dari komputer. Aset tersimpan di CDN gambar."
+          extra="Tempel URL, atau unggah dari komputer. Aset tersimpan di CDN."
         >
           <Input placeholder="https://cdn.jsdelivr.net/gh/sambasku/images@main/assets/achievements/..." />
         </Form.Item>
-        <Form.Item label="Unggah gambar" extra="PNG/JPEG/WebP untuk bingkai. Maks 2 MB.">
+        <Form.Item
+          label="Unggah aset"
+          extra={
+            badgeAssetKind === 'lottie'
+              ? 'JSON atau .lottie untuk border animasi. Maks 2 MB.'
+              : 'PNG/JPEG/WebP. Maks 2 MB.'
+          }
+        >
           <input
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept={
+              badgeAssetKind === 'lottie'
+                ? '.json,application/json,.lottie'
+                : 'image/png,image/jpeg,image/webp'
+            }
             style={{ display: 'block' }}
             onChange={async (e) => {
               const file = e.target.files?.[0];
               e.target.value = '';
               if (!file) return;
-              if (file.size > 2 * 1024 * 1024) {
-                message.error('Ukuran gambar maksimal 2 MB');
-                return;
-              }
               setUploading(true);
               try {
-                const { url } = await uploadImageToCdn(file, '/achievements');
+                const { url } = await uploadAchievementAssetToCdn(file, '/achievements');
                 form.setFieldValue('badge_url', url);
-                message.success('Gambar terunggah');
+                if (badgeAssetKind === 'lottie') {
+                  form.setFieldValue('badge_asset_kind', 'lottie');
+                }
+                message.success('Aset terunggah');
               } catch (err) {
                 message.error(normalizeError(err).message);
               } finally {
@@ -368,7 +402,7 @@ export function AchievementDrawer({
         </Form.Item>
         {badgeUrl ? (
           <Form.Item label="Pratinjau">
-            <Image src={badgeUrl} width={120} height={120} style={{ objectFit: 'contain' }} />
+            <AchievementAssetPreview url={badgeUrl} assetKind={badgeAssetKind} size={120} />
           </Form.Item>
         ) : null}
         <Typography.Title level={5}>Kriteria</Typography.Title>
