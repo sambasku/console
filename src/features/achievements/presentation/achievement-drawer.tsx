@@ -158,6 +158,36 @@ function fromIso(value: string): Dayjs | undefined {
   return parsed.isValid() ? parsed : undefined;
 }
 
+const ACHIEVEMENT_ASSET_ACCEPT_IMAGE =
+  'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp';
+
+/** macOS sering kosongkan MIME .lottie; sertakan zip/octet-stream agar dialog file tetap menampilkan file. */
+const ACHIEVEMENT_ASSET_ACCEPT_LOTTIE =
+  '.json,.lottie,application/json,text/json,application/zip,application/octet-stream';
+
+function isLottieUploadFile(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return (
+    name.endsWith('.json') ||
+    name.endsWith('.lottie') ||
+    file.type === 'application/json' ||
+    file.type === 'text/json'
+  );
+}
+
+const ACHIEVEMENT_FORM_DEFAULTS: Partial<FormValues> = {
+  category: 'kohort',
+  reward_type: 'profile_border',
+  badge_asset_kind: 'image',
+  source: 'registration',
+  threshold: null,
+  filter_entity_type: null,
+  filter_role_in: null,
+  family: '',
+  level: null,
+  is_active: true,
+};
+
 /** Drawer buat/edit pencapaian. Kriteria = source + window + threshold. */
 export function AchievementDrawer({
   open,
@@ -225,22 +255,19 @@ export function AchievementDrawer({
             code: '',
             title: '',
             description: '',
-            category: 'kohort',
-            reward_type: 'profile_border',
             badge_url: '',
-            badge_asset_kind: 'image',
-            source: 'registration',
-            threshold: null,
             window_from: undefined,
             window_to: undefined,
-            filter_entity_type: null,
-            filter_role_in: null,
-            family: '',
-            level: null,
-            is_active: true,
+            ...ACHIEVEMENT_FORM_DEFAULTS,
           },
     );
   }, [open, editing, form]);
+
+  useEffect(() => {
+    if (rewardType && rewardType !== 'profile_border') {
+      form.setFieldValue('badge_asset_kind', 'image');
+    }
+  }, [rewardType, form]);
 
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
@@ -297,7 +324,12 @@ export function AchievementDrawer({
       onClose={onClose}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        initialValues={ACHIEVEMENT_FORM_DEFAULTS}
+      >
         <Form.Item
           name="code"
           label="Kode"
@@ -372,22 +404,26 @@ export function AchievementDrawer({
           }
         >
           <input
+            key={badgeAssetKind === 'lottie' ? 'lottie' : 'image'}
             type="file"
             accept={
               badgeAssetKind === 'lottie'
-                ? '.json,application/json,.lottie'
-                : 'image/png,image/jpeg,image/webp'
+                ? ACHIEVEMENT_ASSET_ACCEPT_LOTTIE
+                : ACHIEVEMENT_ASSET_ACCEPT_IMAGE
             }
             style={{ display: 'block' }}
             onChange={async (e) => {
               const file = e.target.files?.[0];
               e.target.value = '';
               if (!file) return;
+              if (rewardType === 'profile_border' && isLottieUploadFile(file)) {
+                form.setFieldValue('badge_asset_kind', 'lottie');
+              }
               setUploading(true);
               try {
                 const { url } = await uploadAchievementAssetToCdn(file, '/achievements');
                 form.setFieldValue('badge_url', url);
-                if (badgeAssetKind === 'lottie') {
+                if (isLottieUploadFile(file)) {
                   form.setFieldValue('badge_asset_kind', 'lottie');
                 }
                 message.success('Aset terunggah');

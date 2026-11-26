@@ -54,7 +54,10 @@ export async function uploadAchievementAssetToCdn(
   const name = file.name.toLowerCase();
   const okImage = file.type.startsWith('image/');
   const okJson = file.type === 'application/json' || name.endsWith('.json');
-  const okLottie = name.endsWith('.lottie') || file.type === 'application/octet-stream';
+  const okLottie =
+    name.endsWith('.lottie') ||
+    file.type === 'application/zip' ||
+    file.type === 'application/octet-stream';
   if (!okImage && !okJson && !okLottie) {
     throw new Error('File harus gambar, Lottie JSON, atau .lottie');
   }
