@@ -16,6 +16,7 @@ import {
 import type { UploadProps } from 'antd';
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
+import { ExplorePhotoModerationActions } from '@/shared/components/explore-photo-censor-button';
 import { useCulinaryCategories } from '../application/use-culinary';
 import type {
   Cuisine,
@@ -76,9 +77,11 @@ function slugify(name: string): string {
 export function CuisineImagesField({
   value = [],
   onChange,
+  entityId,
 }: {
   value?: CuisineInput['images'];
   onChange?: (next: NonNullable<CuisineInput['images']>) => void;
+  entityId?: string;
 }) {
   const { message } = AntdApp.useApp();
   const [uploading, setUploading] = useState(false);
