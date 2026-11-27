@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EyeOutlined } from '@ant-design/icons';
 import {
   App as AntdApp,
   Button,
@@ -9,13 +10,19 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
 import { normalizeError } from '@/shared/api/error';
 import { useAllRegions } from '@/features/regions/application/use-regions';
 import { useAdminLayanan, useLayananMutations, useLayananQueue } from '../application/use-layanan';
-import type { LayananInput, LayananWire } from '../infrastructure/layanan-api';
+import type {
+  LayananContributionWire,
+  LayananInput,
+  LayananWire,
+} from '../infrastructure/layanan-api';
+import { LayananProposalDrawer } from './layanan-proposal-drawer';
 
 const CATEGORY = [
   { value: 'ambulance', label: 'Ambulan' },
@@ -37,7 +44,13 @@ export function LayananPage() {
   const actions = useLayananMutations();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<LayananWire | null>(null);
+  const [proposal, setProposal] = useState<LayananContributionWire | null>(null);
   const [form] = Form.useForm<LayananInput>();
+
+  const regionName = (id: string | null | undefined) => {
+    if (!id) return '-';
+    return (regions.data ?? []).find((r) => r.id === id)?.name ?? id;
+  };
 
   const kecamatan = (regions.data ?? []).filter(
     (r) => r.type === 'kecamatan' && r.status === 'published',
@@ -94,29 +107,34 @@ export function LayananPage() {
         dataSource={queue.data ?? []}
         pagination={false}
         columns={[
-          { title: 'Jenis', dataIndex: 'kind', width: 80 },
-          { title: 'Pengusul', dataIndex: 'username' },
+          {
+            title: 'Jenis',
+            dataIndex: 'kind',
+            width: 110,
+            render: (v: LayananContributionWire['kind']) => (
+              <Tag color={v === 'new' ? 'green' : 'blue'}>
+                {v === 'new' ? 'Baru' : 'Suntingan'}
+              </Tag>
+            ),
+          },
+          {
+            title: 'Pengusul',
+            dataIndex: 'username',
+            render: (v: string | null) => v ?? '-',
+          },
           { title: 'Nama', render: (_, row) => row.payload.name },
           { title: 'Telepon', render: (_, row) => phonesLabel(row.payload.phones) },
           {
-            title: '',
+            title: 'Aksi',
+            width: 80,
             render: (_, row) => (
-              <Space>
-                <Button size="small" type="primary" onClick={() => actions.approve.mutate(row.id)}>
-                  Setujui
-                </Button>
-                <Button size="small" onClick={() => {
-                  const note = window.prompt('Catatan revisi');
-                  if (note && note.trim().length >= 3) {
-                    actions.revise.mutate({ id: row.id, note: note.trim() });
-                  }
-                }}>
-                  Revisi
-                </Button>
-                <Button size="small" danger onClick={() => actions.reject.mutate(row.id)}>
-                  Tolak
-                </Button>
-              </Space>
+              <Tooltip title="Pratinjau">
+                <Button
+                  type="link"
+                  icon={<EyeOutlined />}
+                  onClick={() => setProposal(row)}
+                />
+              </Tooltip>
             ),
           },
         ]}
@@ -250,6 +268,19 @@ export function LayananPage() {
           </Form.Item>
         </Form>
       </Modal>
+      <LayananProposalDrawer
+        proposal={proposal}
+        existingLayanan={
+          proposal?.layanan_id
+            ? (list.data ?? []).find((item) => item.id === proposal.layanan_id) ?? null
+            : null
+        }
+        regionName={regionName}
+        onClose={() => setProposal(null)}
+        onApprove={(id) => actions.approve.mutateAsync(id)}
+        onRevise={(id, note) => actions.revise.mutateAsync({ id, note })}
+        onReject={(id, reason) => actions.reject.mutateAsync({ id, reason })}
+      />
     </>
   );
 }

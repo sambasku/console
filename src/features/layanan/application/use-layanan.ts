@@ -9,6 +9,7 @@ import {
   setLayananPublished,
   updateAdminLayanan,
   type LayananInput,
+  type LayananRejectReasonCode,
 } from '../infrastructure/layanan-api';
 
 const key = ['layanan'] as const;
@@ -39,7 +40,16 @@ export function useLayananMutations() {
       onSuccess: refresh,
     }),
     approve: useMutation({ mutationFn: approveLayananContribution, onSuccess: refresh }),
-    reject: useMutation({ mutationFn: rejectLayananContribution, onSuccess: refresh }),
+    reject: useMutation({
+      mutationFn: ({
+        id,
+        reason,
+      }: {
+        id: string;
+        reason?: { reason_code: LayananRejectReasonCode; reason_text?: string };
+      }) => rejectLayananContribution(id, reason),
+      onSuccess: refresh,
+    }),
     revise: useMutation({
       mutationFn: ({ id, note }: { id: string; note: string }) => reviseLayananContribution(id, note),
       onSuccess: refresh,

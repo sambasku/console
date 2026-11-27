@@ -9,6 +9,7 @@ import {
   setKaryaPublished,
   updateAdminKarya,
   type KaryaInput,
+  type KaryaRejectReasonCode,
 } from '../infrastructure/karya-api';
 
 const key = ['karya'] as const;
@@ -39,7 +40,16 @@ export function useKaryaMutations() {
       onSuccess: refresh,
     }),
     approve: useMutation({ mutationFn: approveKaryaContribution, onSuccess: refresh }),
-    reject: useMutation({ mutationFn: rejectKaryaContribution, onSuccess: refresh }),
+    reject: useMutation({
+      mutationFn: ({
+        id,
+        reason,
+      }: {
+        id: string;
+        reason?: { reason_code: KaryaRejectReasonCode; reason_text?: string };
+      }) => rejectKaryaContribution(id, reason),
+      onSuccess: refresh,
+    }),
     revise: useMutation({
       mutationFn: ({ id, note }: { id: string; note: string }) => reviseKaryaContribution(id, note),
       onSuccess: refresh,

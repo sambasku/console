@@ -1,4 +1,4 @@
-export type ProfileCoverVariant = 'tab' | 'public' | 'wotd';
+export type ProfileCoverVariant = 'tab' | 'public' | 'wotd' | 'layanan';
 
 export interface ProfileCover {
   id: string;
@@ -36,5 +36,11 @@ export const PROFILE_COVER_SPECS: Record<
     label: 'Kata Hari Ini (kartu Home)',
     // Rasio ~5.86:1 = kartu beranda mobile (BoxFit.cover, tinggi ikut konten teks).
     aspect: 1032 / 176,
+  },
+  layanan: {
+    width: 1032,
+    height: 534,
+    label: 'Detail Layanan Publik',
+    aspect: 1032 / 534,
   },
 };
