@@ -5,6 +5,13 @@ export type AdminVoteTargetType =
   | 'pronunciation'
   | 'word_image'
   | 'comment'
+  | 'article_comment'
+  | 'jinye_comment'
+  | 'place_comment'
+  | 'usaha_comment'
+  | 'cuisine_comment'
+  | 'event_comment'
+  | 'karya_comment'
   | 'discussion_reply'
   | 'discussion'
   | 'pantun'
@@ -41,7 +48,14 @@ export const TARGET_TYPE_LABELS: Record<AdminVoteTargetType, string> = {
   example: 'Contoh',
   pronunciation: 'Pelafalan',
   word_image: 'Gambar Kata',
-  comment: 'Komentar',
+  comment: 'Komentar Kata',
+  article_comment: 'Komentar Artikel',
+  jinye_comment: 'Komentar Jinye',
+  place_comment: 'Komentar Wisata',
+  usaha_comment: 'Komentar Usaha',
+  cuisine_comment: 'Komentar Kuliner',
+  event_comment: 'Komentar Acara',
+  karya_comment: 'Komentar Karya',
   discussion_reply: 'Balasan Diskusi',
   discussion: 'Pertanyaan Diskusi',
   pantun: 'Pantun',
@@ -55,6 +69,13 @@ export const TARGET_TYPE_TAG_COLOR: Record<AdminVoteTargetType, string> = {
   pronunciation: 'orange',
   word_image: 'cyan',
   comment: 'green',
+  article_comment: 'green',
+  jinye_comment: 'green',
+  place_comment: 'green',
+  usaha_comment: 'green',
+  cuisine_comment: 'green',
+  event_comment: 'green',
+  karya_comment: 'green',
   discussion_reply: 'magenta',
   discussion: 'volcano',
   pantun: 'gold',
