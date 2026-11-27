@@ -24,6 +24,8 @@ import { SearchMissesPage } from '@/features/search-miss/presentation/search-mis
 import { VoteModerationPage } from '@/features/vote-moderation/presentation/vote-moderation-page';
 import { WordSuggestionsPage } from '@/features/word-suggestions/presentation/word-suggestions-page';
 import { WordSuggestionDetailPage } from '@/features/word-suggestions/presentation/word-suggestion-detail-page';
+import { LemmaMergesPage } from '@/features/lemma-merges/presentation/lemma-merges-page';
+import { LemmaMergeDetailPage } from '@/features/lemma-merges/presentation/lemma-merge-detail-page';
 import { AuditLogsPage } from '@/features/audit/presentation/audit-logs-page';
 import { BugReportsPage } from '@/features/bug-reports/presentation/bug-reports-page';
 import { WordReportsPage } from '@/features/word-reports/presentation/word-reports-page';
@@ -41,6 +43,8 @@ import { NotificationTemplatesPage } from '@/features/notification-campaigns/pre
 import { AnnouncementsPage } from '@/features/announcements/presentation/announcements-page';
 import { AchievementsPage } from '@/features/achievements/presentation/achievements-page';
 import { StickersPage } from '@/features/stickers/presentation/stickers-page';
+import { ProfileCoversPage } from '@/features/profile-covers/presentation/profile-covers-page';
+import { WordOfDayManagePage } from '@/features/word-of-day/presentation/word-of-day-manage-page';
 import { CategoriesPage } from '@/features/categories/presentation/categories-page';
 import { PlacesPage } from '@/features/places/presentation/places-page';
 import { PlaceViewsPage } from '@/features/places/presentation/place-views-page';
@@ -49,7 +53,9 @@ import { EventsPage } from '@/features/events/presentation/events-page';
 import { UsahaPage } from '@/features/usaha/presentation/usaha-page';
 import { UsahaViewsPage } from '@/features/usaha/presentation/usaha-views-page';
 import { LayananPage } from '@/features/layanan/presentation/layanan-page';
+import { LayananViewsPage } from '@/features/layanan/presentation/layanan-views-page';
 import { KaryaPage } from '@/features/karya/presentation/karya-page';
+import { KaryaViewsPage } from '@/features/karya/presentation/karya-views-page';
 import { BalehoPage } from '@/features/baleho/presentation/baleho-page';
 import { LeaderboardExclusionsPage } from '@/features/leaderboard/presentation/leaderboard-exclusions-page';
 import { UsahaClaimsPage } from '@/features/usaha/presentation/usaha-claims-page';
@@ -59,6 +65,7 @@ import { CulinaryPage } from '@/features/culinary/presentation/culinary-page';
 import { CulinaryViewsPage } from '@/features/culinary/presentation/culinary-views-page';
 import { CulinaryClaimsPage } from '@/features/culinary/presentation/culinary-claims-page';
 import { CulinaryReportsPage } from '@/features/culinary/presentation/culinary-reports-page';
+import { CommunityPage } from '@/features/community/presentation/community-page';
 import { PantunModerationPage } from '@/features/pantun/presentation/pantun-moderation-page';
 import { PantunReportsPage } from '@/features/pantun-reports/presentation/pantun-reports-page';
 import { JinyeModerationPage } from '@/features/jinye/presentation/jinye-moderation-page';
@@ -276,6 +283,18 @@ const wordSuggestionDetailRoute = createRoute({
   component: WordSuggestionDetailPage,
 });
 
+const lemmaMergesRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/lemma-merges',
+  component: LemmaMergesPage,
+});
+
+const lemmaMergeDetailRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/lemma-merges/$id',
+  component: LemmaMergeDetailPage,
+});
+
 const auditLogsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/audit-logs',
@@ -387,6 +406,18 @@ const stickersRoute = createRoute({
   component: StickersPage,
 });
 
+const profileCoversRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/profile-covers',
+  component: ProfileCoversPage,
+});
+
+const wordOfDayManageRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/word-of-day',
+  component: WordOfDayManagePage,
+});
+
 const categoriesRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/categories',
@@ -441,6 +472,18 @@ const layananRoute = createRoute({
   component: LayananPage,
 });
 
+const karyaViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/karya/views',
+  component: KaryaViewsPage,
+});
+
+const layananViewsRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/layanan/views',
+  component: LayananViewsPage,
+});
+
 const karyaRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/karya',
@@ -481,6 +524,12 @@ const culinaryRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/culinary',
   component: CulinaryPage,
+});
+
+const communityRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/community',
+  component: CommunityPage,
 });
 
 const culinaryViewsRoute = createRoute({
@@ -680,6 +729,8 @@ const routeTree = rootRoute.addChildren([
     voteModerationRoute,
     wordSuggestionsRoute,
     wordSuggestionDetailRoute,
+    lemmaMergesRoute,
+    lemmaMergeDetailRoute,
     wordReportsRoute,
     wordReportDetailRoute,
     auditLogsRoute,
@@ -696,6 +747,8 @@ const routeTree = rootRoute.addChildren([
     announcementsRoute,
     achievementsRoute,
     stickersRoute,
+    profileCoversRoute,
+    wordOfDayManageRoute,
     categoriesRoute,
     regionsRoute,
     placesRoute,
@@ -705,12 +758,15 @@ const routeTree = rootRoute.addChildren([
   usahaViewsRoute,
   layananRoute,
   karyaRoute,
+  karyaViewsRoute,
+  layananViewsRoute,
   balehoRoute,
   leaderboardExclusionsRoute,
   usahaClaimsRoute,
   usahaReportsRoute,
   usahaCategoriesRoute,
   culinaryRoute,
+  communityRoute,
   culinaryViewsRoute,
   culinaryClaimsRoute,
   culinaryReportsRoute,

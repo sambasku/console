@@ -26,6 +26,7 @@ export interface AdminUserListItem {
   isTeam: boolean;
   teamAs: string | null;
   teamNote: string | null;
+  teamSortOrder: number | null;
   isSponsor: boolean;
   createdAt: string;
   updatedAt: string | null;

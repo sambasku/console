@@ -19,6 +19,7 @@ interface AchievementWire {
   category: AchievementCategory;
   reward_type: RewardType;
   badge_url: string | null;
+  badge_asset_kind?: 'image' | 'lottie';
   criteria: AchievementCriteria;
   family: string | null;
   level: number | null;
@@ -37,6 +38,7 @@ function mapAchievement(w: AchievementWire): Achievement {
     category: w.category,
     rewardType: w.reward_type,
     badgeUrl: w.badge_url,
+    badgeAssetKind: w.badge_asset_kind ?? 'image',
     criteria: w.criteria,
     family: w.family ?? null,
     level: w.level ?? null,

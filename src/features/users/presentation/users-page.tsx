@@ -11,6 +11,7 @@ import {
   Flex,
   Form,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Result,
@@ -71,7 +72,11 @@ export function UsersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [pendingRoles, setPendingRoles] = useState<PendingRoleMap>({});
   const [teamModalUser, setTeamModalUser] = useState<AdminUserListItem | null>(null);
-  const [teamForm] = Form.useForm<{ team_note: string }>();
+  const [teamForm] = Form.useForm<{
+    team_as: string;
+    team_note: string;
+    team_sort_order: number | null;
+  }>();
   const q = useDebouncedValue(searchInput, 300);
   const updateRole = useUpdateUserRole();
   const setContribute = useSetCanContribute();
@@ -82,18 +87,25 @@ export function UsersPage() {
 
   const openTeamModal = useCallback((row: AdminUserListItem) => {
     setTeamModalUser(row);
-    teamForm.setFieldsValue({ team_note: row.teamNote ?? '' });
+    teamForm.setFieldsValue({
+      team_as: row.teamAs ?? '',
+      team_note: row.teamNote ?? '',
+      team_sort_order: row.teamSortOrder ?? null,
+    });
   }, [teamForm]);
 
   const saveTeamModal = useCallback(async () => {
     if (!teamModalUser) return;
     const values = await teamForm.validateFields();
+    const teamAs = values.team_as.trim();
     const note = values.team_note.trim();
     await updateTeam.mutateAsync({
       id: teamModalUser.id,
       username: teamModalUser.username,
       is_team: true,
+      team_as: teamAs.length > 0 ? teamAs : null,
       team_note: note.length > 0 ? note : null,
+      team_sort_order: values.team_sort_order ?? null,
     });
     setTeamModalUser(null);
   }, [teamForm, teamModalUser, updateTeam]);
@@ -317,7 +329,7 @@ export function UsersPage() {
         size: 140,
         cell: (info) => {
           const row = info.row.original;
-          const tip = row.teamNote || 'Subtitle Tim Inti (bukan role)';
+          const tip = [row.teamAs, row.teamNote].filter(Boolean).join(' · ') || 'Atur Tim Kami';
           return (
             <Space size={4}>
               <Tooltip title={tip}>
@@ -592,12 +604,31 @@ export function UsersPage() {
       >
         <Form form={teamForm} layout="vertical">
           <Form.Item
+            name="team_as"
+            label="Peran singkat"
+            extra="Satu baris di bawah nama, mis. Developer."
+            rules={[{ max: 200, message: 'Maksimal 200 karakter' }]}
+          >
+            <Input placeholder="Developer" maxLength={200} autoFocus />
+          </Form.Item>
+          <Form.Item
+            name="team_sort_order"
+            label="Urutan tampil"
+            extra="Angka lebih kecil tampil lebih dulu. Kosongkan bila tidak perlu urutan khusus."
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="Kosong = null" />
+          </Form.Item>
+          <Form.Item
             name="team_note"
-            label="Keterangan"
-            extra="Tampil sebagai subtitle di Tim Inti, mis. Main developer. Bukan role akun."
+            label="Kontribusi"
+            extra="Maksimal 5 baris (satu poin per baris): apa yang dikerjakan untuk SambasKu."
             rules={[{ max: 2000, message: 'Maksimal 2000 karakter' }]}
           >
-            <Input placeholder="Main developer" maxLength={2000} autoFocus />
+            <Input.TextArea
+              placeholder={"Mis.:\nMerawat API kamus\nReview kontribusi kata"}
+              maxLength={2000}
+              rows={5}
+            />
           </Form.Item>
         </Form>
       </Modal>

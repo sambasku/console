@@ -22,6 +22,7 @@ export interface AdminUserWire {
   is_team?: boolean;
   team_as?: string | null;
   team_note?: string | null;
+  team_sort_order?: number | null;
   is_sponsor?: boolean;
   /** OTP verifikasi terakhir; null = tidak ada OTP tertunda. */
   otp?: { created_at: string; expires_at: string } | null;
@@ -102,7 +103,12 @@ export async function setUserActiveRequest(id: string, isActive: boolean): Promi
 
 export async function updateUserTeamRequest(
   id: string,
-  body: { is_team?: boolean; team_as?: string | null; team_note?: string | null },
+  body: {
+    is_team?: boolean;
+    team_as?: string | null;
+    team_note?: string | null;
+    team_sort_order?: number | null;
+  },
 ): Promise<AdminUserWire> {
   const res = await client.patch<{ success: true; data: AdminUserWire }>(
     `/admin/users/${id}/team`,

@@ -474,7 +474,7 @@ export function PlaceDrawer({
             Foto
           </Typography.Title>
           <Form.Item name="images">
-            <PlaceImagesField />
+            <PlaceImagesField entityId={editing?.id} />
           </Form.Item>
         </div>
       </Form>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   App as AntdApp,
   Button,
@@ -6,7 +6,6 @@ import {
   Drawer,
   Flex,
   Form,
-  Image,
   Input,
   InputNumber,
   Select,
@@ -15,7 +14,16 @@ import {
 } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { normalizeError } from '@/shared/api/error';
-import { uploadImageToCdn } from '@/shared/api/image-upload';
+import {
+  isLottieAssetFile,
+  uploadAchievementAssetToCdn,
+  uploadAchievementLottieToGithub,
+} from '@/shared/api/achievement-asset-upload';
+import {
+  AchievementAssetPreview,
+  isLottieBadgeUrl,
+  type BadgeAssetKind,
+} from './achievement-asset-preview';
 import {
   ACHIEVEMENT_CATEGORY_LABELS,
   REWARD_TYPE_LABELS,
@@ -31,6 +39,7 @@ interface FormValues {
   category: AchievementCategory;
   reward_type: RewardType;
   badge_url: string;
+  badge_asset_kind: BadgeAssetKind;
   source: string;
   threshold: number | null;
   window_from?: Dayjs | null;
@@ -154,6 +163,26 @@ function fromIso(value: string): Dayjs | undefined {
   return parsed.isValid() ? parsed : undefined;
 }
 
+const ACHIEVEMENT_ASSET_ACCEPT_IMAGE =
+  'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp';
+
+/** macOS sering kosongkan MIME .lottie; sertakan zip/octet-stream agar dialog file tetap menampilkan file. */
+const ACHIEVEMENT_ASSET_ACCEPT_LOTTIE =
+  '.json,.lottie,application/json,text/json,application/zip,application/octet-stream';
+
+const ACHIEVEMENT_FORM_DEFAULTS: Partial<FormValues> = {
+  category: 'kohort',
+  reward_type: 'profile_border',
+  badge_asset_kind: 'image',
+  source: 'registration',
+  threshold: null,
+  filter_entity_type: null,
+  filter_role_in: null,
+  family: '',
+  level: null,
+  is_active: true,
+};
+
 /** Drawer buat/edit pencapaian. Kriteria = source + window + threshold. */
 export function AchievementDrawer({
   open,
@@ -161,11 +190,17 @@ export function AchievementDrawer({
   onSaved,
   editing,
   submit,
+  patchBadge,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
   editing: Achievement | null;
+  /** Saat edit: simpan badge_url/kind langsung ke API setelah unggah. */
+  patchBadge?: (
+    id: string,
+    body: { badge_url: string; badge_asset_kind: BadgeAssetKind },
+  ) => Promise<unknown>;
   submit: (values: {
     code: string;
     title: string;
@@ -173,6 +208,7 @@ export function AchievementDrawer({
     category: AchievementCategory;
     reward_type: RewardType;
     badge_url: string | null;
+    badge_asset_kind: BadgeAssetKind;
     criteria: {
       source: string;
       threshold?: number | null;
@@ -188,8 +224,23 @@ export function AchievementDrawer({
   const [form] = Form.useForm<FormValues>();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [localPreviewFile, setLocalPreviewFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const localPreviewUrlRef = useRef<string | null>(null);
   const source = Form.useWatch('source', form);
   const badgeUrl = Form.useWatch('badge_url', form);
+  const badgeAssetKind = Form.useWatch('badge_asset_kind', form) ?? 'image';
+  const rewardType = Form.useWatch('reward_type', form);
+
+  useEffect(() => {
+    if (open) return;
+    if (localPreviewUrlRef.current) {
+      URL.revokeObjectURL(localPreviewUrlRef.current);
+      localPreviewUrlRef.current = null;
+    }
+    setLocalPreviewFile(null);
+    setLocalPreviewUrl(null);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -203,6 +254,7 @@ export function AchievementDrawer({
             category: editing.category,
             reward_type: editing.rewardType,
             badge_url: editing.badgeUrl ?? '',
+            badge_asset_kind: editing.badgeAssetKind ?? 'image',
             source: criteria?.source ?? 'registration',
             threshold: criteria?.threshold ?? null,
             window_from: criteria?.window?.from ? fromIso(criteria.window.from) : undefined,
@@ -217,58 +269,76 @@ export function AchievementDrawer({
             code: '',
             title: '',
             description: '',
-            category: 'kohort',
-            reward_type: 'profile_border',
             badge_url: '',
-            source: 'registration',
-            threshold: null,
             window_from: undefined,
             window_to: undefined,
-            filter_entity_type: null,
-            filter_role_in: null,
-            family: '',
-            level: null,
-            is_active: true,
+            ...ACHIEVEMENT_FORM_DEFAULTS,
           },
     );
   }, [open, editing, form]);
 
+  useEffect(() => {
+    if (rewardType && rewardType !== 'profile_border') {
+      form.setFieldValue('badge_asset_kind', 'image');
+    }
+  }, [rewardType, form]);
+
+  useEffect(() => {
+    if (!open) return;
+    const u = badgeUrl?.trim();
+    if (rewardType !== 'profile_border' || !u) return;
+    if (isLottieBadgeUrl(u)) {
+      form.setFieldValue('badge_asset_kind', 'lottie');
+    }
+  }, [badgeUrl, rewardType, open, form]);
+
   const handleFinish = async (values: FormValues) => {
     setSaving(true);
     try {
-      const meta = sourceMeta(values.source);
+      // Field disabled (mis. `code` saat edit) tidak masuk `values` onFinish.
+      const fields = { ...form.getFieldsValue(true), ...values } as FormValues;
+      const meta = sourceMeta(fields.source);
       const needsWindow = meta?.supportsWindow === true;
       const needsThreshold = meta?.supportsThreshold === true;
-      const hasWindow = needsWindow && values.window_from && values.window_to;
+      const hasWindow = needsWindow && fields.window_from && fields.window_to;
       const filters: Record<string, string> = {};
-      if (meta?.filterFields?.some((f) => f.key === 'entity_type') && values.filter_entity_type) {
-        filters.entity_type = values.filter_entity_type;
+      if (meta?.filterFields?.some((f) => f.key === 'entity_type') && fields.filter_entity_type) {
+        filters.entity_type = fields.filter_entity_type;
       }
       if (meta?.filterFields?.some((f) => f.key === 'role_in')) {
-        const roles = (values.filter_role_in ?? []).map((r) => r.trim()).filter(Boolean);
+        const roles = (fields.filter_role_in ?? []).map((r) => r.trim()).filter(Boolean);
         if (roles.length > 0) {
           filters.role_in = roles.join(',');
         }
       }
+      const badgeUrlTrimmed = fields.badge_url?.trim() || null;
+      const badgeAssetKindForWire: BadgeAssetKind =
+        fields.reward_type === 'profile_border' &&
+        badgeUrlTrimmed &&
+        isLottieBadgeUrl(badgeUrlTrimmed)
+          ? 'lottie'
+          : (fields.badge_asset_kind ?? 'image');
+
       await submit({
-        code: values.code.trim(),
-        title: values.title.trim(),
-        description: values.description.trim(),
-        category: values.category,
-        reward_type: values.reward_type,
-        badge_url: values.badge_url?.trim() || null,
+        code: (editing?.code ?? fields.code ?? '').trim(),
+        title: fields.title.trim(),
+        description: fields.description.trim(),
+        category: fields.category,
+        reward_type: fields.reward_type,
+        badge_url: badgeUrlTrimmed,
+        badge_asset_kind: badgeAssetKindForWire,
         criteria: {
-          source: values.source,
+          source: fields.source,
           // Jangan kirim threshold/window bila source tidak support - API menolak.
-          threshold: needsThreshold ? (values.threshold ?? null) : null,
+          threshold: needsThreshold ? (fields.threshold ?? null) : null,
           window: hasWindow
-            ? { from: toIsoWithOffset(values.window_from!), to: toIsoWithOffset(values.window_to!) }
+            ? { from: toIsoWithOffset(fields.window_from!), to: toIsoWithOffset(fields.window_to!) }
             : null,
           filters: Object.keys(filters).length > 0 ? filters : null,
         },
-        family: values.family?.trim() || null,
-        level: values.level ?? null,
-        is_active: values.is_active,
+        family: fields.family?.trim() || null,
+        level: fields.level ?? null,
+        is_active: fields.is_active,
       });
       message.success(editing ? 'Pencapaian diperbarui' : 'Pencapaian dibuat');
       onSaved();
@@ -287,7 +357,12 @@ export function AchievementDrawer({
       onClose={onClose}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        initialValues={ACHIEVEMENT_FORM_DEFAULTS}
+      >
         <Form.Item
           name="code"
           label="Kode"
@@ -333,30 +408,97 @@ export function AchievementDrawer({
           />
         </Form.Item>
         <Form.Item
+          name="badge_asset_kind"
+          label="Jenis aset"
+          extra="Lottie untuk border animasi (.json atau .lottie). Badge/stiker tetap gambar."
+          rules={[{ required: true }]}
+        >
+          <Select
+            options={[
+              { value: 'image', label: 'Gambar (PNG/WebP)' },
+              { value: 'lottie', label: 'Lottie animasi' },
+            ]}
+            disabled={rewardType !== 'profile_border'}
+          />
+        </Form.Item>
+        <Form.Item
           name="badge_url"
           label="URL aset (opsional)"
-          extra="Tempel URL, atau unggah gambar dari komputer. Aset tersimpan di CDN gambar."
+          extra="Border Lottie: unggah .json Bodymovin atau .lottie (jsDelivr). PNG tetap ImageKit. Setelah unggah, edit otomatis tersimpan ke pencapaian."
         >
           <Input placeholder="https://cdn.jsdelivr.net/gh/sambasku/images@main/assets/achievements/..." />
         </Form.Item>
-        <Form.Item label="Unggah gambar" extra="PNG/JPEG/WebP untuk bingkai. Maks 2 MB.">
+        <Form.Item
+          label="Unggah aset"
+          extra={
+            badgeAssetKind === 'lottie'
+              ? 'JSON atau .lottie diunggah ke repo GitHub (jsDelivr). Maks 2 MB. PNG tetap ImageKit.'
+              : 'PNG/JPEG/WebP. Maks 2 MB.'
+          }
+        >
           <input
+            key="achievement-asset-file"
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept={
+              rewardType === 'profile_border'
+                ? `${ACHIEVEMENT_ASSET_ACCEPT_IMAGE},${ACHIEVEMENT_ASSET_ACCEPT_LOTTIE}`
+                : ACHIEVEMENT_ASSET_ACCEPT_IMAGE
+            }
             style={{ display: 'block' }}
             onChange={async (e) => {
               const file = e.target.files?.[0];
               e.target.value = '';
               if (!file) return;
-              if (file.size > 2 * 1024 * 1024) {
-                message.error('Ukuran gambar maksimal 2 MB');
+
+              const fileIsLottie = await isLottieAssetFile(file);
+              if (fileIsLottie && rewardType !== 'profile_border') {
+                message.error('Lottie hanya untuk reward border profil');
                 return;
               }
+              const uploadKind: BadgeAssetKind =
+                rewardType === 'profile_border' && fileIsLottie ? 'lottie' : 'image';
+              if (uploadKind === 'lottie') {
+                form.setFieldsValue({ badge_asset_kind: 'lottie' });
+              }
+              if (localPreviewUrlRef.current) {
+                URL.revokeObjectURL(localPreviewUrlRef.current);
+              }
+              const blobUrl = URL.createObjectURL(file);
+              localPreviewUrlRef.current = blobUrl;
+              setLocalPreviewFile(file);
+              setLocalPreviewUrl(blobUrl);
+
               setUploading(true);
               try {
-                const { url } = await uploadImageToCdn(file, '/achievements');
-                form.setFieldValue('badge_url', url);
-                message.success('Gambar terunggah');
+                const { url } =
+                  uploadKind === 'lottie'
+                    ? await uploadAchievementLottieToGithub(file)
+                    : await uploadAchievementAssetToCdn(file, '/achievements', 'image');
+                form.setFieldsValue({
+                  badge_url: url,
+                  badge_asset_kind: uploadKind,
+                });
+                if (editing && patchBadge) {
+                  await patchBadge(editing.id, {
+                    badge_url: url,
+                    badge_asset_kind: uploadKind,
+                  });
+                }
+                if (localPreviewUrlRef.current) {
+                  URL.revokeObjectURL(localPreviewUrlRef.current);
+                  localPreviewUrlRef.current = null;
+                }
+                setLocalPreviewFile(null);
+                setLocalPreviewUrl(null);
+                message.success(
+                  editing
+                    ? uploadKind === 'lottie'
+                      ? 'Lottie terunggah dan pencapaian diperbarui'
+                      : 'Gambar terunggah dan pencapaian diperbarui'
+                    : uploadKind === 'lottie'
+                      ? 'Lottie tersimpan di repo GitHub (jsDelivr) - klik Buat untuk menyimpan'
+                      : 'Gambar terunggah ke ImageKit - klik Buat untuk menyimpan',
+                );
               } catch (err) {
                 message.error(normalizeError(err).message);
               } finally {
@@ -366,9 +508,28 @@ export function AchievementDrawer({
           />
           {uploading ? <Typography.Text type="secondary">Mengunggah...</Typography.Text> : null}
         </Form.Item>
-        {badgeUrl ? (
-          <Form.Item label="Pratinjau">
-            <Image src={badgeUrl} width={120} height={120} style={{ objectFit: 'contain' }} />
+        {badgeUrl || localPreviewUrl ? (
+          <Form.Item
+            label="Pratinjau"
+            extra={
+              localPreviewUrl && !badgeUrl
+                ? 'Pratinjau lokal - selesai unggah untuk URL jsDelivr.'
+                : undefined
+            }
+          >
+            <AchievementAssetPreview
+              url={localPreviewUrl ?? badgeUrl ?? ''}
+              assetKind={
+                localPreviewFile &&
+                (badgeAssetKind === 'lottie' ||
+                  localPreviewFile.name.toLowerCase().endsWith('.json') ||
+                  localPreviewFile.name.toLowerCase().endsWith('.lottie'))
+                  ? 'lottie'
+                  : badgeAssetKind
+              }
+              fileName={localPreviewFile?.name}
+              size={120}
+            />
           </Form.Item>
         ) : null}
         <Typography.Title level={5}>Kriteria</Typography.Title>
@@ -484,7 +645,7 @@ export function AchievementDrawer({
 
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>Batal</Button>
-          <Button type="primary" htmlType="submit" loading={saving}>
+          <Button type="primary" htmlType="submit" loading={saving} disabled={uploading}>
             {editing ? 'Simpan' : 'Buat'}
           </Button>
         </Flex>

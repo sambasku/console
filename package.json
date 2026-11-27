@@ -23,12 +23,15 @@
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
     "@ant-design/plots": "2.6.8",
+    "@lottiefiles/dotlottie-react": "^0.22.3",
     "@tanstack/react-query": "^5.104.5",
     "@tanstack/react-router": "^1.170.45",
     "@tanstack/react-table": "^9.3.1",
     "antd": "^6.6.7",
+    "antd-img-crop": "^4.30.0",
     "axios": "^1.20.0",
     "dayjs": "^1.11.23",
+    "lottie-react": "^3.1.2",
     "maplibre-gl": "^6.15.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

@@ -132,11 +132,13 @@ export function useUpdateUserTeam() {
       is_team?: boolean;
       team_as?: string | null;
       team_note?: string | null;
+      team_sort_order?: number | null;
     }) =>
       updateUserTeamRequest(vars.id, {
         is_team: vars.is_team,
         team_as: vars.team_as,
         team_note: vars.team_note,
+        team_sort_order: vars.team_sort_order,
       }),
     onSuccess: async (_, vars) => {
       await queryClient.invalidateQueries({ queryKey: ['admin-users'] });

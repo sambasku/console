@@ -40,6 +40,7 @@ export interface LayananContributionWire {
   kind: 'new' | 'edit';
   status: string;
   username: string | null;
+  layanan_id: string | null;
   payload: LayananInput & {
     village_id?: string | null;
     lat?: number | null;
@@ -47,7 +48,25 @@ export interface LayananContributionWire {
     maps_url?: string | null;
   };
   revision_note: string | null;
+  reject_reason_code?: string | null;
+  created_at?: string;
 }
+
+export type LayananRejectReasonCode =
+  | 'invalid_phone'
+  | 'wrong_region'
+  | 'duplicate'
+  | 'other';
+
+export const LAYANAN_REJECT_REASON_OPTIONS: Array<{
+  code: LayananRejectReasonCode;
+  label: string;
+}> = [
+  { code: 'invalid_phone', label: 'Nomor telepon tidak valid atau tidak bisa dihubungi' },
+  { code: 'wrong_region', label: 'Wilayah atau alamat tidak sesuai' },
+  { code: 'duplicate', label: 'Sama dengan layanan yang sudah tercatat' },
+  { code: 'other', label: 'Lainnya' },
+];
 
 export async function listAdminLayanan(signal?: AbortSignal): Promise<LayananWire[]> {
   const res = await client.get<{ success: true; data: { items: LayananWire[] } }>(
@@ -84,10 +103,73 @@ export async function approveLayananContribution(id: string): Promise<void> {
   await client.post(`/admin/layanan-contributions/${id}/approve`);
 }
 
-export async function rejectLayananContribution(id: string): Promise<void> {
-  await client.post(`/admin/layanan-contributions/${id}/reject`, { reason_code: 'other' });
+export async function rejectLayananContribution(
+  id: string,
+  reason: { reason_code: LayananRejectReasonCode; reason_text?: string } = {
+    reason_code: 'other',
+  },
+): Promise<void> {
+  await client.post(`/admin/layanan-contributions/${id}/reject`, reason);
 }
 
 export async function reviseLayananContribution(id: string, note: string): Promise<void> {
   await client.post(`/admin/layanan-contributions/${id}/request-revision`, { note });
+}
+
+/** Total view per layanan_id. `days` undefined = semua waktu. */
+export async function listLayananViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ layanan_id: string; views: number }> };
+  }>('/admin/layanan/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.layanan_id, i.views]));
+}
+
+export interface LayananViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    layananId: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type LayananViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    layanan_id: string;
+    name: string;
+    slug: string;
+    category: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+export async function getLayananViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<LayananViewsReport> {
+  const res = await client.get<{ success: true; data: LayananViewsReportWire }>(
+    '/admin/layanan/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      layananId: i.layanan_id,
+      name: i.name,
+      slug: i.slug,
+      category: i.category,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
 }

@@ -9,6 +9,7 @@ import {
   CommentOutlined,
   DashboardOutlined,
   EditOutlined,
+  MergeCellsOutlined,
   EnvironmentOutlined,
   FileTextOutlined,
   FlagOutlined,
@@ -34,6 +35,7 @@ UserOutlined,
   FileProtectOutlined,
   ApiOutlined,
   AppstoreOutlined,
+  PictureOutlined,
   CloudServerOutlined,
   CloudUploadOutlined,
   CompassOutlined,
@@ -69,17 +71,21 @@ const ANALYTICS_ROUTES = {
   '/usaha/views': { icon: <ShopOutlined />, label: 'Usaha' },
   '/culinary/views': { icon: <CoffeeOutlined />, label: 'Kuliner' },
   '/encyclopedia/views': { icon: <ReadOutlined />, label: 'Ensiklopedia' },
+  '/karya/views': { icon: <PlayCircleOutlined />, label: 'Karya' },
+  '/layanan/views': { icon: <PhoneOutlined />, label: 'Layanan Publik' },
 } as const;
 
 /** Leaf routes di bawah grup Kamus - selectedKeys + auto-expand parent. */
 const KAMUS_ROUTES = {
   '/words': { icon: <TranslationOutlined />, label: 'Kata' },
+  '/word-of-day': { icon: <CalendarOutlined />, label: 'Kata Hari Ini' },
   '/contributions': { icon: <InboxOutlined />, label: 'Review' },
   '/discussions': { icon: <MessageOutlined />, label: 'Diskusi' },
   '/jinye': { icon: <MessageOutlined />, label: 'Jinye' },
   '/jinye-reports': { icon: <WarningOutlined />, label: 'Laporan Jinye' },
   '/translations': { icon: <TranslationOutlined />, label: 'Usulan terjemahan' },
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
+  '/lemma-merges': { icon: <MergeCellsOutlined />, label: 'Gabung kata' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
   '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
   '/comment-blocklist': { icon: <StopOutlined />, label: 'Blocklist' },
@@ -109,6 +115,7 @@ const EKSPLORASI_ROUTES = {
   '/usaha-claims': { icon: <KeyOutlined />, label: 'Klaim usaha' },
   '/usaha-reports': { icon: <WarningOutlined />, label: 'Laporan usaha' },
   '/culinary': { icon: <CoffeeOutlined />, label: 'Kuliner' },
+  '/community': { icon: <TeamOutlined />, label: 'Komunitas' },
   '/culinary-categories': { icon: <AppstoreOutlined />, label: 'Kategori kuliner' },
   '/culinary-claims': { icon: <KeyOutlined />, label: 'Klaim kuliner' },
   '/culinary-reports': { icon: <WarningOutlined />, label: 'Laporan kuliner' },
@@ -146,6 +153,7 @@ type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
   | '/achievements'
   | '/stickers'
+  | '/profile-covers'
   | '/users'
   | '/sponsorships'
   | '/audit-logs'
@@ -172,12 +180,14 @@ const SYSTEM_GROUP_KEY = 'system';
 const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Analitik',
   words: 'Kata',
+  'word-of-day': 'Kata Hari Ini',
   contributions: 'Review',
   'discussions': 'Ruang Diskusi',
   jinye: 'Jinye',
   'jinye-reports': 'Laporan Jinye',
   translations: 'Usulan terjemahan',
   'word-suggestions': 'Usul Edit',
+  'lemma-merges': 'Gabung kata',
   'word-reports': 'Laporan Entri',
   comments: 'Komentar',
   'comment-blocklist': 'Blocklist',
@@ -193,6 +203,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
   stickers: 'Stiker',
+  'profile-covers': 'Cover Profil',
   encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
   regions: 'Wilayah',
@@ -273,6 +284,7 @@ export function ConsoleLayout() {
           ? canModerateContent || user?.role === 'editor'
           : key === '/vote-moderation' ||
               key === '/word-suggestions' ||
+              key === '/lemma-merges' ||
               key === '/jinye' ||
               key === '/jinye-reports' ||
               key === '/translations'
@@ -342,6 +354,7 @@ export function ConsoleLayout() {
     items.push({ key: '/achievements', icon: <TrophyOutlined />, label: 'Pencapaian' });
     // Katalog stiker chat/komentar (beda dari reward achievement).
     items.push({ key: '/stickers', icon: <AppstoreOutlined />, label: 'Stiker' });
+    items.push({ key: '/profile-covers', icon: <PictureOutlined />, label: 'Cover Profil' });
     if (canManageUsers) {
       items.push({ key: '/users', icon: <UserOutlined />, label: 'Pengguna' });
       items.push({

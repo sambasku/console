@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EyeOutlined } from '@ant-design/icons';
 import {
   App as AntdApp,
   Button,
@@ -10,12 +11,18 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
 import { normalizeError } from '@/shared/api/error';
 import { useAdminKarya, useKaryaMutations, useKaryaQueue } from '../application/use-karya';
-import type { KaryaInput, KaryaWire } from '../infrastructure/karya-api';
+import type {
+  KaryaContributionWire,
+  KaryaInput,
+  KaryaWire,
+} from '../infrastructure/karya-api';
+import { KaryaProposalDrawer } from './karya-proposal-drawer';
 
 const KIND_OPTIONS = [
   { value: 'music', label: 'Musik' },
@@ -61,6 +68,7 @@ export function KaryaPage() {
   const actions = useKaryaMutations();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<KaryaWire | null>(null);
+  const [proposal, setProposal] = useState<KaryaContributionWire | null>(null);
   const [form] = Form.useForm<KaryaInput>();
   const kind = Form.useWatch('kind', form);
 
@@ -126,31 +134,33 @@ export function KaryaPage() {
         dataSource={queue.data ?? []}
         pagination={false}
         columns={[
-          { title: 'Jenis', dataIndex: 'kind', width: 90 },
-          { title: 'Pengusul', dataIndex: 'username' },
+          {
+            title: 'Jenis',
+            dataIndex: 'kind',
+            width: 110,
+            render: (v: KaryaContributionWire['kind']) => (
+              <Tag color={v === 'new' ? 'green' : v === 'edit' ? 'blue' : 'purple'}>
+                {v === 'new' ? 'Baru' : v === 'edit' ? 'Suntingan' : 'Kutipan'}
+              </Tag>
+            ),
+          },
+          {
+            title: 'Pengusul',
+            dataIndex: 'username',
+            render: (v: string | null) => v ?? '-',
+          },
           { title: 'Isi', render: (_, row) => payloadTitle(row.payload) },
           {
-            title: '',
+            title: 'Aksi',
+            width: 80,
             render: (_, row) => (
-              <Space>
-                <Button size="small" type="primary" onClick={() => actions.approve.mutate(row.id)}>
-                  Setujui
-                </Button>
+              <Tooltip title="Pratinjau">
                 <Button
-                  size="small"
-                  onClick={() => {
-                    const note = window.prompt('Catatan revisi');
-                    if (note && note.trim().length >= 3) {
-                      actions.revise.mutate({ id: row.id, note: note.trim() });
-                    }
-                  }}
-                >
-                  Revisi
-                </Button>
-                <Button size="small" danger onClick={() => actions.reject.mutate(row.id)}>
-                  Tolak
-                </Button>
-              </Space>
+                  type="link"
+                  icon={<EyeOutlined />}
+                  onClick={() => setProposal(row)}
+                />
+              </Tooltip>
             ),
           },
         ]}
@@ -382,6 +392,9 @@ export function KaryaPage() {
                         options={[
                           { value: 'listen', label: 'Dengar' },
                           { value: 'watch', label: 'Tonton' },
+                          ...(kind === 'film'
+                            ? [{ value: 'trailer' as const, label: 'Trailer' }]
+                            : []),
                           { value: 'buy', label: 'Beli' },
                           { value: 'official', label: 'Resmi' },
                           { value: 'other', label: 'Lainnya' },
@@ -417,6 +430,18 @@ export function KaryaPage() {
           </Form.List>
         </Form>
       </Modal>
+      <KaryaProposalDrawer
+        proposal={proposal}
+        existingKarya={
+          proposal?.karya_id
+            ? (list.data ?? []).find((item) => item.id === proposal.karya_id) ?? null
+            : null
+        }
+        onClose={() => setProposal(null)}
+        onApprove={(id) => actions.approve.mutateAsync(id)}
+        onRevise={(id, note) => actions.revise.mutateAsync({ id, note })}
+        onReject={(id, reason) => actions.reject.mutateAsync({ id, reason })}
+      />
     </>
   );
 }

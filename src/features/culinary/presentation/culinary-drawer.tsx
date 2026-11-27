@@ -16,6 +16,7 @@ import {
 import type { UploadProps } from 'antd';
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
+import { ExplorePhotoModerationActions } from '@/shared/components/explore-photo-censor-button';
 import { useCulinaryCategories } from '../application/use-culinary';
 import type {
   Cuisine,
@@ -76,9 +77,11 @@ function slugify(name: string): string {
 export function CuisineImagesField({
   value = [],
   onChange,
+  entityId,
 }: {
   value?: CuisineInput['images'];
   onChange?: (next: NonNullable<CuisineInput['images']>) => void;
+  entityId?: string;
 }) {
   const { message } = AntdApp.useApp();
   const [uploading, setUploading] = useState(false);
@@ -151,6 +154,13 @@ export function CuisineImagesField({
                 >
                   {img.is_main ? 'Utama' : 'Jadikan utama'}
                 </Button>
+                <ExplorePhotoModerationActions
+                  module="culinary"
+                  entityId={entityId}
+                  imageUrl={img.url}
+                  onCensored={(newUrl) => patch(i, { url: newUrl })}
+                  onTakedown={() => onChange?.(images.filter((_, j) => j !== i))}
+                />
                 <Button
                   size="small"
                   danger
@@ -406,7 +416,7 @@ export function CuisineDrawer({
           name="images"
           extra="Atribusi wajib: nama pemilik dan lisensi. Disimpan dan ditampilkan apa adanya."
         >
-          <CuisineImagesField />
+          <CuisineImagesField entityId={editing?.id} />
         </Form.Item>
       </Form>
     </Drawer>

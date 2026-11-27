@@ -35,6 +35,7 @@ export interface AdminCommentImage {
 export interface AdminCommentItem {
   id: string;
   word_id: string;
+  parent_id?: string | null;
   word_lemma: string | null;
   user_id: string;
   username: string | null;

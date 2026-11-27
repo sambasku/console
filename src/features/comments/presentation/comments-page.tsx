@@ -4,11 +4,12 @@ import { tableFeatureSet } from '../../../shared/components/table-features';
 import {
   CheckOutlined,
   CloseOutlined,
+  EditOutlined,
   EyeOutlined,
   ReloadOutlined,
   StopOutlined,
 } from '@ant-design/icons';
-import { Alert, App as AntdApp, Button, Flex, Image, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { Alert, App as AntdApp, Button, Flex, Image, Modal, Segmented, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
 import { VerifierMark } from '@/shared/components/verifier-mark';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
@@ -22,6 +23,10 @@ import { useTakedownComment } from '../application/use-takedown-comment';
 import { useUncensorComment } from '../application/use-uncensor-comment';
 import { useApproveCommentImage } from '../application/use-approve-comment-image';
 import { useRejectCommentImage } from '../application/use-reject-comment-image';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { censorCommentImageRequest } from '../infrastructure/comment-api';
+import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
+import { ExploreCommentsPanel } from './explore-comments-panel';
 import {
   COMMENT_STATUS_LABELS,
   COMMENT_STATUSES,
@@ -38,16 +43,31 @@ export function CommentsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { message, modal } = AntdApp.useApp();
+  const queryClient = useQueryClient();
+  const [scope, setScope] = useState<'word' | 'explore'>('word');
   const [tab, setTab] = useState<TabKey>('published');
+  const [censorTarget, setCensorTarget] = useState<AdminCommentItem | null>(null);
   const photoPending = tab === 'photo_pending';
   const status = photoPending ? undefined : tab;
+  const canModerate = user?.role === 'reviewer' || user?.role === 'admin' || user?.role === 'root';
 
   const { items, hasMore, loadMore, isLoading, isFetching, isFetchingNextPage, isError, error, refetch } =
     useCommentList({
       status,
       imageStatus: photoPending ? 'pending_review' : undefined,
-      enabled: user?.role === 'reviewer' || user?.role === 'admin' || user?.role === 'root',
+      enabled: canModerate && scope === 'word',
     });
+
+  const censorImageMutation = useMutation({
+    mutationFn: ({ id, blob }: { id: string; blob: Blob }) => censorCommentImageRequest(id, blob),
+    onSuccess: () => {
+      message.success('Foto komentar tersensor disimpan');
+      setCensorTarget(null);
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+      refetch();
+    },
+    onError: (err) => message.error(normalizeError(err).message),
+  });
 
   const takedownMutation = useTakedownComment();
   const uncensorMutation = useUncensorComment();
@@ -241,19 +261,30 @@ export function CommentsPage() {
             const busyRj =
               rejectImageMutation.isPending && rejectImageMutation.variables?.id === item.id;
             const imagePending = item.image?.status === 'pending_review';
+            const imagePublished = item.image?.status === 'published';
+            const hasModerableImage = imagePending || imagePublished;
             return (
               <Flex gap={0}>
                 {imagePending ? (
+                  <Tooltip title="Setujui foto">
+                    <Button
+                      type="link"
+                      icon={<CheckOutlined />}
+                      loading={busyAp}
+                      onClick={() => confirmApproveImage(item)}
+                    />
+                  </Tooltip>
+                ) : null}
+                {hasModerableImage ? (
                   <>
-                    <Tooltip title="Setujui foto">
+                    <Tooltip title="Sensor foto">
                       <Button
                         type="link"
-                        icon={<CheckOutlined />}
-                        loading={busyAp}
-                        onClick={() => confirmApproveImage(item)}
+                        icon={<EditOutlined />}
+                        onClick={() => setCensorTarget(item)}
                       />
                     </Tooltip>
-                    <Tooltip title="Tolak foto">
+                    <Tooltip title={imagePending ? 'Tolak foto' : 'Turunkan foto'}>
                       <Button
                         type="link"
                         danger
@@ -274,8 +305,8 @@ export function CommentsPage() {
                     />
                   </Tooltip>
                 ) : null}
-                {item.status === 'published' && !imagePending ? (
-                  <Tooltip title="Takedown">
+                {item.status === 'published' ? (
+                  <Tooltip title="Takedown komentar">
                     <Button
                       type="link"
                       danger
@@ -285,7 +316,7 @@ export function CommentsPage() {
                     />
                   </Tooltip>
                 ) : null}
-                {!item.is_censored && item.status !== 'published' && !imagePending ? (
+                {!item.is_censored && item.status !== 'published' && !hasModerableImage ? (
                   <Typography.Text type="secondary">-</Typography.Text>
                 ) : null}
               </Flex>
@@ -319,43 +350,83 @@ export function CommentsPage() {
     ...COMMENT_STATUSES.map((s) => ({ key: s, label: COMMENT_STATUS_LABELS[s] })),
   ];
 
+  const censorUrl = censorTarget?.image?.public_url || censorTarget?.image?.url || '';
+
   return (
     <>
       <PageHeader
         title="Moderasi Komentar"
-        subtitle="Teks tayang langsung. Foto komentar dicek dulu di tab Foto menunggu cek."
+        subtitle="Komentar teks, audio, dan foto tayang langsung (post-moderation). Sensor atau turunkan konten yang melanggar."
         extra={
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            Muat ulang
-          </Button>
+          <Space>
+            <Segmented
+              value={scope}
+              onChange={(v) => setScope(v as 'word' | 'explore')}
+              options={[
+                { value: 'word', label: 'Komentar Kata' },
+                { value: 'explore', label: 'Komentar Eksplorasi' },
+              ]}
+            />
+            {scope === 'word' ? (
+              <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+                Muat ulang
+              </Button>
+            ) : null}
+          </Space>
         }
       />
-      <Tabs activeKey={tab} onChange={(key) => setTab(key as TabKey)} items={tabItems} />
 
-      {isError ? (
-        <Alert
-          type="error"
-          showIcon
-          style={{ marginBottom: 16 }}
-          message="Gagal memuat data"
-          description={error?.message}
-        />
-      ) : null}
+      {scope === 'explore' ? (
+        <ExploreCommentsPanel enabled={canModerate} />
+      ) : (
+        <>
+          <Tabs activeKey={tab} onChange={(key) => setTab(key as TabKey)} items={tabItems} />
 
-      <DataTable
-        table={table}
-        rowKey={(record) => String(record.id)}
-        loading={isLoading || (isFetching && !items.length)}
-      />
+          {isError ? (
+            <Alert
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message="Gagal memuat data"
+              description={error?.message}
+            />
+          ) : null}
 
-      <Flex justify="center" align="center" gap={16} style={{ marginTop: 16 }}>
-        <Typography.Text type="secondary">{items.length} komentar dimuat</Typography.Text>
-        {hasMore ? (
-          <Button onClick={() => loadMore()} loading={isFetchingNextPage}>
-            Muat lagi
-          </Button>
-        ) : null}
-      </Flex>
+          <DataTable
+            table={table}
+            rowKey={(record) => String(record.id)}
+            loading={isLoading || (isFetching && !items.length)}
+          />
+
+          <Flex justify="center" align="center" gap={16} style={{ marginTop: 16 }}>
+            <Typography.Text type="secondary">{items.length} komentar dimuat</Typography.Text>
+            {hasMore ? (
+              <Button onClick={() => loadMore()} loading={isFetchingNextPage}>
+                Muat lagi
+              </Button>
+            ) : null}
+          </Flex>
+
+          <Modal
+            open={Boolean(censorTarget)}
+            title="Sensor foto komentar"
+            footer={null}
+            width={720}
+            destroyOnClose
+            onCancel={() => setCensorTarget(null)}
+          >
+            {censorTarget && censorUrl ? (
+              <ImageCensorEditor
+                imageUrl={censorUrl}
+                disabled={censorImageMutation.isPending}
+                confirmLabel="Simpan foto tersensor"
+                onApply={(blob) => censorImageMutation.mutate({ id: censorTarget.id, blob })}
+                onCancel={() => setCensorTarget(null)}
+              />
+            ) : null}
+          </Modal>
+        </>
+      )}
     </>
   );
 }

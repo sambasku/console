@@ -28,7 +28,7 @@ export interface KaryaRelatedRefWire {
 }
 
 export interface AccessLinkWire {
-  kind: 'listen' | 'watch' | 'buy' | 'read' | 'stream' | 'official' | 'other';
+  kind: 'listen' | 'watch' | 'trailer' | 'buy' | 'read' | 'stream' | 'official' | 'other';
   label: string;
   url: string;
   is_primary?: boolean;
@@ -82,7 +82,27 @@ export interface KaryaContributionWire {
   karya_id: string | null;
   payload: Record<string, unknown>;
   revision_note: string | null;
+  reject_reason_code?: string | null;
+  created_at?: string;
 }
+
+export type KaryaRejectReasonCode =
+  | 'missing_sambas'
+  | 'invalid_metadata'
+  | 'rights'
+  | 'duplicate'
+  | 'other';
+
+export const KARYA_REJECT_REASON_OPTIONS: Array<{
+  code: KaryaRejectReasonCode;
+  label: string;
+}> = [
+  { code: 'missing_sambas', label: 'Tidak jelas keterkaitannya dengan Sambas' },
+  { code: 'invalid_metadata', label: 'Data atau informasi karya tidak valid' },
+  { code: 'rights', label: 'Masalah hak cipta atau izin kutipan' },
+  { code: 'duplicate', label: 'Sama dengan karya yang sudah tercatat' },
+  { code: 'other', label: 'Lainnya' },
+];
 
 export async function listAdminKarya(signal?: AbortSignal): Promise<KaryaWire[]> {
   const res = await client.get<{ success: true; data: { items: KaryaWire[] } }>(
@@ -119,8 +139,13 @@ export async function approveKaryaContribution(id: string): Promise<void> {
   await client.post(`/admin/karya-contributions/${id}/approve`);
 }
 
-export async function rejectKaryaContribution(id: string): Promise<void> {
-  await client.post(`/admin/karya-contributions/${id}/reject`, { reason_code: 'other' });
+export async function rejectKaryaContribution(
+  id: string,
+  reason: { reason_code: KaryaRejectReasonCode; reason_text?: string } = {
+    reason_code: 'other',
+  },
+): Promise<void> {
+  await client.post(`/admin/karya-contributions/${id}/reject`, reason);
 }
 
 export async function reviseKaryaContribution(id: string, note: string): Promise<void> {
@@ -132,4 +157,62 @@ export async function linkKaryaCredit(
   body: { kreator_id?: string; display_name?: string },
 ): Promise<void> {
   await client.post(`/admin/karya-credits/${creditId}/link`, body);
+}
+
+/** Total view per karya_id. `days` undefined = semua waktu. */
+export async function listKaryaViewsRequest(
+  days?: number,
+  signal?: AbortSignal,
+): Promise<Map<string, number>> {
+  const res = await client.get<{
+    success: true;
+    data: { items: Array<{ karya_id: string; views: number }> };
+  }>('/admin/karya/views', { params: days ? { days } : undefined, signal });
+  return new Map(res.data.data.items.map((i) => [i.karya_id, i.views]));
+}
+
+export interface KaryaViewsReport {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    karyaId: string;
+    title: string;
+    slug: string;
+    kind: string;
+    views: number;
+    lastViewed: string | null;
+  }>;
+}
+
+type KaryaViewsReportWire = {
+  trend: Array<{ day: string; total: number }>;
+  items: Array<{
+    karya_id: string;
+    title: string;
+    slug: string;
+    kind: string;
+    views: number;
+    last_viewed: string | null;
+  }>;
+};
+
+export async function getKaryaViewsReportRequest(
+  days: number,
+  signal?: AbortSignal,
+): Promise<KaryaViewsReport> {
+  const res = await client.get<{ success: true; data: KaryaViewsReportWire }>(
+    '/admin/karya/views/daily',
+    { params: { days }, signal },
+  );
+  const data = res.data.data;
+  return {
+    trend: data.trend,
+    items: data.items.map((i) => ({
+      karyaId: i.karya_id,
+      title: i.title,
+      slug: i.slug,
+      kind: i.kind,
+      views: i.views,
+      lastViewed: i.last_viewed,
+    })),
+  };
 }

@@ -12,7 +12,6 @@ import {
   Badge,
   Button,
   Drawer,
-  Image,
   Input,
   Modal,
   Popconfirm,
@@ -23,6 +22,7 @@ import {
   Typography,
 } from 'antd';
 import { PageHeader } from '@/shared/components/page-header';
+import { AchievementAssetPreview, resolveBadgeAssetKind } from './achievement-asset-preview';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { normalizeError } from '@/shared/api/error';
 import { useAuth } from '@/shared/auth/use-auth';
@@ -156,7 +156,11 @@ export function AchievementsPage() {
             width: 80,
             render: (_: unknown, row) =>
               row.badgeUrl ? (
-                <Image src={row.badgeUrl} alt={row.title} width={44} height={44} style={{ objectFit: 'contain' }} />
+                <AchievementAssetPreview
+                  url={row.badgeUrl}
+                  assetKind={resolveBadgeAssetKind(row.badgeUrl, row.badgeAssetKind)}
+                  size={44}
+                />
               ) : (
                 <Typography.Text type="secondary">-</Typography.Text>
               ),
@@ -316,12 +320,20 @@ export function AchievementsPage() {
         open={drawerOpen}
         editing={editing}
         onClose={() => setDrawerOpen(false)}
-        onSaved={() => setDrawerOpen(false)}
-        submit={(values) =>
-          editing
-            ? updateMutation.mutateAsync({ id: editing.id, ...values })
-            : createMutation.mutateAsync(values)
-        }
+        onSaved={() => {
+          setDrawerOpen(false);
+          setEditing(null);
+          void list.refetch();
+        }}
+        patchBadge={(id, body) => updateMutation.mutateAsync({ id, ...body })}
+        submit={(values) => {
+          if (editing) {
+            const { code, ...body } = values;
+            void code;
+            return updateMutation.mutateAsync({ id: editing.id, ...body });
+          }
+          return createMutation.mutateAsync(values);
+        }}
       />
 
       <Modal

@@ -20,6 +20,7 @@ export function normalizeAdminUserListItem(wire: AdminUserWire): AdminUserListIt
   isTeam: wire.is_team ?? false,
   teamAs: wire.team_as ?? null,
   teamNote: wire.team_note ?? null,
+  teamSortOrder: wire.team_sort_order ?? null,
   isSponsor: wire.is_sponsor ?? false,
   createdAt: wire.created_at,
     updatedAt: wire.updated_at,
