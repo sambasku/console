@@ -114,6 +114,7 @@ export interface ListExploreCommentsParams {
   module: ExploreCommentModule;
   status?: 'published' | 'taken_down' | 'deleted_by_author';
   hasMedia?: 'image' | 'audio' | 'any';
+  imageStatus?: 'pending_review' | 'published' | 'rejected';
   q?: string;
   limit?: number;
   cursor?: string;
@@ -136,6 +137,7 @@ export async function listExploreCommentsRequest(
         module: params.module,
         status: params.status,
         has_media: params.hasMedia,
+        image_status: params.imageStatus,
         q: params.q?.trim() || undefined,
         limit: params.limit ?? 25,
         cursor: params.cursor,
@@ -153,6 +155,19 @@ export async function takedownExploreCommentRequest(
   const res = await client.post<ApiOkEnvelope<{ id: string; status: 'taken_down' }>>(
     `/admin/explore-comments/${module}/${id}/takedown`,
   );
+  return res.data.data;
+}
+
+export async function approveExploreCommentImageRequest(
+  module: ExploreCommentModule,
+  id: string,
+  contentWarnings: string[] = [],
+): Promise<{ id: string; image_public_url: string; content_warnings: string[] }> {
+  const res = await client.post<
+    ApiOkEnvelope<{ id: string; image_public_url: string; content_warnings: string[] }>
+  >(`/admin/explore-comments/${module}/${id}/censor-image`, {
+    content_warnings: contentWarnings,
+  });
   return res.data.data;
 }
 

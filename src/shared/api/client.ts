@@ -110,6 +110,15 @@ authClient.interceptors.response.use(
 client.interceptors.request.use((config) => {
   const token = sessionStore.getSnapshot().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // Hapus Content-Type default JSON saat mengirim FormData agar Axios tidak
+  // mengubah FormData menjadi JSON dan browser menyetel boundary multipart.
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    if (typeof config.headers.delete === 'function') {
+      config.headers.delete('Content-Type');
+    } else {
+      delete (config.headers as Record<string, unknown>)['Content-Type'];
+    }
+  }
   return config;
 });
 

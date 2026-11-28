@@ -1,5 +1,16 @@
-import { EyeOutlined, StopOutlined } from '@ant-design/icons';
-import { Alert, App as AntdApp, Button, Divider, Flex, Skeleton, Space, Tag, Typography } from 'antd';
+import { CheckOutlined, CloseOutlined, EyeOutlined, StopOutlined } from '@ant-design/icons';
+import {
+  Alert,
+  App as AntdApp,
+  Button,
+  Divider,
+  Flex,
+  Image,
+  Skeleton,
+  Space,
+  Tag,
+  Typography,
+} from 'antd';
 import { formatDateTime } from '@/shared/utils/format-datetime';
 import { personLabel } from '@/shared/utils/person-label';
 import { VerifierMark } from '@/shared/components/verifier-mark';
@@ -9,6 +20,8 @@ import {
   COMMENT_STATUS_TAG_COLOR,
   type AdminCommentItem,
 } from '../domain/comment';
+import { useApproveCommentImage } from '../application/use-approve-comment-image';
+import { useRejectCommentImage } from '../application/use-reject-comment-image';
 import { useTakedownComment } from '../application/use-takedown-comment';
 import { useUncensorComment } from '../application/use-uncensor-comment';
 import { useWordComments } from '../application/use-word-comments';
@@ -22,6 +35,46 @@ export function WordComments({ wordId }: { wordId: string }) {
     useWordComments(wordId);
   const takedownMutation = useTakedownComment();
   const uncensorMutation = useUncensorComment();
+  const approveImageMutation = useApproveCommentImage();
+  const rejectImageMutation = useRejectCommentImage();
+
+  const confirmApproveImage = (item: AdminCommentItem) => {
+    modal.confirm({
+      title: 'Setujui foto komentar?',
+      content: 'Foto akan tayang publik. Teks komentar sudah tayang.',
+      okText: 'Setujui',
+      cancelText: 'Batal',
+      onOk: async () => {
+        try {
+          await approveImageMutation.mutateAsync(item.id);
+          message.success('Foto disetujui');
+        } catch (err) {
+          message.error(normalizeError(err).message);
+          refetch();
+        }
+      },
+    });
+  };
+
+  const confirmRejectImage = (item: AdminCommentItem) => {
+    const isPending = item.image?.status === 'pending_review';
+    modal.confirm({
+      title: isPending ? 'Tolak foto komentar?' : 'Turunkan foto komentar?',
+      content: 'Foto dihapus. Teks komentar tetap tayang.',
+      okText: isPending ? 'Tolak' : 'Turunkan',
+      okButtonProps: { danger: true },
+      cancelText: 'Batal',
+      onOk: async () => {
+        try {
+          await rejectImageMutation.mutateAsync({ id: item.id, abusive: false });
+          message.success(isPending ? 'Foto ditolak' : 'Foto diturunkan');
+        } catch (err) {
+          message.error(normalizeError(err).message);
+          refetch();
+        }
+      },
+    });
+  };
 
   const decide = (item: AdminCommentItem) => {
     modal.confirm({
@@ -77,6 +130,12 @@ export function WordComments({ wordId }: { wordId: string }) {
       {items.map((cm) => {
         const busyTd = takedownMutation.isPending && takedownMutation.variables === cm.id;
         const busyUc = uncensorMutation.isPending && uncensorMutation.variables === cm.id;
+        const busyAp = approveImageMutation.isPending && approveImageMutation.variables === cm.id;
+        const busyRj =
+          rejectImageMutation.isPending && rejectImageMutation.variables?.id === cm.id;
+        const imagePending = cm.image?.status === 'pending_review';
+        const hasModerableImage = imagePending || cm.image?.status === 'published';
+        const imageUrl = cm.image?.public_url || cm.image?.url;
         const marked =
           cm.status === 'taken_down' || cm.status === 'deleted_by_author'
             ? {
@@ -107,6 +166,30 @@ export function WordComments({ wordId }: { wordId: string }) {
                 {cm.is_censored ? <Tag color="gold">Disensor</Tag> : null}
               </Space>
               <Space size={4}>
+                {imagePending ? (
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<CheckOutlined />}
+                    loading={busyAp}
+                    disabled={approveImageMutation.isPending && !busyAp}
+                    onClick={() => confirmApproveImage(cm)}
+                  >
+                    Setujui foto
+                  </Button>
+                ) : null}
+                {hasModerableImage ? (
+                  <Button
+                    size="small"
+                    danger
+                    icon={<CloseOutlined />}
+                    loading={busyRj}
+                    disabled={rejectImageMutation.isPending && !busyRj}
+                    onClick={() => confirmRejectImage(cm)}
+                  >
+                    {imagePending ? 'Tolak foto' : 'Turunkan foto'}
+                  </Button>
+                ) : null}
                 {cm.is_censored ? (
                   <Button
                     size="small"
@@ -139,6 +222,18 @@ export function WordComments({ wordId }: { wordId: string }) {
               <Paragraph type="secondary" style={{ marginBottom: 0, marginTop: 4, fontSize: 12 }}>
                 Asli: {cm.body_original}
               </Paragraph>
+            ) : null}
+            {hasModerableImage && imageUrl ? (
+              <Flex gap={8} align="center" style={{ marginTop: 6 }}>
+                <Image
+                  src={imageUrl}
+                  alt="Foto komentar"
+                  width={72}
+                  height={72}
+                  style={{ objectFit: 'cover', borderRadius: 6 }}
+                />
+                {imagePending ? <Tag color="orange">Foto menunggu cek</Tag> : null}
+              </Flex>
             ) : null}
             <Divider style={{ margin: '8px 0 0' }} />
           </div>

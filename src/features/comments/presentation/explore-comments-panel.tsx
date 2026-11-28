@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  CheckOutlined,
   CloseOutlined,
   EditOutlined,
   ReloadOutlined,
@@ -29,6 +30,7 @@ import { personLabel } from '@/shared/utils/person-label';
 import { useDebouncedValue } from '@/shared/hooks/use-debounced-value';
 import { ImageCensorEditor } from '@/features/discussions/presentation/image-censor-editor';
 import {
+  approveExploreCommentImageRequest,
   censorExploreCommentImageRequest,
   listExploreCommentsRequest,
   rejectExploreCommentImageRequest,
@@ -56,6 +58,7 @@ const STATUS_OPTIONS = [
 
 const MEDIA_OPTIONS = [
   { value: 'all', label: 'Semua konten' },
+  { value: 'image_pending', label: 'Foto menunggu cek' },
   { value: 'any', label: 'Ada foto/audio' },
   { value: 'image', label: 'Ada foto' },
   { value: 'audio', label: 'Ada audio' },
@@ -88,7 +91,10 @@ export function ExploreCommentsPanel({ enabled }: { enabled: boolean }) {
               ? undefined
               : (statusFilter as 'published' | 'taken_down' | 'deleted_by_author'),
           hasMedia:
-            mediaFilter === 'all' ? undefined : (mediaFilter as 'image' | 'audio' | 'any'),
+            mediaFilter === 'all' || mediaFilter === 'image_pending'
+              ? undefined
+              : (mediaFilter as 'image' | 'audio' | 'any'),
+          imageStatus: mediaFilter === 'image_pending' ? 'pending_review' : undefined,
           q: debouncedQ || undefined,
           cursor: pageParam,
         },
@@ -110,6 +116,16 @@ export function ExploreCommentsPanel({ enabled }: { enabled: boolean }) {
       takedownExploreCommentRequest(mod, id),
     onSuccess: () => {
       message.success('Komentar di-takedown');
+      invalidate();
+    },
+    onError: (err) => message.error(normalizeError(err).message),
+  });
+
+  const approveImageMutation = useMutation({
+    mutationFn: ({ mod, id }: { mod: ExploreCommentModule; id: string }) =>
+      approveExploreCommentImageRequest(mod, id),
+    onSuccess: () => {
+      message.success('Foto komentar disetujui');
       invalidate();
     },
     onError: (err) => message.error(normalizeError(err).message),
@@ -164,11 +180,21 @@ export function ExploreCommentsPanel({ enabled }: { enabled: boolean }) {
     });
   };
 
-  const confirmRejectImage = (item: AdminExploreCommentItem) => {
+  const confirmApproveImage = (item: AdminExploreCommentItem) => {
     modal.confirm({
-      title: 'Turunkan foto komentar ini?',
+      title: 'Setujui foto komentar?',
+      content: 'Foto akan tayang publik. Teks komentar sudah tayang.',
+      okText: 'Setujui',
+      onOk: () => approveImageMutation.mutateAsync({ mod: item.module, id: item.id }),
+    });
+  };
+
+  const confirmRejectImage = (item: AdminExploreCommentItem) => {
+    const isPending = item.image?.status === 'pending_review';
+    modal.confirm({
+      title: isPending ? 'Tolak foto komentar ini?' : 'Turunkan foto komentar ini?',
       content: 'Foto akan dihapus dari tampilan publik. Teks komentar tetap tayang.',
-      okText: 'Turunkan foto',
+      okText: isPending ? 'Tolak foto' : 'Turunkan foto',
       okButtonProps: { danger: true },
       onOk: () =>
         rejectImageMutation.mutateAsync({ mod: item.module, id: item.id, abusive: false }),
@@ -255,11 +281,24 @@ export function ExploreCommentsPanel({ enabled }: { enabled: boolean }) {
       fixed: 'right',
       width: 150,
       render: (_, row) => {
+        const isImagePending = row.image?.status === 'pending_review';
         const hasModerableImage =
           Boolean(row.image?.public_url || row.image?.url) &&
-          (row.image?.status === 'published' || row.image?.status === 'pending_review');
+          (row.image?.status === 'published' || isImagePending);
         return (
           <Flex gap={0}>
+            {isImagePending ? (
+              <Tooltip title="Setujui foto">
+                <Button
+                  type="link"
+                  icon={<CheckOutlined />}
+                  loading={
+                    approveImageMutation.isPending && approveImageMutation.variables?.id === row.id
+                  }
+                  onClick={() => confirmApproveImage(row)}
+                />
+              </Tooltip>
+            ) : null}
             {hasModerableImage ? (
               <>
                 <Tooltip title="Sensor foto">
@@ -269,7 +308,7 @@ export function ExploreCommentsPanel({ enabled }: { enabled: boolean }) {
                     onClick={() => setCensorTarget(row)}
                   />
                 </Tooltip>
-                <Tooltip title="Turunkan foto">
+                <Tooltip title={isImagePending ? 'Tolak foto' : 'Turunkan foto'}>
                   <Button
                     type="link"
                     danger
