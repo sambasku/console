@@ -205,7 +205,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   announcements: 'Pengumuman',
   achievements: 'Pencapaian',
   stickers: 'Stiker',
-  cashflow: 'Cashflow',
+  cashflow: 'Keuangan',
   'profile-covers': 'Cover Profil',
   encyclopedia: 'Ensiklopedia',
   categories: 'Kategori',
@@ -366,7 +366,7 @@ export function ConsoleLayout() {
         icon: <ShopOutlined />,
         label: 'Sponsor & Mitra',
       });
-      items.push({ key: '/cashflow', icon: <WalletOutlined />, label: 'Cashflow' });
+      items.push({ key: '/cashflow', icon: <WalletOutlined />, label: 'Keuangan' });
       items.push({
         key: '/verifier-applications',
         icon: <SafetyCertificateOutlined />,

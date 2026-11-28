@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { App as AntdApp, Button, Flex, Space, Switch, Table, Tag, Tooltip, Typography } from 'antd';
-import { PlusOutlined, SwapOutlined, CheckSquareOutlined } from '@ant-design/icons';
+import { App as AntdApp, Button, Flex, Space, Switch, Table, Tag, Typography } from 'antd';
+import { PlusOutlined, CheckSquareOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import {
   REKENING_JENIS_LABEL,
@@ -16,11 +16,11 @@ import {
   useUpdateKategori,
   useUpdateRekening,
 } from '../application/use-cashflow';
-import { KategoriDialog, RekeningDialog, RekonsiliasiDialog, TransferDialog } from './cashflow-dialogs';
+import { KategoriDialog, RekeningDialog, RekonsiliasiDialog } from './cashflow-dialogs';
 
-type DialogKind = 'kategori' | 'rekening' | 'transfer' | 'rekonsiliasi' | null;
+type DialogKind = 'kategori' | 'rekening' | 'rekonsiliasi' | null;
 
-/** Tab pengaturan: master kategori (masuk/keluar), rekening, pindah dana, dan rekonsiliasi bank. */
+/** Tab pengaturan: master kategori (masuk/keluar), rekening, dan rekonsiliasi bank. Pindah dana ada di menu Catat. */
 export function PengaturanTab() {
   const { message } = AntdApp.useApp();
   const kategoriQ = useCashflowKategori();
@@ -53,13 +53,6 @@ export function PengaturanTab() {
   return (
     <Flex vertical gap={24}>
       <Space wrap>
-        <Tooltip title={rekening.length < 2 ? 'Tambah minimal 2 rekening dulu untuk memindah dana' : undefined}>
-          <span>
-            <Button icon={<SwapOutlined />} onClick={() => setDialog('transfer')} disabled={rekening.length < 2}>
-              Pindah dana antar rekening
-            </Button>
-          </span>
-        </Tooltip>
         <Button icon={<CheckSquareOutlined />} onClick={() => setDialog('rekonsiliasi')} disabled={rekening.length === 0}>
           Cocokkan saldo bank
         </Button>
@@ -144,7 +137,6 @@ export function PengaturanTab() {
 
       {dialog === 'kategori' ? <KategoriDialog onClose={() => setDialog(null)} /> : null}
       {dialog === 'rekening' ? <RekeningDialog onClose={() => setDialog(null)} /> : null}
-      {dialog === 'transfer' ? <TransferDialog rekening={rekening} onClose={() => setDialog(null)} /> : null}
       {dialog === 'rekonsiliasi' ? <RekonsiliasiDialog rekening={rekening} onClose={() => setDialog(null)} /> : null}
     </Flex>
   );
