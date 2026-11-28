@@ -4,6 +4,7 @@ import type {
   CampaignAudienceType,
   CampaignDetail,
   CampaignStatus,
+  CampaignTargetPlatform,
   DeepLinkKind,
   NotificationCampaign,
   NotificationTemplate,
@@ -31,6 +32,7 @@ interface CampaignWire {
   deep_link_kind: DeepLinkKind;
   deep_link_value: string | null;
   audience_type: CampaignAudienceType;
+  target_platform?: CampaignTargetPlatform;
   status: CampaignStatus;
   send_at: string | null;
   targeted_users: number;
@@ -69,6 +71,7 @@ function mapCampaign(w: CampaignWire): NotificationCampaign {
     deepLinkKind: w.deep_link_kind,
     deepLinkValue: w.deep_link_value,
     audienceType: w.audience_type,
+    targetPlatform: w.target_platform ?? 'all',
     status: w.status,
     sendAt: w.send_at,
     targetedUsers: w.targeted_users,
@@ -186,6 +189,7 @@ export async function createCampaignRequest(body: {
   deep_link_kind?: DeepLinkKind;
   deep_link_value?: string | null;
   audience_type: CampaignAudienceType;
+  target_platform?: CampaignTargetPlatform;
   user_ids?: string[];
   send_at?: string | null;
 }): Promise<NotificationCampaign> {
@@ -217,13 +221,23 @@ export async function retryCampaignRequest(id: string): Promise<NotificationCamp
   return mapCampaign(res.data.data);
 }
 
+export interface AudienceEstimate {
+  users_with_device: number;
+  devices: number;
+  by_platform?: {
+    android: number;
+    ios: number;
+  };
+}
+
 export async function estimateAudienceRequest(body: {
   audience_type: CampaignAudienceType;
+  target_platform?: CampaignTargetPlatform;
   user_ids?: string[];
-}): Promise<{ users_with_device: number; devices: number }> {
+}): Promise<AudienceEstimate> {
   const res = await client.post<{
     success: true;
-    data: { users_with_device: number; devices: number };
+    data: AudienceEstimate;
   }>('/admin/notification-campaigns/estimate', body);
   return res.data.data;
 }

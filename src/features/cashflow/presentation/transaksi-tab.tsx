@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { App as AntdApp, Alert, Button, Card, DatePicker, Flex, Form, Input, InputNumber, Radio, Select, Space, Table, Tag, Typography } from 'antd';
-import { MinusCircleOutlined, PlusOutlined, UndoOutlined, RetweetOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PaperClipOutlined, PlusOutlined, UndoOutlined, RetweetOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import { formatDate } from '@/shared/utils/format-datetime';
 import { newIdempotencyKey } from '../infrastructure/cashflow-api';
@@ -25,6 +25,7 @@ import {
 } from '../application/use-cashflow';
 import { RefundDialog, ReversalDialog } from './cashflow-dialogs';
 import { PartyPicker } from './party-picker';
+import { LampiranDialog } from './lampiran-dialog';
 
 const KODE_DONASI = 'MSK-DON';
 
@@ -89,6 +90,7 @@ export function TransaksiTab() {
   const [idKey, setIdKey] = useState(newIdempotencyKey);
   const [reversalTarget, setReversalTarget] = useState<CashTransaksi | null>(null);
   const [refundSource, setRefundSource] = useState<CashTransaksi | null>(null);
+  const [lampiranTarget, setLampiranTarget] = useState<CashTransaksi | null>(null);
 
   const kategori = useMemo(() => kategoriQ.data ?? [], [kategoriQ.data]);
   const rekening = useMemo(() => rekeningQ.data ?? [], [rekeningQ.data]);
@@ -327,7 +329,7 @@ export function TransaksiTab() {
         loading={transaksiQ.isLoading}
         dataSource={transaksiRows}
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
-        scroll={{ x: 760 }}
+        scroll={{ x: 920 }}
         columns={[
           { title: 'Tanggal', dataIndex: 'tanggal', key: 'tanggal', width: 130, render: (v: string) => formatDate(v) },
           {
@@ -377,14 +379,25 @@ export function TransaksiTab() {
             render: (v: string) => rekeningMap.get(v)?.nama ?? v,
           },
           {
+            title: 'Bukti',
+            key: 'bukti',
+            width: 90,
+            align: 'center',
+            render: (_: unknown, row: CashTransaksi) =>
+              row.lampiran_count ? <Tag color="blue">{row.lampiran_count} file</Tag> : <Typography.Text type="secondary">-</Typography.Text>,
+          },
+          {
             title: '',
             key: 'ops',
-            width: 210,
+            width: 300,
             render: (_: unknown, row: CashTransaksi) => {
               const isKoreksi = row.kategori_sistem === 'reversal';
               const bisaRefund = row.tipe === 'masuk' && kategoriMap.get(row.kategori_id ?? '')?.kode === KODE_DONASI;
               return (
                 <Space>
+                  <Button size="small" icon={<PaperClipOutlined />} onClick={() => setLampiranTarget(row)}>
+                    Bukti
+                  </Button>
                   {bisaRefund ? (
                     <Button size="small" icon={<RetweetOutlined />} onClick={() => setRefundSource(row)}>
                       Refund
@@ -404,6 +417,7 @@ export function TransaksiTab() {
 
       {transaksiQ.isError ? <Typography.Text type="danger">{normalizeError(transaksiQ.error).message}</Typography.Text> : null}
       {reversalTarget ? <ReversalDialog target={reversalTarget} onClose={() => setReversalTarget(null)} /> : null}
+      {lampiranTarget ? <LampiranDialog tx={lampiranTarget} onClose={() => setLampiranTarget(null)} /> : null}
       {refundSource ? (
         <RefundDialog source={refundSource} rekening={rekening} onClose={() => setRefundSource(null)} />
       ) : null}

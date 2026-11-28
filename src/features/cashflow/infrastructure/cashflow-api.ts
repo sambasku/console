@@ -13,6 +13,7 @@ import type {
   RekeningJenis,
   Rekonsiliasi,
   CashTipe,
+  CashLampiran,
 } from '../domain/cashflow';
 
 interface Envelope<T> {
@@ -107,6 +108,32 @@ export async function getSummaryRequest(): Promise<CashflowSummary> {
 
 export async function listTransaksiRequest(): Promise<CashTransaksi[]> {
   const res = await client.get<Envelope<CashTransaksi[]>>(`${BASE}/transactions`, { params: { limit: 100 } });
+  return res.data.data;
+}
+
+export async function listLampiranRequest(txId: string): Promise<CashLampiran[]> {
+  const res = await client.get<Envelope<CashLampiran[]>>(`${BASE}/transactions/${txId}/attachments`);
+  return res.data.data;
+}
+
+/** Unggah satu file. Server mendedupe sha256, jadi mengulang unggah file yang sama aman. */
+export async function uploadLampiranRequest(txId: string, file: File): Promise<CashLampiran> {
+  const form = new FormData();
+  form.append('file', file);
+  // Hapus Content-Type default JSON dari client supaya browser memasang boundary multipart.
+  const res = await client.post<Envelope<CashLampiran>>(`${BASE}/transactions/${txId}/attachments`, form, {
+    headers: { 'Content-Type': undefined },
+  });
+  return res.data.data;
+}
+
+export async function lampiranUrlRequest(id: string): Promise<{ url: string; expires_in: number }> {
+  const res = await client.get<Envelope<{ url: string; expires_in: number }>>(`${BASE}/attachments/${id}/url`);
+  return res.data.data;
+}
+
+export async function hapusLampiranRequest(id: string): Promise<CashLampiran> {
+  const res = await client.delete<Envelope<CashLampiran>>(`${BASE}/attachments/${id}`);
   return res.data.data;
 }
 

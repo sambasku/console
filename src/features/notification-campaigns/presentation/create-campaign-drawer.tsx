@@ -17,7 +17,9 @@ import { listAdminUsersRequest } from '@/features/users/infrastructure/user-admi
 import {
   AUDIENCE_LABELS,
   DEEP_LINK_KIND_LABELS,
+  TARGET_PLATFORM_LABELS,
   type CampaignAudienceType,
+  type CampaignTargetPlatform,
   type DeepLinkKind,
 } from '../domain/campaign';
 import {
@@ -41,6 +43,7 @@ interface FormValues {
   deep_link_kind?: DeepLinkKind;
   deep_link_value?: string;
   audience_type: CampaignAudienceType;
+  target_platform: CampaignTargetPlatform;
   user_ids?: string[];
   schedule_mode: 'now' | 'later';
   send_at?: dayjs.Dayjs;
@@ -55,6 +58,7 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
   const [userOptions, setUserOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [userSearch, setUserSearch] = useState('');
   const audienceType = Form.useWatch('audience_type', form);
+  const targetPlatform = Form.useWatch('target_platform', form);
   const scheduleMode = Form.useWatch('schedule_mode', form);
   const selectedUsers = Form.useWatch('user_ids', form);
   const templateId = Form.useWatch('template_id', form);
@@ -63,6 +67,7 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
     if (!open) return;
     form.setFieldsValue({
       audience_type: 'all',
+      target_platform: 'all',
       schedule_mode: 'now',
       deep_link_kind: 'none',
     });
@@ -91,10 +96,11 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
     if (!open || !audienceType) return;
     estimateMutation.mutate({
       audience_type: audienceType,
+      target_platform: targetPlatform ?? 'all',
       user_ids: audienceType === 'selected' ? selectedUsers : undefined,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-estimate on audience change
-  }, [open, audienceType, selectedUsers?.join(',')]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-estimate on audience/platform change
+  }, [open, audienceType, targetPlatform, selectedUsers?.join(',')]);
 
   useEffect(() => {
     if (!templateId) return;
@@ -120,6 +126,7 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
         deep_link_kind: values.deep_link_kind,
         deep_link_value: values.deep_link_value ?? null,
         audience_type: values.audience_type,
+        target_platform: values.target_platform ?? 'all',
         user_ids: values.audience_type === 'selected' ? values.user_ids : undefined,
         send_at:
           values.schedule_mode === 'later' && values.send_at
@@ -200,6 +207,14 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
             }))}
           />
         </Form.Item>
+        <Form.Item name="target_platform" label="Target platform" rules={[{ required: true }]}>
+          <Radio.Group
+            options={(Object.keys(TARGET_PLATFORM_LABELS) as CampaignTargetPlatform[]).map((k) => ({
+              value: k,
+              label: TARGET_PLATFORM_LABELS[k],
+            }))}
+          />
+        </Form.Item>
         {audienceType === 'selected' ? (
           <Form.Item
             name="user_ids"
@@ -219,7 +234,11 @@ export function CreateCampaignDrawer({ open, onClose, onCreated }: Props) {
         {estimate ? (
           <Typography.Paragraph type="secondary">
             Estimasi: {estimate.users_with_device} user dengan device aktif
-            {audienceType === 'selected' ? ` · ${estimate.devices} token` : ''}.
+            {` · ${estimate.devices} token`}
+            {estimate.by_platform
+              ? ` (Android: ${estimate.by_platform.android}, iOS: ${estimate.by_platform.ios})`
+              : ''}
+            .
           </Typography.Paragraph>
         ) : null}
         <Form.Item name="schedule_mode" label="Waktu kirim">

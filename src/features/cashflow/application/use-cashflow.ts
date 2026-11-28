@@ -15,8 +15,11 @@ import {
   listPengingatRequest,
   listRekeningRequest,
   listTransaksiRequest,
+  hapusLampiranRequest,
+  listLampiranRequest,
   lookupRequest,
   refundRequest,
+  uploadLampiranRequest,
   reimburseRequest,
   rekonsiliasiRequest,
   transferRequest,
@@ -48,6 +51,30 @@ export const useCashflowKategori = (enabled = true) =>
 
 export const useCashflowRekening = (enabled = true) =>
   useQuery({ queryKey: [...KEY, 'rekening'], queryFn: listRekeningRequest, enabled });
+
+/** Lampiran satu transaksi. Key di bawah prefix cashflow supaya ikut tersegarkan saat mutasi. */
+export const useCashflowLampiran = (txId: string | null) =>
+  useQuery({
+    queryKey: [...KEY, 'lampiran', txId],
+    queryFn: () => listLampiranRequest(txId!),
+    enabled: !!txId,
+  });
+
+export const useUploadLampiran = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { txId: string; file: File }) => uploadLampiranRequest(input.txId, input.file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+};
+
+export const useHapusLampiran = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => hapusLampiranRequest(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+};
 
 /** Pencarian picker. Key terpisah dari data cashflow supaya tidak ikut di-refetch tiap mutasi. */
 export const useCashflowLookup = (kind: 'user' | 'usaha', q: string) =>

@@ -23,6 +23,8 @@ import {
   AUDIENCE_LABELS,
   CAMPAIGN_STATUS_COLORS,
   CAMPAIGN_STATUS_LABELS,
+  TARGET_PLATFORM_COLORS,
+  TARGET_PLATFORM_LABELS,
   type NotificationCampaign,
 } from '../domain/campaign';
 import { useCampaignList } from '../application/use-campaigns';
@@ -230,6 +232,15 @@ export function NotificationCampaignsPage() {
             title: 'Audience',
             key: 'audience',
             render: (_: unknown, row: NotificationCampaign) => AUDIENCE_LABELS[row.audienceType],
+          },
+          {
+            title: 'Platform',
+            key: 'targetPlatform',
+            render: (_: unknown, row: NotificationCampaign) => (
+              <Tag color={TARGET_PLATFORM_COLORS[row.targetPlatform]}>
+                {TARGET_PLATFORM_LABELS[row.targetPlatform]}
+              </Tag>
+            ),
           },
           {
             title: 'Status',

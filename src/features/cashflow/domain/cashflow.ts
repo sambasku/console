@@ -41,6 +41,20 @@ export interface CashTransaksi {
   donatur_tipe: DonaturTipe | null;
   donatur_user_id: string | null;
   donatur_usaha_id: string | null;
+  /** Jumlah lampiran bukti yang belum dihapus. Hanya ada di daftar transaksi. */
+  lampiran_count?: number;
+  created_at: string;
+}
+
+/** Lampiran bukti transaksi (PDF atau gambar). File disimpan privat, dibuka lewat URL sementara. */
+export interface CashLampiran {
+  id: string;
+  transaction_id: string;
+  original_name: string;
+  mime: 'application/pdf' | 'image/jpeg' | 'image/png' | 'image/webp';
+  size_bytes: number;
+  sha256: string;
+  uploaded_by: string | null;
   created_at: string;
 }
 

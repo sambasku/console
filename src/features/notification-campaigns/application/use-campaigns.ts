@@ -12,7 +12,12 @@ import {
   sendCampaignRequest,
   updateTemplateRequest,
 } from '../infrastructure/campaign-api';
-import type { CampaignAudienceType, CampaignStatus, DeepLinkKind } from '../domain/campaign';
+import type {
+  CampaignAudienceType,
+  CampaignStatus,
+  CampaignTargetPlatform,
+  DeepLinkKind,
+} from '../domain/campaign';
 
 export function useTemplateList(enabled = true) {
   return useQuery({
@@ -123,7 +128,10 @@ export function useRetryCampaign() {
 
 export function useEstimateAudience() {
   return useMutation({
-    mutationFn: (body: { audience_type: CampaignAudienceType; user_ids?: string[] }) =>
-      estimateAudienceRequest(body),
+    mutationFn: (body: {
+      audience_type: CampaignAudienceType;
+      target_platform?: CampaignTargetPlatform;
+      user_ids?: string[];
+    }) => estimateAudienceRequest(body),
   });
 }

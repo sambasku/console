@@ -19,6 +19,8 @@ import {
   CAMPAIGN_STATUS_COLORS,
   CAMPAIGN_STATUS_LABELS,
   DEEP_LINK_KIND_LABELS,
+  TARGET_PLATFORM_COLORS,
+  TARGET_PLATFORM_LABELS,
   isSendAtInFuture,
 } from '../domain/campaign';
 import {
@@ -144,6 +146,11 @@ export function NotificationCampaignDetailPage() {
         ) : null}
         <Descriptions.Item label="Audience">
           {AUDIENCE_LABELS[data.audienceType]}
+        </Descriptions.Item>
+        <Descriptions.Item label="Target platform">
+          <Tag color={TARGET_PLATFORM_COLORS[data.targetPlatform]}>
+            {TARGET_PLATFORM_LABELS[data.targetPlatform]}
+          </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Deep link">
           {DEEP_LINK_KIND_LABELS[data.deepLinkKind]}

@@ -1,5 +1,6 @@
 export type DeepLinkKind = 'word' | 'contribution' | 'suggestion' | 'url' | 'none';
 export type CampaignAudienceType = 'all' | 'selected';
+export type CampaignTargetPlatform = 'all' | 'android' | 'ios';
 export type CampaignStatus =
   | 'draft'
   | 'scheduled'
@@ -30,6 +31,7 @@ export interface NotificationCampaign {
   deepLinkKind: DeepLinkKind;
   deepLinkValue: string | null;
   audienceType: CampaignAudienceType;
+  targetPlatform: CampaignTargetPlatform;
   status: CampaignStatus;
   sendAt: string | null;
   targetedUsers: number;
@@ -87,6 +89,18 @@ export const DEEP_LINK_KIND_LABELS: Record<DeepLinkKind, string> = {
 export const AUDIENCE_LABELS: Record<CampaignAudienceType, string> = {
   all: 'Semua device aktif',
   selected: 'Pengguna terpilih',
+};
+
+export const TARGET_PLATFORM_LABELS: Record<CampaignTargetPlatform, string> = {
+  all: 'Semua platform',
+  android: 'Android',
+  ios: 'iOS',
+};
+
+export const TARGET_PLATFORM_COLORS: Record<CampaignTargetPlatform, string> = {
+  all: 'default',
+  android: 'green',
+  ios: 'blue',
 };
 
 /** Jadwal masih di masa depan pada saat tombol aksi dirender. */
