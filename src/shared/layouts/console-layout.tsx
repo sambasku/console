@@ -88,7 +88,6 @@ const KAMUS_ROUTES = {
   '/word-suggestions': { icon: <EditOutlined />, label: 'Usul Edit' },
   '/lemma-merges': { icon: <MergeCellsOutlined />, label: 'Gabung kata' },
   '/word-reports': { icon: <WarningOutlined />, label: 'Laporan Entri' },
-  '/comments': { icon: <CommentOutlined />, label: 'Komentar' },
   '/comment-blocklist': { icon: <StopOutlined />, label: 'Blocklist' },
   '/search-misses': { icon: <SearchOutlined />, label: 'Pencarian' },
   '/vote-moderation': { icon: <LikeOutlined />, label: 'Vote' },
@@ -152,6 +151,7 @@ type PermainanRoute = keyof typeof PERMAINAN_ROUTES;
 type NotificationRoute = keyof typeof NOTIFICATION_ROUTES;
 type SystemRoute = keyof typeof SYSTEM_ROUTES;
 type TopRoute =
+  | '/comments'
   | '/achievements'
   | '/stickers'
   | '/profile-covers'
@@ -324,6 +324,7 @@ export function ConsoleLayout() {
         label: 'Kamus',
         children: kamusChildren,
       },
+      { key: '/comments', icon: <CommentOutlined />, label: 'Komentar' },
     ];
     if (canModerateContent) {
       items.push({

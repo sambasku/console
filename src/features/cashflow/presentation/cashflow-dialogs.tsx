@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
-import { App as AntdApp, Button, DatePicker, Form, Input, InputNumber, Modal, Radio, Select, Space, Typography } from 'antd';
+import { Alert, App as AntdApp, Button, DatePicker, Form, Input, InputNumber, Modal, Radio, Select, Space, Typography } from 'antd';
 import { normalizeError } from '@/shared/api/error';
 import { newIdempotencyKey } from '../infrastructure/cashflow-api';
 import {
@@ -19,6 +19,7 @@ import {
 } from '../domain/cashflow';
 import {
   useBatalkan,
+  useCashflowSummary,
   useCreateKategori,
   useCreateKewajiban,
   useCreateRekening,
@@ -63,13 +64,14 @@ interface DialogFooterProps {
   loading: boolean;
   okText: string;
   onClose: () => void;
+  disabled?: boolean;
 }
 
-function DialogFooter({ formId, loading, okText, onClose }: DialogFooterProps) {
+function DialogFooter({ formId, loading, okText, onClose, disabled = false }: DialogFooterProps) {
   return (
     <Space>
       <Button onClick={onClose}>Batal</Button>
-      <Button type="primary" form={formId} htmlType="submit" loading={loading}>
+      <Button type="primary" form={formId} htmlType="submit" loading={loading} disabled={disabled}>
         {okText}
       </Button>
     </Space>
@@ -452,8 +454,24 @@ export function BerhentiDialog({ item, onClose }: BerhentiDialogProps) {
 export function TransferDialog({ rekening, onClose }: DialogProps & { rekening: Rekening[] }) {
   const { message } = AntdApp.useApp();
   const mutation = useTransfer();
+  const summary = useCashflowSummary();
   const [form] = Form.useForm();
   const [idKey] = useState(newIdempotencyKey);
+  const dari = Form.useWatch('dari_rekening_id', form);
+  const ke = Form.useWatch('ke_rekening_id', form);
+  const nominal = Form.useWatch('nominal', form) ?? 0;
+
+  const saldoMap = new Map((summary.data?.rekening ?? []).map((r) => [r.id, r.saldo]));
+  const namaMap = new Map(rekening.map((r) => [r.id, r.nama]));
+  const aktif = rekening.filter((r) => r.aktif);
+  const saldoLabel = (r: Rekening) =>
+    `${r.nama} (${REKENING_JENIS_LABEL[r.jenis]}) - saldo ${formatRupiah(saldoMap.get(r.id) ?? 0)}`;
+  const dariOptions = aktif.map((r) => ({ value: r.id, label: saldoLabel(r), disabled: r.id === ke }));
+  const keOptions = aktif.map((r) => ({ value: r.id, label: saldoLabel(r), disabled: r.id === dari }));
+
+  const saldoDari = dari && summary.data ? (saldoMap.get(dari) ?? 0) : null;
+  const kurang = saldoDari !== null && nominal > saldoDari;
+  const sama = !!dari && dari === ke;
 
   const handleFinish = async (values: {
     dari_rekening_id: string;
@@ -484,21 +502,50 @@ export function TransferDialog({ rekening, onClose }: DialogProps & { rekening: 
       open
       onCancel={onClose}
       destroyOnHidden
-      footer={<DialogFooter formId="cf-transfer" loading={mutation.isPending} okText="Catat transfer" onClose={onClose} />}
+      footer={
+        <DialogFooter
+          formId="cf-transfer"
+          loading={mutation.isPending}
+          okText="Catat transfer"
+          onClose={onClose}
+          disabled={kurang || sama}
+        />
+      }
     >
       <Typography.Paragraph type="secondary">
         Transfer tidak mengubah total kas. Yang berubah hanya posisi per rekening.
       </Typography.Paragraph>
-      <Form id="cf-transfer" form={form} layout="vertical" initialValues={{ tanggal: dayjs() }} onFinish={handleFinish}>
+      <Form
+        id="cf-transfer"
+        form={form}
+        layout="vertical"
+        initialValues={{ tanggal: dayjs() }}
+        onFinish={handleFinish}
+        onValuesChange={(changed) => {
+          // Rekening asal diganti jadi sama dengan tujuan: kosongkan tujuan, jangan biarkan pasangan sama.
+          if ('dari_rekening_id' in changed && changed.dari_rekening_id === form.getFieldValue('ke_rekening_id')) {
+            form.setFieldValue('ke_rekening_id', undefined);
+          }
+        }}
+      >
         <Form.Item name="dari_rekening_id" label="Dari rekening" rules={[{ required: true, message: 'Pilih asalnya dulu ya' }]}>
-          <Select options={rekeningOptions(rekening)} />
+          <Select options={dariOptions} placeholder="Pilih rekening asal" />
         </Form.Item>
         <Form.Item name="ke_rekening_id" label="Ke rekening" rules={[{ required: true, message: 'Pilih tujuannya dulu ya' }]}>
-          <Select options={rekeningOptions(rekening)} />
+          <Select options={keOptions} placeholder="Pilih rekening tujuan" />
         </Form.Item>
+        {sama ? <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Rekening asal dan tujuan tidak boleh sama." /> : null}
         <Form.Item name="nominal" label="Nominal" rules={[{ required: true, message: 'Nominal wajib diisi ya' }]}>
           {nominalField}
         </Form.Item>
+        {kurang && saldoDari !== null ? (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={`Saldo ${namaMap.get(dari!)} ${formatRupiah(saldoDari)}, kurang ${formatRupiah(nominal - saldoDari)}. Kurangi nominal atau pilih rekening asal lain.`}
+          />
+        ) : null}
         <Form.Item name="tanggal" label="Tanggal" rules={[{ required: true, message: 'Tanggal wajib diisi' }]}>
           <DatePicker style={{ width: '100%' }} format="D MMM YYYY" />
         </Form.Item>

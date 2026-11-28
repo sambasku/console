@@ -13,6 +13,7 @@ import {
   type CashTipe,
   type CashTransaksi,
   type KategoriTransaksi,
+  type PartyValue,
 } from '../domain/cashflow';
 import {
   useCashflowKategori,
@@ -23,6 +24,7 @@ import {
   useCatatMasuk,
 } from '../application/use-cashflow';
 import { RefundDialog, ReversalDialog } from './cashflow-dialogs';
+import { PartyPicker } from './party-picker';
 
 const KODE_DONASI = 'MSK-DON';
 
@@ -34,6 +36,8 @@ const SISTEM_LABEL: Record<string, string> = {
   transfer: 'Pindah rekening',
 };
 
+type DonaturPilihan = 'anonim' | 'perorangan' | 'usaha';
+
 interface FormValues {
   tipe: CashTipe;
   kategori_id?: string;
@@ -41,15 +45,34 @@ interface FormValues {
   nominal?: number;
   tanggal: dayjs.Dayjs;
   catatan?: string;
-  donatur_nama?: string;
+  donatur_tipe?: DonaturPilihan;
+  donatur?: PartyValue;
   penerima_nama?: string;
-  talangan?: { penalang_nama?: string; pokok?: number }[];
+  talangan?: { penalang?: PartyValue; pokok?: number }[];
 }
 
-function labelTransaksi(row: CashTransaksi, kategoriMap: Map<string, KategoriTransaksi>): string {
+function labelTransaksi(
+  row: CashTransaksi,
+  kategoriMap: Map<string, KategoriTransaksi>,
+  pasangan: CashTransaksi | undefined,
+  namaRekening: (id: string) => string,
+): string {
+  if (row.kategori_sistem === 'transfer') {
+    // Kedua kaki transfer menampilkan arah yang sama: dari kaki keluar ke kaki masuk.
+    const keluar = row.tipe === 'keluar' ? row : pasangan;
+    const masuk = row.tipe === 'masuk' ? row : pasangan;
+    if (keluar && masuk) return `Pindah dari ${namaRekening(keluar.rekening_id)} ke ${namaRekening(masuk.rekening_id)}`;
+    return SISTEM_LABEL.transfer;
+  }
   if (row.kewajiban_id) return `Pembayaran kewajiban ${row.periode ?? ''}`.trim();
   if (row.kategori_id) return kategoriMap.get(row.kategori_id)?.nama ?? row.kategori_id;
   return SISTEM_LABEL[row.kategori_sistem ?? ''] ?? '-';
+}
+
+function donaturLabel(row: CashTransaksi): string {
+  if (!row.donatur_nama) return '';
+  const jenis = row.donatur_tipe === 'usaha' ? ' (usaha)' : row.donatur_user_id ? ' (akun)' : '';
+  return `Dari ${row.donatur_nama}${jenis}`;
 }
 
 /** Tab transaksi: catat uang masuk/keluar, talangan, dan riwayat (dengan koreksi & refund). */
@@ -71,8 +94,24 @@ export function TransaksiTab() {
   const rekening = useMemo(() => rekeningQ.data ?? [], [rekeningQ.data]);
   const kategoriMap = useMemo(() => new Map(kategori.map((k) => [k.id, k])), [kategori]);
   const rekeningMap = useMemo(() => new Map(rekening.map((r) => [r.id, r])), [rekening]);
+  const namaRekening = (id: string) => rekeningMap.get(id)?.nama ?? id;
+  const transaksiRows = useMemo(() => transaksiQ.data ?? [], [transaksiQ.data]);
+  const pasanganMap = useMemo(() => {
+    const byPair = new Map<string, CashTransaksi>();
+    for (const row of transaksiRows) {
+      if (row.transfer_pair_id) byPair.set(`${row.transfer_pair_id}:${row.tipe}`, row);
+    }
+    const result = new Map<string, CashTransaksi>();
+    for (const row of transaksiRows) {
+      if (!row.transfer_pair_id) continue;
+      const other = byPair.get(`${row.transfer_pair_id}:${row.tipe === 'keluar' ? 'masuk' : 'keluar'}`);
+      if (other) result.set(row.id, other);
+    }
+    return result;
+  }, [transaksiRows]);
 
   const tipe = Form.useWatch('tipe', form) ?? 'keluar';
+  const donaturPilihan = Form.useWatch('donatur_tipe', form) ?? 'anonim';
   const kategoriId = Form.useWatch('kategori_id', form);
   const rekeningId = Form.useWatch('rekening_id', form);
   const nominal = Form.useWatch('nominal', form) ?? 0;
@@ -105,12 +144,24 @@ export function TransaksiTab() {
         idempotency_key: idKey,
       };
       if (values.tipe === 'masuk') {
-        await catatMasuk.mutateAsync({ ...common, donatur_nama: values.donatur_nama?.trim() || null });
+        const jenis = values.donatur_tipe;
+        const donatur = jenis === 'perorangan' || jenis === 'usaha' ? values.donatur : undefined;
+        await catatMasuk.mutateAsync({
+          ...common,
+          donatur_tipe: donatur && (jenis === 'perorangan' || jenis === 'usaha') ? jenis : null,
+          donatur_user_id: jenis === 'perorangan' ? (donatur?.id ?? null) : null,
+          donatur_usaha_id: jenis === 'usaha' ? (donatur?.id ?? null) : null,
+          donatur_nama: donatur?.nama ?? null,
+        });
         message.success('Uang masuk dicatat');
       } else {
         const talangan = (values.talangan ?? [])
-          .filter((t) => t?.penalang_nama?.trim() && Number(t?.pokok) > 0)
-          .map((t) => ({ penalang_nama: t.penalang_nama!.trim(), pokok: Number(t.pokok) }));
+          .filter((t) => t?.penalang?.nama?.trim() && Number(t?.pokok) > 0)
+          .map((t) => ({
+            penalang_nama: t.penalang!.nama.trim(),
+            penalang_user_id: t.penalang!.id,
+            pokok: Number(t.pokok),
+          }));
         const res = await catatKeluar.mutateAsync({
           ...common,
           penerima_nama: butuhPenerima ? values.penerima_nama?.trim() : undefined,
@@ -137,10 +188,11 @@ export function TransaksiTab() {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ tipe: 'keluar', tanggal: dayjs(), talangan: [] }}
+          initialValues={{ tipe: 'keluar', donatur_tipe: 'anonim', tanggal: dayjs(), talangan: [] }}
           onFinish={handleFinish}
           onValuesChange={(changed) => {
-            if ('tipe' in changed) form.setFieldsValue({ kategori_id: undefined, talangan: [] });
+            if ('tipe' in changed) form.setFieldsValue({ kategori_id: undefined, talangan: [], donatur_tipe: 'anonim', donatur: undefined });
+            if ('donatur_tipe' in changed) form.setFieldsValue({ donatur: undefined });
           }}
         >
           <Form.Item name="tipe" label="Jenis">
@@ -176,9 +228,38 @@ export function TransaksiTab() {
           </Flex>
 
           {tipe === 'masuk' ? (
-            <Form.Item name="donatur_nama" label="Nama donatur (opsional)">
-              <Input placeholder="Mis. Hamba Allah" maxLength={80} />
-            </Form.Item>
+            <>
+              <Form.Item name="donatur_tipe" label="Dari siapa (donatur atau sponsor)">
+                <Radio.Group
+                  optionType="button"
+                  options={[
+                    { value: 'anonim', label: 'Tanpa nama' },
+                    { value: 'perorangan', label: 'Perorangan' },
+                    { value: 'usaha', label: 'Usaha' },
+                  ]}
+                />
+              </Form.Item>
+              {donaturPilihan === 'perorangan' ? (
+                <Form.Item
+                  name="donatur"
+                  label="Akun atau nama donatur"
+                  extra="Pilih akun Sambasku, atau ketik nama kalau donaturnya belum punya akun."
+                  rules={[{ required: true, message: 'Pilih akun atau tulis namanya dulu ya' }]}
+                >
+                  <PartyPicker kind="user" allowFreeText placeholder="Cari akun atau ketik nama" />
+                </Form.Item>
+              ) : null}
+              {donaturPilihan === 'usaha' ? (
+                <Form.Item
+                  name="donatur"
+                  label="Usaha"
+                  extra="Sponsor terhubung ke data usaha yang sudah terdaftar."
+                  rules={[{ required: true, message: 'Pilih usahanya dulu ya' }]}
+                >
+                  <PartyPicker kind="usaha" placeholder="Cari nama usaha" />
+                </Form.Item>
+              ) : null}
+            </>
           ) : null}
 
           {butuhPenerima ? (
@@ -190,7 +271,7 @@ export function TransaksiTab() {
           {tipe === 'keluar' ? (
             <Card size="small" type="inner" title="Talangan (opsional)" style={{ marginBottom: 16 }}>
               <Typography.Paragraph type="secondary" style={{ marginTop: 0 }}>
-                Kalau kas rekening kurang, tulis siapa yang menalangi. Dana masuk nanti bisa dipakai mengembalikannya.
+                Kalau kas rekening kurang, pilih siapa yang menalangi. Dana masuk nanti bisa dipakai mengembalikannya.
               </Typography.Paragraph>
               {nominal > 0 && kurang > 0 ? (
                 <Alert
@@ -209,8 +290,8 @@ export function TransaksiTab() {
                   <Flex vertical gap={8}>
                     {fields.map((field) => (
                       <Flex key={field.key} gap={8} wrap align="center">
-                        <Form.Item name={[field.name, 'penalang_nama']} style={{ flex: '1 1 200px', marginBottom: 0 }}>
-                          <Input placeholder="Nama penalang" maxLength={80} />
+                        <Form.Item name={[field.name, 'penalang']} style={{ flex: '1 1 240px', marginBottom: 0 }}>
+                          <PartyPicker kind="user" allowFreeText placeholder="Cari akun atau ketik nama penalang" />
                         </Form.Item>
                         <Form.Item name={[field.name, 'pokok']} style={{ flex: '1 1 160px', marginBottom: 0 }}>
                           <InputNumber min={1} precision={0} style={{ width: '100%' }} formatter={rupiahInputFormatter} parser={rupiahInputParser} placeholder="Nominal talangan" />
@@ -218,7 +299,7 @@ export function TransaksiTab() {
                         <Button type="text" danger icon={<MinusCircleOutlined />} onClick={() => remove(field.name)} aria-label="Hapus talangan" />
                       </Flex>
                     ))}
-                    <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ penalang_nama: '', pokok: undefined })}>
+                    <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ penalang: undefined, pokok: undefined })}>
                       Tambah penalang
                     </Button>
                   </Flex>
@@ -244,7 +325,7 @@ export function TransaksiTab() {
         rowKey="id"
         size="middle"
         loading={transaksiQ.isLoading}
-        dataSource={transaksiQ.data ?? []}
+        dataSource={transaksiRows}
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
         scroll={{ x: 760 }}
         columns={[
@@ -261,10 +342,10 @@ export function TransaksiTab() {
             key: 'label',
             render: (_: unknown, row: CashTransaksi) => (
               <Flex vertical gap={0}>
-                <span>{labelTransaksi(row, kategoriMap)}</span>
+                <span>{labelTransaksi(row, kategoriMap, pasanganMap.get(row.id), namaRekening)}</span>
                 {row.penerima_nama || row.donatur_nama || row.catatan ? (
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    {row.penerima_nama ? `Ke ${row.penerima_nama}` : row.donatur_nama ? `Dari ${row.donatur_nama}` : row.catatan}
+                    {row.penerima_nama ? `Ke ${row.penerima_nama}` : row.donatur_nama ? donaturLabel(row) : row.catatan}
                   </Typography.Text>
                 ) : null}
                 {row.alasan_koreksi ? (

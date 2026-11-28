@@ -2,6 +2,8 @@ import { client } from '@/shared/api/client';
 import type {
   CashTransaksi,
   CashflowSummary,
+  DonaturTipe,
+  LookupItem,
   KategoriTransaksi,
   Kewajiban,
   KewajibanRecurrence,
@@ -24,6 +26,7 @@ const BASE = '/admin/cashflow';
 export const newIdempotencyKey = (): string => crypto.randomUUID();
 
 export interface TalanganInput {
+  penalang_user_id?: string | null;
   penalang_nama: string;
   pokok: number;
 }
@@ -45,6 +48,9 @@ export interface MasukBody {
   nominal: number;
   tanggal: string;
   catatan?: string;
+  donatur_tipe?: DonaturTipe | null;
+  donatur_user_id?: string | null;
+  donatur_usaha_id?: string | null;
   donatur_nama?: string | null;
   idempotency_key: string;
 }
@@ -101,6 +107,15 @@ export async function getSummaryRequest(): Promise<CashflowSummary> {
 
 export async function listTransaksiRequest(): Promise<CashTransaksi[]> {
   const res = await client.get<Envelope<CashTransaksi[]>>(`${BASE}/transactions`, { params: { limit: 100 } });
+  return res.data.data;
+}
+
+/** Cari akun (`user`) atau usaha (`usaha`) untuk dipilih. Kata kunci minimal 2 huruf. */
+export async function lookupRequest(kind: 'user' | 'usaha', q: string, signal?: AbortSignal): Promise<LookupItem[]> {
+  const res = await client.get<Envelope<LookupItem[]>>(`${BASE}/lookup/${kind === 'user' ? 'users' : 'usaha'}`, {
+    params: { q },
+    signal,
+  });
   return res.data.data;
 }
 

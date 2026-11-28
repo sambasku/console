@@ -38,7 +38,25 @@ export interface CashTransaksi {
   transfer_pair_id: string | null;
   penerima_nama: string | null;
   donatur_nama: string | null;
+  donatur_tipe: DonaturTipe | null;
+  donatur_user_id: string | null;
+  donatur_usaha_id: string | null;
   created_at: string;
+}
+
+export type DonaturTipe = 'perorangan' | 'usaha';
+
+/** Hasil pencarian akun atau usaha untuk picker donatur, sponsor, dan penalang. */
+export interface LookupItem {
+  id: string;
+  nama: string;
+  detail: string;
+}
+
+/** Nilai picker: `id` terisi jika memilih akun/usaha, null jika nama bebas tanpa akun. */
+export interface PartyValue {
+  id: string | null;
+  nama: string;
 }
 
 export interface Loan {

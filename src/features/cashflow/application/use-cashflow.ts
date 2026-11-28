@@ -15,6 +15,7 @@ import {
   listPengingatRequest,
   listRekeningRequest,
   listTransaksiRequest,
+  lookupRequest,
   refundRequest,
   reimburseRequest,
   rekonsiliasiRequest,
@@ -47,6 +48,15 @@ export const useCashflowKategori = (enabled = true) =>
 
 export const useCashflowRekening = (enabled = true) =>
   useQuery({ queryKey: [...KEY, 'rekening'], queryFn: listRekeningRequest, enabled });
+
+/** Pencarian picker. Key terpisah dari data cashflow supaya tidak ikut di-refetch tiap mutasi. */
+export const useCashflowLookup = (kind: 'user' | 'usaha', q: string) =>
+  useQuery({
+    queryKey: ['cashflow-lookup', kind, q],
+    queryFn: ({ signal }) => lookupRequest(kind, q, signal),
+    enabled: q.trim().length >= 2,
+    staleTime: 30_000,
+  });
 
 /** Mutasi apa pun menyegarkan semua data cashflow (saldo, talangan, pengingat berubah bersamaan). */
 function useCashflowMutation<TInput, TOutput>(mutationFn: (input: TInput) => Promise<TOutput>) {

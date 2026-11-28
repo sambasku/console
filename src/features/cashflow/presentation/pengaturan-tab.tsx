@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { App as AntdApp, Button, Flex, Space, Switch, Table, Tag, Typography } from 'antd';
+import { App as AntdApp, Button, Flex, Space, Switch, Table, Tag, Tooltip, Typography } from 'antd';
 import { PlusOutlined, SwapOutlined, CheckSquareOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import {
@@ -53,9 +53,13 @@ export function PengaturanTab() {
   return (
     <Flex vertical gap={24}>
       <Space wrap>
-        <Button icon={<SwapOutlined />} onClick={() => setDialog('transfer')} disabled={rekening.length < 2}>
-          Pindah dana antar rekening
-        </Button>
+        <Tooltip title={rekening.length < 2 ? 'Tambah minimal 2 rekening dulu untuk memindah dana' : undefined}>
+          <span>
+            <Button icon={<SwapOutlined />} onClick={() => setDialog('transfer')} disabled={rekening.length < 2}>
+              Pindah dana antar rekening
+            </Button>
+          </span>
+        </Tooltip>
         <Button icon={<CheckSquareOutlined />} onClick={() => setDialog('rekonsiliasi')} disabled={rekening.length === 0}>
           Cocokkan saldo bank
         </Button>
