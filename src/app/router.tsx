@@ -34,6 +34,7 @@ import { DiscussionsPage } from '@/features/discussions/presentation/discussions
 import { DiscussionDetailPage } from '@/features/discussions/presentation/discussion-detail-page';
 import { UsersPage } from '@/features/users/presentation/users-page';
 import { SponsorshipsPage } from '@/features/sponsorships/presentation/sponsorships-page';
+import { CashflowPage } from '@/features/cashflow/presentation/cashflow-page';
 import { AbusePage } from '@/features/abuse/presentation/abuse-page';
 import { VerifierApplicationsPage } from '@/features/verifier-applications/presentation/verifier-applications-page';
 import { VerifierApplicationDetailPage } from '@/features/verifier-applications/presentation/verifier-application-detail-page';
@@ -341,6 +342,12 @@ const sponsorshipsRoute = createRoute({
   getParentRoute: () => consoleLayoutRoute,
   path: '/sponsorships',
   component: SponsorshipsPage,
+});
+
+const cashflowRoute = createRoute({
+  getParentRoute: () => consoleLayoutRoute,
+  path: '/cashflow',
+  component: CashflowPage,
 });
 
 const abuseRoute = createRoute({
@@ -737,6 +744,7 @@ const routeTree = rootRoute.addChildren([
     bugReportsRoute,
     usersRoute,
     sponsorshipsRoute,
+    cashflowRoute,
     abuseRoute,
     abuseLegacyRoute,
     verifierApplicationsRoute,
