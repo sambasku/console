@@ -147,6 +147,20 @@ describe('failover client', () => {
     expect(activeTier().index).toBe(1);
   });
 
+  it('timeout request yang sengaja lebih panjang (unggah) tidak ditimpa timeout tier', async () => {
+    const timeouts: Array<number | undefined> = [];
+    client.defaults.adapter = (async (config) => {
+      timeouts.push(config.timeout);
+      return ok(config);
+    }) satisfies AxiosAdapter;
+
+    await client.get('/words/1');
+    await client.post('/upload', {}, { timeout: 600_000 });
+
+    expect(timeouts[0]).toBe(activeTier().timeoutMs);
+    expect(timeouts[1]).toBe(600_000);
+  });
+
   it('satu GET yang gagal di dua tier menggeser pin ke tier 3 tanpa menembaknya', async () => {
     client.defaults.adapter = (async (config) => {
       hosts.push(config.baseURL ?? '');

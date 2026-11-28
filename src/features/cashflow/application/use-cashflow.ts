@@ -63,7 +63,8 @@ export const useCashflowLampiran = (txId: string | null) =>
 export const useUploadLampiran = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { txId: string; file: File }) => uploadLampiranRequest(input.txId, input.file),
+    mutationFn: (input: { txId: string; file: File; onProgress?: (percent: number) => void }) =>
+      uploadLampiranRequest(input.txId, input.file, input.onProgress),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 };

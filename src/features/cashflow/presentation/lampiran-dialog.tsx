@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import dayjs from 'dayjs';
-import { App as AntdApp, Button, Modal, Popconfirm, Space, Table, Tag, Typography, Upload } from 'antd';
-import { DeleteOutlined, FileOutlined, InboxOutlined, LinkOutlined } from '@ant-design/icons';
+import { App as AntdApp, Button, Modal, Popconfirm, Progress, Space, Table, Tag, Typography, Upload } from 'antd';
+import { DeleteOutlined, ExportOutlined, EyeOutlined, FileOutlined, InboxOutlined } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import { lampiranUrlRequest } from '../infrastructure/cashflow-api';
 import { formatRupiah, type CashLampiran, type CashTransaksi } from '../domain/cashflow';
@@ -28,6 +29,11 @@ interface LampiranDialogProps {
   onClose: () => void;
 }
 
+interface PreviewState {
+  row: CashLampiran;
+  url: string;
+}
+
 /**
  * Lampiran bukti satu transaksi: unggah (PDF atau gambar), daftar, buka, dan hapus.
  * Dialog dimount saat dibuka. Unggah ulang file yang sama aman karena server mendedupe.
@@ -41,29 +47,31 @@ export function LampiranDialog({ tx, onClose }: LampiranDialogProps) {
   const daftar = lampiranQ.data ?? [];
   const penuh = daftar.length >= MAX_LAMPIRAN_PER_TRANSAKSI;
 
+  const [progress, setProgress] = useState<number | null>(null);
+  const [preview, setPreview] = useState<PreviewState | null>(null);
+  const [loadingPreviewId, setLoadingPreviewId] = useState<string | null>(null);
+
   const handleFile = async (file: File) => {
+    setProgress(0);
     try {
-      await upload.mutateAsync({ txId: tx.id, file });
+      await upload.mutateAsync({ txId: tx.id, file, onProgress: setProgress });
       message.success('Lampiran ditambahkan');
     } catch (err) {
       message.error(normalizeError(err).message);
+    } finally {
+      setProgress(null);
     }
   };
 
-  const bukaFile = async (row: CashLampiran) => {
-    // Tab dibuka dulu di klik pertama, supaya tidak diblokir pop-up. URL diisi setelah diambil.
-    const tab = window.open('', '_blank');
-    if (!tab) {
-      message.error('Pop-up diblokir browser. Izinkan pop-up untuk situs ini, lalu coba lagi.');
-      return;
-    }
-    tab.opener = null;
+  const lihatFile = async (row: CashLampiran) => {
+    setLoadingPreviewId(row.id);
     try {
       const { url } = await lampiranUrlRequest(row.id);
-      tab.location.href = url;
+      setPreview({ row, url });
     } catch (err) {
-      tab.close();
       message.error(normalizeError(err).message);
+    } finally {
+      setLoadingPreviewId(null);
     }
   };
 
@@ -82,6 +90,15 @@ export function LampiranDialog({ tx, onClose }: LampiranDialogProps) {
         {formatRupiah(tx.nominal)} pada {dayjs(tx.tanggal).format('D MMM YYYY')}. Maksimal {MAX_LAMPIRAN_PER_TRANSAKSI} file
         per transaksi. Bisa PDF atau gambar (JPG, PNG, WebP).
       </Typography.Paragraph>
+
+      {progress !== null && (
+        <div style={{ marginBottom: 16 }}>
+          <Typography.Text type="secondary">
+            {progress >= 100 ? 'Memproses di server...' : `Mengunggah... ${progress}%`}
+          </Typography.Text>
+          <Progress percent={progress} status={progress >= 100 ? 'active' : 'normal'} />
+        </div>
+      )}
 
       <Upload.Dragger
         accept={ACCEPT}
@@ -143,8 +160,13 @@ export function LampiranDialog({ tx, onClose }: LampiranDialogProps) {
             width: 150,
             render: (_: unknown, row: CashLampiran) => (
               <Space size={4}>
-                <Button size="small" icon={<LinkOutlined />} onClick={() => bukaFile(row)}>
-                  Buka
+                <Button
+                  size="small"
+                  icon={<EyeOutlined />}
+                  loading={loadingPreviewId === row.id}
+                  onClick={() => lihatFile(row)}
+                >
+                  Lihat
                 </Button>
                 <Popconfirm
                   title="Hapus lampiran ini?"
@@ -161,6 +183,39 @@ export function LampiranDialog({ tx, onClose }: LampiranDialogProps) {
           },
         ]}
       />
+
+      <Modal
+        title={preview?.row.original_name}
+        open={preview !== null}
+        onCancel={() => setPreview(null)}
+        destroyOnHidden
+        centered
+        width={900}
+        footer={
+          preview && (
+            <Button href={preview.url} target="_blank" rel="noopener noreferrer" icon={<ExportOutlined />}>
+              Buka di tab baru
+            </Button>
+          )
+        }
+      >
+        {preview &&
+          (preview.row.mime === 'application/pdf' ? (
+            <iframe
+              title={preview.row.original_name}
+              src={preview.url}
+              referrerPolicy="no-referrer"
+              style={{ width: '100%', height: '70vh', border: 0 }}
+            />
+          ) : (
+            <img
+              src={preview.url}
+              alt={preview.row.original_name}
+              referrerPolicy="no-referrer"
+              style={{ display: 'block', maxWidth: '100%', maxHeight: '70vh', margin: '0 auto' }}
+            />
+          ))}
+      </Modal>
     </Modal>
   );
 }

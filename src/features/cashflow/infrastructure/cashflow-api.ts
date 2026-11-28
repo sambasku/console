@@ -23,6 +23,8 @@ interface Envelope<T> {
 
 const BASE = '/admin/cashflow';
 
+const UPLOAD_TIMEOUT_MS = 10 * 60_000;
+
 /** Kunci idempotensi per form. Sama kunci = transaksi tidak tercatat dua kali. */
 export const newIdempotencyKey = (): string => crypto.randomUUID();
 
@@ -117,12 +119,21 @@ export async function listLampiranRequest(txId: string): Promise<CashLampiran[]>
 }
 
 /** Unggah satu file. Server mendedupe sha256, jadi mengulang unggah file yang sama aman. */
-export async function uploadLampiranRequest(txId: string, file: File): Promise<CashLampiran> {
+export async function uploadLampiranRequest(
+  txId: string,
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<CashLampiran> {
   const form = new FormData();
   form.append('file', file);
   // Hapus Content-Type default JSON dari client supaya browser memasang boundary multipart.
   const res = await client.post<Envelope<CashLampiran>>(`${BASE}/transactions/${txId}/attachments`, form, {
     headers: { 'Content-Type': undefined },
+    // Timeout bawaan 15 detik terlalu pendek untuk file puluhan MB.
+    timeout: UPLOAD_TIMEOUT_MS,
+    onUploadProgress: (e) => {
+      if (e.total) onProgress?.(Math.min(100, Math.round((e.loaded * 100) / e.total)));
+    },
   });
   return res.data.data;
 }

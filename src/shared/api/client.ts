@@ -39,9 +39,11 @@ const AUTH_ENDPOINT_PREFIX = '/auth/';
  * `withCredentials: true` agar cookie httpOnly refresh_token ikut terkirim
  * (khususnya saat baseURL berbentuk absolute URL lintas origin).
  */
+const DEFAULT_TIMEOUT_MS = 15_000;
+
 const BASE_CONFIG: AxiosRequestConfig = {
   baseURL: env.apiBaseUrl,
-  timeout: 15_000,
+  timeout: DEFAULT_TIMEOUT_MS,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 };
@@ -78,7 +80,9 @@ async function applyActiveTier(config: InternalAxiosRequestConfig): Promise<Inte
     }
   }
   config.baseURL = tier.baseUrl;
-  config.timeout = tier.timeoutMs;
+  // Request yang sengaja diberi timeout lebih panjang dari bawaan (unggah file besar)
+  // tidak ditimpa timeout tier. Selain itu, timeout mengikuti tier aktif.
+  if (!(config.timeout && config.timeout > DEFAULT_TIMEOUT_MS)) config.timeout = tier.timeoutMs;
   if (gated) (config as InternalAxiosRequestConfig & { _coldGated?: boolean })._coldGated = true;
   return config;
 }
