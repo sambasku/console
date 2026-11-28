@@ -108,8 +108,19 @@ export async function getSummaryRequest(): Promise<CashflowSummary> {
   return res.data.data;
 }
 
-export async function listTransaksiRequest(): Promise<CashTransaksi[]> {
-  const res = await client.get<Envelope<CashTransaksi[]>>(`${BASE}/transactions`, { params: { limit: 100 } });
+/** Rentang tanggal transaksi, format YYYY-MM-DD, inklusif. Kosong = tanpa batas. */
+export interface TransaksiFilter {
+  from?: string;
+  to?: string;
+}
+
+/** Jumlah baris maksimum riwayat per permintaan (sama dengan batas API). */
+export const BATAS_TRANSAKSI = 500;
+
+export async function listTransaksiRequest(filter: TransaksiFilter = {}): Promise<CashTransaksi[]> {
+  const res = await client.get<Envelope<CashTransaksi[]>>(`${BASE}/transactions`, {
+    params: { limit: BATAS_TRANSAKSI, from: filter.from, to: filter.to },
+  });
   return res.data.data;
 }
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { Button, Card, Divider, Empty, Flex, Skeleton, Space, Tag, Typography } from 'antd';
+import { Button, Card, DatePicker, Divider, Empty, Flex, Radio, Skeleton, Space, Tag, Typography } from 'antd';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { normalizeError } from '@/shared/api/error';
 import { formatDate } from '@/shared/utils/format-datetime';
+import { BATAS_TRANSAKSI } from '../infrastructure/cashflow-api';
 import { formatRupiah, type CashTransaksi, type KategoriTransaksi } from '../domain/cashflow';
 import { useCashflowKategori, useCashflowRekening, useCashflowTransaksi } from '../application/use-cashflow';
 import { RefundDialog, ReversalDialog } from './cashflow-dialogs';
@@ -18,8 +19,33 @@ import { LampiranDialog } from './lampiran-dialog';
 
 const KODE_DONASI = 'MSK-DON';
 
-/** Batas baris yang diminta ke API (lihat `listTransaksiRequest`). Dipakai untuk catatan "terbaru saja". */
-const BATAS_TAMPIL = 100;
+type Preset = 'semua' | '7h' | '30h' | '6b' | '1t' | 'custom';
+type Rentang = [dayjs.Dayjs, dayjs.Dayjs];
+
+const PRESET_OPTIONS: { value: Exclude<Preset, 'custom'>; label: string }[] = [
+  { value: 'semua', label: 'Semua' },
+  { value: '7h', label: '7 hari terakhir' },
+  { value: '30h', label: '30 hari terakhir' },
+  { value: '6b', label: '6 bulan terakhir' },
+  { value: '1t', label: '1 tahun terakhir' },
+];
+
+/** Rentang preset berakhir hari ini. Hari dihitung inklusif: 7 hari terakhir = hari ini dan 6 hari sebelumnya. */
+function rentangPreset(preset: Preset): Rentang | null {
+  const akhir = dayjs().startOf('day');
+  switch (preset) {
+    case '7h':
+      return [akhir.subtract(6, 'day'), akhir];
+    case '30h':
+      return [akhir.subtract(29, 'day'), akhir];
+    case '6b':
+      return [akhir.subtract(6, 'month'), akhir];
+    case '1t':
+      return [akhir.subtract(1, 'year'), akhir];
+    default:
+      return null;
+  }
+}
 
 const SISTEM_LABEL: Record<string, string> = {
   talangan: 'Dana ditalangi',
@@ -71,7 +97,11 @@ interface HariGroup {
 export function TransaksiTab() {
   const kategoriQ = useCashflowKategori();
   const rekeningQ = useCashflowRekening();
-  const transaksiQ = useCashflowTransaksi();
+  const [preset, setPreset] = useState<Preset>('semua');
+  const [rentang, setRentang] = useState<Rentang | null>(null);
+  const from = rentang?.[0].format('YYYY-MM-DD');
+  const to = rentang?.[1].format('YYYY-MM-DD');
+  const transaksiQ = useCashflowTransaksi({ from, to });
 
   const [reversalTarget, setReversalTarget] = useState<CashTransaksi | null>(null);
   const [refundSource, setRefundSource] = useState<CashTransaksi | null>(null);
@@ -119,12 +149,56 @@ export function TransaksiTab() {
     return hasil;
   }, [transaksiRows, pasanganMap]);
 
-  if (transaksiQ.isLoading) return <Skeleton active paragraph={{ rows: 6 }} />;
+  const jumlahBaris = groups.reduce((acc, g) => acc + g.rows.length, 0);
+  const totalMasuk = groups.reduce((acc, g) => acc + g.masuk, 0);
+  const totalKeluar = groups.reduce((acc, g) => acc + g.keluar, 0);
 
   return (
     <Flex vertical gap={16}>
-      {groups.length === 0 ? (
-        <Empty description="Belum ada transaksi. Klik Catat di kanan atas untuk mulai." />
+      <Flex gap={8} wrap align="center">
+        <Radio.Group
+          optionType="button"
+          value={preset === 'custom' ? null : preset}
+          options={PRESET_OPTIONS}
+          onChange={(e) => {
+            const p = e.target.value as Preset;
+            setPreset(p);
+            setRentang(rentangPreset(p));
+          }}
+        />
+        <DatePicker.RangePicker
+          value={rentang}
+          format="D MMM YYYY"
+          placeholder={['Tanggal mulai', 'Tanggal akhir']}
+          allowClear
+          onChange={(v) => {
+            if (v?.[0] && v[1]) {
+              setRentang([v[0], v[1]]);
+              setPreset('custom');
+            } else {
+              setRentang(null);
+              setPreset('semua');
+            }
+          }}
+        />
+      </Flex>
+      {jumlahBaris > 0 ? (
+        <Space size={12} wrap>
+          <Typography.Text type="secondary">{jumlahBaris} transaksi</Typography.Text>
+          <Typography.Text type="success">Masuk +{formatRupiah(totalMasuk)}</Typography.Text>
+          <Typography.Text type="danger">Keluar -{formatRupiah(totalKeluar)}</Typography.Text>
+        </Space>
+      ) : null}
+
+      {transaksiQ.isLoading ? <Skeleton active paragraph={{ rows: 6 }} /> : null}
+      {!transaksiQ.isLoading && groups.length === 0 ? (
+        <Empty
+          description={
+            rentang
+              ? 'Tidak ada transaksi di rentang tanggal ini.'
+              : 'Belum ada transaksi. Klik Catat di kanan atas untuk mulai.'
+          }
+        />
       ) : null}
 
       {groups.map((g) => (
@@ -209,8 +283,10 @@ export function TransaksiTab() {
         </Card>
       ))}
 
-      {transaksiRows.length >= BATAS_TAMPIL ? (
-        <Typography.Text type="secondary">Menampilkan {BATAS_TAMPIL} transaksi terbaru.</Typography.Text>
+      {transaksiRows.length >= BATAS_TRANSAKSI ? (
+        <Typography.Text type="secondary">
+          Menampilkan {BATAS_TRANSAKSI} transaksi terbaru{rentang ? ' di rentang ini. Persempit rentang untuk melihat yang lebih lama' : ''}.
+        </Typography.Text>
       ) : null}
       {transaksiQ.isError ? <Typography.Text type="danger">{normalizeError(transaksiQ.error).message}</Typography.Text> : null}
       {reversalTarget ? <ReversalDialog target={reversalTarget} onClose={() => setReversalTarget(null)} /> : null}

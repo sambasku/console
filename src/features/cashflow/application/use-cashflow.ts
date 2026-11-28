@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   batalkanRequest,
   bayarKewajibanRequest,
@@ -15,6 +15,7 @@ import {
   listPengingatRequest,
   listRekeningRequest,
   listTransaksiRequest,
+  type TransaksiFilter,
   hapusLampiranRequest,
   listLampiranRequest,
   lookupRequest,
@@ -34,8 +35,14 @@ const KEY = ['cashflow'] as const;
 export const useCashflowSummary = (enabled = true) =>
   useQuery({ queryKey: [...KEY, 'summary'], queryFn: getSummaryRequest, enabled });
 
-export const useCashflowTransaksi = (enabled = true) =>
-  useQuery({ queryKey: [...KEY, 'transaksi'], queryFn: listTransaksiRequest, enabled });
+/** Riwayat transaksi untuk satu rentang tanggal. Data lama tetap tampil selama rentang baru dimuat. */
+export const useCashflowTransaksi = (filter: TransaksiFilter = {}, enabled = true) =>
+  useQuery({
+    queryKey: [...KEY, 'transaksi', filter.from ?? null, filter.to ?? null],
+    queryFn: () => listTransaksiRequest(filter),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
 
 export const useCashflowLoans = (enabled = true) =>
   useQuery({ queryKey: [...KEY, 'loans'], queryFn: listLoansRequest, enabled });
