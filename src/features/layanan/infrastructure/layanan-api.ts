@@ -1,6 +1,7 @@
 import { client } from '@/shared/api/client';
 
-export type LayananCategory = 'ambulance' | 'fire';
+/** Slug dari master kategori layanan (`layanan_categories`). */
+export type LayananCategory = string;
 
 export interface LayananPhoneWire {
   phone: string;

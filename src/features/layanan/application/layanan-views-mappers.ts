@@ -25,15 +25,6 @@ export interface LayananViewsKpis {
   avgViews: number;
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  ambulance: 'Ambulans',
-  fire: 'Pemadam',
-};
-
-export function layananCategoryLabel(category: string): string {
-  return CATEGORY_LABEL[category] ?? category;
-}
-
 export function toLayananViewsKpis(report: LayananViewsReport): LayananViewsKpis {
   const total = report.items.reduce((s, i) => s + i.views, 0);
   const top = report.items[0];

@@ -22,11 +22,7 @@ import {
   type LayananRejectReasonCode,
   type LayananWire,
 } from '../infrastructure/layanan-api';
-
-const CATEGORY_LABEL: Record<string, string> = {
-  ambulance: 'Ambulan',
-  fire: 'Pemadam kebakaran',
-};
+import { useLayananCategoryMap } from '../application/use-layanan-categories';
 
 function textOrDash(value: string | null | undefined): string {
   const trimmed = value?.trim();
@@ -83,6 +79,7 @@ export function LayananProposalDrawer({
   const [reasonCode, setReasonCode] = useState<LayananRejectReasonCode>('invalid_phone');
   const [reasonText, setReasonText] = useState('');
   const [revisionOpen, setRevisionOpen] = useState(false);
+  const { map: categoryMap } = useLayananCategoryMap();
   const [revisionNote, setRevisionNote] = useState('');
 
   const payload = proposal?.payload;
@@ -185,7 +182,7 @@ export function LayananProposalDrawer({
             <Tag color={isEdit ? 'blue' : 'green'}>
               {isEdit ? 'Usulan sunting' : 'Layanan baru'}
             </Tag>
-            <Tag>{CATEGORY_LABEL[payload.category] ?? payload.category}</Tag>
+            <Tag>{categoryMap[payload.category]?.name ?? payload.category}</Tag>
             {existingLayanan ? <Tag>Target: {existingLayanan.name}</Tag> : null}
           </Space>
 
@@ -218,9 +215,9 @@ export function LayananProposalDrawer({
           <Descriptions size="small" column={1} bordered>
             <Descriptions.Item label="Kategori">
               {renderWithPrev(
-                CATEGORY_LABEL[payload.category] ?? payload.category,
+                categoryMap[payload.category]?.name ?? payload.category,
                 isEdit && existingLayanan
-                  ? CATEGORY_LABEL[existingLayanan.category] ?? existingLayanan.category
+                  ? categoryMap[existingLayanan.category]?.name ?? existingLayanan.category
                   : undefined,
               )}
             </Descriptions.Item>

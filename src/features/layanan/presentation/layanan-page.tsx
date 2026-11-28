@@ -17,17 +17,13 @@ import { PageHeader } from '@/shared/components/page-header';
 import { normalizeError } from '@/shared/api/error';
 import { useAllRegions } from '@/features/regions/application/use-regions';
 import { useAdminLayanan, useLayananMutations, useLayananQueue } from '../application/use-layanan';
+import { useAllLayananCategoryItems } from '../application/use-layanan-categories';
 import type {
   LayananContributionWire,
   LayananInput,
   LayananWire,
 } from '../infrastructure/layanan-api';
 import { LayananProposalDrawer } from './layanan-proposal-drawer';
-
-const CATEGORY = [
-  { value: 'ambulance', label: 'Ambulan' },
-  { value: 'fire', label: 'Pemadam kebakaran' },
-];
 
 function phonesLabel(phones: { phone: string; note: string | null }[] | undefined): string {
   if (!phones?.length) return '-';
@@ -46,6 +42,13 @@ export function LayananPage() {
   const [editing, setEditing] = useState<LayananWire | null>(null);
   const [proposal, setProposal] = useState<LayananContributionWire | null>(null);
   const [form] = Form.useForm<LayananInput>();
+  const categories = useAllLayananCategoryItems();
+  const categoryMap = Object.fromEntries((categories.data ?? []).map((c) => [c.id, c]));
+  // Kategori arsip tidak bisa dipilih untuk input baru; tetap tampil bila sedang dipakai layanan yang diedit.
+  const categoryOptions = (categories.data ?? [])
+    .filter((c) => c.status === 'published' || c.id === editing?.category)
+    .map((c) => ({ value: c.id, label: c.name }));
+  const defaultCategory = categories.data?.find((c) => c.status === 'published')?.id;
 
   const regionName = (id: string | null | undefined) => {
     if (!id) return '-';
@@ -86,7 +89,7 @@ export function LayananPage() {
             note: row.note,
           }
         : {
-            category: 'ambulance',
+            category: defaultCategory,
             phones: [{ phone: '', note: null, whatsapp: null }],
           },
     );
@@ -149,7 +152,7 @@ export function LayananPage() {
           {
             title: 'Kategori',
             dataIndex: 'category',
-            render: (v: string) => (v === 'fire' ? 'Pemadam' : 'Ambulan'),
+            render: (v: string) => categoryMap[v]?.shortLabel ?? v,
           },
           { title: 'Nama', dataIndex: 'name' },
           { title: 'Kecamatan', dataIndex: 'region_name' },
@@ -200,7 +203,7 @@ export function LayananPage() {
       >
         <Form form={form} layout="vertical">
           <Form.Item name="category" label="Kategori" rules={[{ required: true }]}>
-            <Select options={CATEGORY} />
+            <Select options={categoryOptions} />
           </Form.Item>
           <Form.Item name="region_id" label="Kecamatan" rules={[{ required: true, message: 'Kecamatan wajib dipilih' }]}>
             <Select

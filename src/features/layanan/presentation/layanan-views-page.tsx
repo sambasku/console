@@ -5,11 +5,8 @@ import { PageHeader } from '@/shared/components/page-header';
 import { useAuth } from '@/shared/auth/use-auth';
 import { TrendChart } from '@/features/web-analytics/presentation/components/trend-chart';
 import { useLayananViewsReport } from '../application/use-layanan-views';
-import {
-  fillTrendDays,
-  layananCategoryLabel,
-  toLayananViewsKpis,
-} from '../application/layanan-views-mappers';
+import { useLayananCategoryMap } from '../application/use-layanan-categories';
+import { fillTrendDays, toLayananViewsKpis } from '../application/layanan-views-mappers';
 
 const PERIODS = [
   { value: 7, label: '7 hari' },
@@ -19,6 +16,7 @@ const PERIODS = [
 const TOP_N = 10;
 
 export function LayananViewsPage() {
+  const { map: categoryMap } = useLayananCategoryMap();
   const { user } = useAuth();
   const [days, setDays] = useState<number>(30);
   const report = useLayananViewsReport(days);
@@ -173,7 +171,7 @@ export function LayananViewsPage() {
                     <div className="dashboard__misses-main">
                       <span className="dashboard__misses-term">{item.name}</span>
                       <Tag className="dashboard__misses-tag">
-                        {layananCategoryLabel(item.category)}
+                        {categoryMap[item.category]?.shortLabel ?? item.category}
                       </Tag>
                     </div>
                     <span className="dashboard__misses-hits">
